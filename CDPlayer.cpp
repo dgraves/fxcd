@@ -482,7 +482,7 @@ FXbool CDPlayer::update()
       case CDAUDIO_PLAYING:
         //Check for track change
         if((currentTrack!=discInfo.disc_current_track)||
-           (intro&&((discInfo.disc_track_time.minutes>introTime.minutes)||
+           (intro&&((discInfo.disc_track_time.minutes>=introTime.minutes)&&
            (discInfo.disc_track_time.seconds>introTime.seconds))))
         {
           //Finished a track
@@ -513,7 +513,7 @@ FXbool CDPlayer::update()
 	  }
           else
  	    currentTrack=discInfo.disc_first_track;
-          play();
+          cd_play(media,currentTrack);
         }
         else
 	{

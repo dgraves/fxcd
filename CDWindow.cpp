@@ -726,6 +726,7 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
   getApp()->reg().write();
 
   getApp()->stop();
+
   return 1;
 }
 
