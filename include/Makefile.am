@@ -1,4 +1,6 @@
 EXTRA_DIST = \
+		icons.h 	        \
+		CDutils.h	        \
 		CDBMPIcon.h	        \
 		CDCanvas.h	        \
 		CDChoiceDialog.h	\

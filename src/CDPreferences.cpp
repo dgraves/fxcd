@@ -16,12 +16,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <algorithm>
+#ifndef WIN32
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 #include "cdlyte.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
 #include "CDdefs.h"
+#include "CDutils.h"
 #include "CDPlayer.h"
+#include "CDListBox.h"
 #include "CDCanvas.h"
 #include "CDWindow.h"
 #include "CDServerDialog.h"
@@ -33,7 +41,7 @@ FXDEFMAP(CDPreferences) CDPreferencesMap[]={
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEADD,CDPreferences::onCmdDeviceAdd),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEREM,CDPreferences::onCmdDeviceRemove),
   FXMAPFUNC(SEL_UPDATE,CDPreferences::ID_DEVICEREM,CDPreferences::onUpdDeviceRemove),
-  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEFAULTDEVS,CDPreferences::onCmdDefaultDevs)
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICESCAN,CDPreferences::onCmdDeviceScan)
 };
 
 FXIMPLEMENT(CDPreferences,FXDialogBox,CDPreferencesMap,ARRAYNUMBER(CDPreferencesMap))
@@ -165,22 +173,59 @@ CDPreferences::CDPreferences(CDWindow* owner)
   new FXRadioButton(repeatframe,"Album",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_DISC,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
 
   // Hardware panel
-  FXVerticalFrame* hardframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  FXVerticalFrame* hardframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
   new FXLabel(hardframe,"Hardware");
   new FXHorizontalSeparator(hardframe,SEPARATOR_LINE|LAYOUT_FILL_X);
 
-  FXGroupBox* hardbox=new FXGroupBox(hardframe,"CD Audio Device",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXGroupBox* hardbox=new FXGroupBox(hardframe,"CD Audio Device",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXHorizontalFrame* devframe=new FXHorizontalFrame(hardbox,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXVerticalFrame* devlistframe=new FXVerticalFrame(devframe,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0, 0,0);
   devlist=new FXList(devlistframe,NULL,0,LIST_BROWSESELECT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  FXVerticalFrame* devbuttons=new FXVerticalFrame(devframe,PACK_UNIFORM_WIDTH|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
-  new FXButton(devbuttons,"&Add",NULL,this,ID_DEVICEADD,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
-  new FXButton(devbuttons,"&Remove",NULL,this,ID_DEVICEREM,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
+  FXVerticalFrame* devbuttons=new FXVerticalFrame(devframe,PACK_UNIFORM_WIDTH,0,0,0,0, 0,0,0,0);
+  FXVerticalFrame* devaddframe=new FXVerticalFrame(devbuttons,FRAME_SUNKEN|LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXButton(devaddframe,"Add",NULL,this,ID_DEVICEADD,FRAME_RAISED|LAYOUT_FILL_X,0,0,0,0, 20,20);
+  FXVerticalFrame* devremframe=new FXVerticalFrame(devbuttons,FRAME_SUNKEN|LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXButton(devremframe,"Remove",NULL,this,ID_DEVICEREM,FRAME_RAISED|LAYOUT_FILL_X,0,0,0,0, 20,20);
+  FXVerticalFrame* devscanframe=new FXVerticalFrame(devbuttons,FRAME_SUNKEN|LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXButton(devscanframe,"Scan",NULL,this,ID_DEVICESCAN,FRAME_RAISED|LAYOUT_FILL_X,0,0,0,0, 20,20);
 
+  // Add devices to list
+  FXint i,n=owner->bandtitle->getNumItems();
+  FXString *data;
+
+  // Look for device
+  for(i=0;i<n;i++)
+  {
+    data=(FXString*)owner->bandtitle->getItemData(i);
+    devlist->appendItem(*data);
+  }
+}
+
+void CDPreferences::setPanel(FXuint panel)
+{
+  tree->setCurrentItem(treeitem[panel],TRUE);
+}
+
+FXuint CDPreferences::getPanel() const
+{
+  FXTreeItem* ti=tree->getCurrentItem();
+  std::vector<FXTreeItem*>::const_iterator iter;
+
+  for(iter=treeitem.begin();iter!=treeitem.end();++iter)
+  {
+    if(*iter==ti)
+      return iter-treeitem.begin();
+  }
+
+  return 0;  // Default to first item
 }
 
 long CDPreferences::onCmdAccept(FXObject*,FXSelector,void*)
 {
+//    if(!cdwindow->addDevice(devnam))
+//      FXMessageBox::error(this,MBOX_OK,"Invalid CD Audio Device","%s is not a valid CD audio device.  ",devnam.text());
+//  if(!cdwindow->removeDevice(devnam))
+//    FXMessageBox::error(this,MBOX_OK,"Remove Device Error","%s could not be removed.  ",devnam.text());
   return 1;
 }
 
@@ -206,42 +251,47 @@ long CDPreferences::onCmdDeviceAdd(FXObject*,FXSelector,void*)
   if(dialog.execute())
   {
     FXString devnam=dialog.getText();
+
+    if(!checkDevice(devnam))
+    {
+      FXMessageBox::error(this,MBOX_OK,"Invalid CD Audio Device","%s is not a valid CD audio device.  ",devnam.text());
+    }
+    else
+    {
+      std::list<FXString>::iterator iter=std::find(remdev.begin(),remdev.end(),devnam);
+      if(iter!=remdev.end())
+        remdev.erase(iter);
+      else
+        adddev.push_back(devnam);
+      devlist->appendItem(devnam);
+    }
   }
   return 1;
 }
 
 long CDPreferences::onCmdDeviceRemove(FXObject*,FXSelector,void*)
 {
+  FXint item=devlist->getCurrentItem();
+  FXString devnam=devlist->getItemText(item);
+  std::list<FXString>::iterator iter=std::find(adddev.begin(),adddev.end(),devnam);
+  if(iter!=adddev.end())
+    adddev.erase(iter);
+  else
+    remdev.push_back(devnam);
+  devlist->removeItem(item);
   return 1;
 }
 
 long CDPreferences::onUpdDeviceRemove(FXObject* sender,FXSelector,void*)
 {
+  FXuint msg=(devlist->getNumItems()>1)?ID_ENABLE:ID_DISABLE;
+  sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
 
-long CDPreferences::onCmdDefaultDevs(FXObject*,FXSelector,void*)
+long CDPreferences::onCmdDeviceScan(FXObject*,FXSelector,void*)
 {
   return 1;
-}
-
-void CDPreferences::setPanel(FXuint panel)
-{
-  tree->setCurrentItem(treeitem[panel],TRUE);
-}
-
-FXuint CDPreferences::getPanel() const
-{
-  FXTreeItem* ti=tree->getCurrentItem();
-  std::vector<FXTreeItem*>::const_iterator iter;
-
-  for(iter=treeitem.begin();iter!=treeitem.end();++iter)
-  {
-    if(*iter==ti)
-      return iter-treeitem.begin();
-  }
-
-  return 0;  // Default to first item
 }
 
 /*

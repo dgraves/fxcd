@@ -38,9 +38,10 @@ ICONS = \
 
 fxcd_SOURCES = \
 		icons.cpp	        \
+		CDutils.cpp     	\
 		CDBMPIcon.cpp	        \
 		CDCanvas.cpp	        \
-		CDListBox.cpp	\
+		CDListBox.cpp	        \
 		CDPlayer.cpp	        \
 		CDPreferences.cpp	\
 		CDSeekButton.cpp	\

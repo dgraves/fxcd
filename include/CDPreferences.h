@@ -19,6 +19,7 @@
 #ifndef _CDPREFERENCES_H_
 #define _CDPREFERENCES_H_
 
+#include <list>
 #include <vector>
 
 enum
@@ -50,6 +51,8 @@ protected:
   FXbool  random;
   FXuint  repeatmode;
   FXuint  timemode;
+  std::list<FXString> adddev;
+  std::list<FXString> remdev;
 protected:
   FXDataTarget showmenubartgt;
   FXDataTarget showstatusbartgt;
@@ -78,7 +81,7 @@ public:
   long onCmdDeviceAdd(FXObject*,FXSelector,void*);
   long onCmdDeviceRemove(FXObject*,FXSelector,void*);
   long onUpdDeviceRemove(FXObject*,FXSelector,void*);
-  long onCmdDefaultDevs(FXObject*,FXSelector,void*);
+  long onCmdDeviceScan(FXObject*,FXSelector,void*);
 public:
   enum
   {
@@ -86,7 +89,7 @@ public:
     ID_LIST,
     ID_DEVICEADD,
     ID_DEVICEREM,
-    ID_DEFAULTDEVS,
+    ID_DEVICESCAN,
     ID_LAST
   };
 public:

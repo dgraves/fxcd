@@ -183,8 +183,14 @@ public:
 
   // Get button icon color
   FXColor getIconColor() const;
+  
+  // Add a new CD audio device
+  FXbool addDevice(const FXString& devnam);
+  
+  // Remove an existing CD audio device
+  FXbool removeDevice(const FXString& devnam);
 
-  //Destructor
+  // Destructor
   ~CDWindow();
 };
 

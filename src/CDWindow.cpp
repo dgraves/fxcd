@@ -19,6 +19,7 @@
 #include "cdlyte.h"
 #include "fox/fx.h"
 #include "CDdefs.h"
+#include "CDutils.h"
 #include "CDPlayer.h"
 #include "CDListBox.h"
 #include "CDSeekButton.h"
@@ -618,6 +619,83 @@ void CDWindow::setIconColor(FXColor color)
 FXColor CDWindow::getIconColor() const
 {
   return iconclr;
+}
+
+FXbool CDWindow::addDevice(const FXString& devnam)
+{
+  FXint n=getApp()->reg().readIntEntry("DEVICES","total",0);
+  FXString *name=new FXString(devnam);
+  FXString entry;
+
+  // Check device validity
+  if(!checkDevice(devnam))
+    return FALSE;
+
+  // Add to list
+  bandtitle->appendItem(devnam,NULL,(void*)name);
+  bandtitle->setNumVisible(n+1);
+
+  // Get data for device
+
+  // Add to registry
+  entry.format("device%d",n);
+  getApp()->reg().writeIntEntry("DEVICES","total",n+1);
+  getApp()->reg().writeStringEntry("DEVICES",entry.text(),devnam.text());
+  getApp()->reg().write();
+
+  return TRUE;
+}
+
+FXbool CDWindow::removeDevice(const FXString& devnam)
+{
+  FXint i,n=bandtitle->getNumItems();
+  FXint item=-1;
+  FXString *data,entry;
+  FXbool stopngo=FALSE;
+
+  // Look for device
+  for(i=0;i<n;i++)
+  {
+    data=(FXString*)bandtitle->getItemData(i);
+    if(*data==devnam)
+    {
+      item=i;
+      break;
+    }
+  }
+
+  if(item<0)
+    return FALSE;
+
+  stopngo=(item==bandtitle->getCurrentItem())?TRUE:FALSE;
+
+  // Remove item from list
+  bandtitle->removeItem(item);
+  bandtitle->setNumVisible(n-1);
+
+  // Remove device data
+
+  // Remove from registry
+  n=getApp()->reg().readIntEntry("DEVICES","total",0);
+  getApp()->reg().writeIntEntry("DEVICES","total",n-1);
+  for(i=item;i<(n-1);i++)
+  {
+    // Move each item up
+    entry.format("device%d",i+1);
+    const FXchar* entstr=getApp()->reg().readStringEntry("DEVICES",entry.text(),NULL);
+
+    entry.format("device%d",i);
+    getApp()->reg().writeStringEntry("DEVICES",entry.text(),entstr);
+  }
+  entry.format("device%d",n-1);
+  getApp()->reg().deleteEntry("DEVICES",entry.text());
+  getApp()->reg().write();
+
+  // Reset player if the active device was deleted
+  if(stopngo)
+    handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandtitle->getCurrentItem());
+
+  return TRUE;
 }
 
 long CDWindow::onMouseUp(FXObject*,FXSelector,void* ptr)
