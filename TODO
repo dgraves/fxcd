@@ -1,34 +1,3 @@
--Fixed? Seek needs improvements for crossing track boundaries:
-          * Seek past end of track ignores random mode and repeat track mode.  
-          * Seek past of end of last track generates an assertion failure.  
-
--Fixed? Intro mode does not observe repeat disc mode.  
-
--Fixed? When CD player plays entire disk, track should reset to 1.  
-
--Fixed? Ejecting a CD while player is running causes player to crash.
-
--Fixed both? Toshiba DVD-ROM performs like expected but Generic CD-ROM has exhibited 2 problems:
--Fixed with hack?  1.  It does not report its state as being completed when a disc plays to end.  So,
-      because of this repeat album is not working here.  For some reason it reports this
-      state when it starts playing, before it reports the play state.  I guess you get what you pay for.  
--Fixed with hack?  2.  Ejecting when CD is playing stops the cd but does not eject.  Eject must be pressed again to make it happen.  
-      gtcd and kscd als exhibit this behavior (but neither of them can ever eject the cd).  
-This may not be worth worrying about.  Once, RealJukebox told me it could not record a CD because
-the drive was sub-par so maybe that's the answer to give to anyone who experiences these problems.  
-
--Done! Implement settings button and menu option.  
-
--Done! Add advanced buttons for CDDB and CDindex settings to set cgi scripts.  
-
--Done! [By zeroing cd-rom volume.  This is actually how OSS mixers handle mute.]  Mute does not work.  
-
--Fixed? Changing colors for the mute icons (two colors each) has problems with one color becoming the transparency or both colors becoming the same.  
-
--Fixed? When the cd player starts while a disk is already playing, the stopped flag is not properly set to FALSE
-
--Done! When there are multiple cddb entries, provide a choice.  
-
 Batch mode for network info retrieval - will require mods to libcdaudio.  
 
 CD device discovery

@@ -1,0 +1,21 @@
+Sun Jul 15 Dustin Graves <dgraves@computer.org>
+  * This is a list of changes since initial (limited) release (fxcd-0.3)
+  * Fixed seek problems with crossing track boundaries:
+    - Seek past end of track ignores random mode and repeat track mode.  
+    - Seek past of end of last track generates an assertion failure.  
+  * Fixed problem where intro mode does not observe repeat disc mode.  
+  * Fixed problem with CD player not reseting track after it plays entire disk.  
+  * Fixed problem where ejecting a CD while player is running causes player to crash.
+  * Fixed both? Toshiba DVD-ROM performs like expected but Generic CD-ROM has exhibited 2 problems:
+    - Fixed with hack?  1.  It does not report its state as being completed when a disc plays to end.  So,
+      because of this repeat album is not working here.  For some reason it reports this
+      state when it starts playing, before it reports the play state.  I guess you get what you pay for.  
+    -Fixed with hack?  2.  Ejecting when CD is playing stops the cd but does not eject.  Eject must be pressed again to make it happen.  
+      gtcd and kscd als exhibit this behavior (but neither of them can ever eject the cd).  
+  * Implemented settings dialog, button, and menu option.  
+  * Added advanced buttons for CDDB and CDindex settings to set cgi scripts.  
+  * Implemented mute (By zeroing cd-rom volume.  This is actually how OSS mixers handle mute).  
+  * Fixed issue with changing colors for the mute icons (two colors each) having problems with one color becoming the transparency or both colors becoming the same.  
+  * Fixed bug, when the cd player starts while a disk is already playing, the stopped flag is not properly set to FALSE.  
+  * When there are multiple cddb entries, there is now a dialog to provide a choice.  
+  * Now uses GNU build system (autoconf,automake,etc).  
