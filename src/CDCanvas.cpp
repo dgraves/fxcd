@@ -157,17 +157,6 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
   FXbool negative=FALSE;
   FXString text;
 
-  //Create image for double buffering
-  FXImage back(getApp(),NULL,IMAGE_OPAQUE,getWidth(),getHeight());
-  back.create();
-
-  //Create device context
-  FXDCWindow dc(&back);
-
-  //Draw background
-  dc.setForeground(lcdbackclr);
-  dc.fillRectangle(0,0,getWidth(),getHeight());
-
   //Create string to draw
   if(di->disc_mode==CDLYTE_PLAYING||di->disc_mode==CDLYTE_PAUSED)
   {
@@ -216,6 +205,17 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
     text.format("%02d00:00",track);
   }
 
+  //Create image for double buffering
+  FXImage back(getApp(),NULL,IMAGE_OPAQUE,getWidth(),getHeight());
+  back.create();
+
+  //Create device context
+  FXDCWindow dc(&back);
+
+  //Draw background
+  dc.setForeground(lcdbackclr);
+  dc.fillRectangle(0,0,getWidth(),getHeight());
+
   FXint x=DEFAULT_SPACING,y=DEFAULT_SPACING*3,p=0;
   FXIcon* drawMe=NULL;
 
@@ -240,8 +240,9 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
     }
   }
 
-  FXDCWindow sdc(this);
-  sdc.drawImage(&back,0,0);
+  dc.end();
+  dc.begin(this);
+  dc.drawImage(&back,0,0);
 }
 
 long CDCanvas::onMouseDown(FXObject*,FXSelector,void*)
