@@ -19,16 +19,6 @@
 #ifndef _CDWINDOW_H_
 #define _CDWINDOW_H_
 
-#include <vector>
-
-enum
-{
-  CDTIME_DISC    =0,      // Show elapsed disc time in time display
-  CDTIME_TRACK   =1,      // Show elapsed track time in time display
-  CDTIME_DISCREM =2,      // Show remaining disc time in time display
-  CDTIME_TRACKREM=3       // Show remaining track time in time display
-};
-
 enum
 {
   CDSTART_NONE =0,         // Take no action when program starts
@@ -37,10 +27,9 @@ enum
 };
 
 class CDBMPIcon;
+class CDCanvas;
 class CDListBox;
 class CDPreferences;
-
-typedef std::vector<CDBMPIcon*> cdbmp_array;
 
 class CDWindow : public FXMainWindow
 {
@@ -49,7 +38,6 @@ class CDWindow : public FXMainWindow
 protected:
   FXbool              stoponexit;        // Stop playing when program exits
   FXuint              startmode;         // Action to take when program starts: nont, start play, stop play
-  FXuint              timemode;          // Time mode: disc, track, disc remain, track remain
   FXColor             lcdforeclr;        // Color of LCD foreground
   FXColor             lcdbackclr;        // Color of LCD background
   FXColor             iconclr;           // Color of icons on CD player control buttons
@@ -67,15 +55,23 @@ protected:
   cdbmp_array         mutebmp;           // Mute icons
   cdbmp_array         btnbmp;            // Icons for cd player controls
   cdbmp_array         lcdbmp;            // Icons for the display
+  cdbmp_array         disbmp;            // "Greyed-out" icons for the display
+  fxwin_array         lcdwin;            // Buttons for the display
   FXTimer*            timer;             // Player update timer
-  FXCanvas*           canvas;            // Time display
+  CDCanvas*           canvas;            // Time display
   CDListBox*          bandtitle;         // List for LCD artist name display
   CDListBox*          tracktitle;        // List for LCD track name display
   FXLabel*            albumtitle;        // Label for LCD album display
   FXMenuBar*          menubar;
   FXMenuPane*         filemenu;
+  FXMenuPane*         viewmenu;
+  FXMenuPane*         optionsmenu;
+  FXMenuPane*         timemenu;
+  FXMenuPane*         repeatmenu;
+  FXMenuPane*         helpmenu;
   FXStatusBar*        statusbar;
   FXToolTip*          tooltip;
+  FXHorizontalFrame*  lcdframe;
 protected:
   CDWindow() { }
   void readRegistry();
@@ -83,16 +79,19 @@ protected:
   FXbool checkDevices();                      // Check for available cdrom devices
   FXbool loadDiscData();                      // Load data for currently open device
   FXbool getData(struct disc_data* data);
-  void doDraw(FXint,const struct disc_info*);
 public:
   long onPaint(FXObject*,FXSelector,void*);
   long onMouseDown(FXObject*,FXSelector,void*);
   long onTimeout(FXObject*,FXSelector,void*);
+  long onCmdToggleTooltips(FXObject*,FXSelector,void*);
+  long onUpdToggleTooltips(FXObject*,FXSelector,void*);
+  long onCmdAbout(FXObject*,FXSelector,void*);
   long onCmdQuit(FXObject*,FXSelector,void*);
   long onUpdStatusDisc(FXObject*,FXSelector,void*);
   long onUpdStatusTrack(FXObject*,FXSelector,void*);
+  long onCmdRandom(FXObject*,FXSelector,void*);
+  long onUpdRandom(FXObject*,FXSelector,void*);
   long onCmdPrefs(FXObject*,FXSelector,void*);
-  long onCmdFont(FXObject*,FXSelector,void*);
   long onCmdBand(FXObject*,FXSelector,void*);
   long onCmdTrack(FXObject*,FXSelector,void*);
   long onUpdTrack(FXObject*,FXSelector,void*);
@@ -122,24 +121,15 @@ public:
     ID_CANVAS,
     ID_TIMEOUT,
 
+    ID_TOGGLETOOLTIPS,
+    ID_ABOUT,
+
     ID_STATUSDISC,
     ID_STATUSTRACK,
 
+    ID_RANDOM,
+
     ID_PREFS,
-
-    ID_FONT,
-
-    ID_CDROMADD,
-    ID_CDROMREM,
-
-    ID_TOGGLEMENU,
-    ID_TOGGLESTATUS,
-    ID_TOGGLETIPS,
-
-    ID_DEFAULTOPTIONS,
-    ID_DEFAULTAPPEARANCE,
-    ID_DEFAULTHARDWARE,
-    ID_DEFAULTINTERNET,
 
     ID_BAND,
     ID_TRACK,

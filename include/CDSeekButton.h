@@ -53,6 +53,9 @@ public:
   //Set timer value in milliseconds.
   //A negative value inidcates use of app scroll speed.
   void setSeekRate(FXint seekrate);
+  
+  //Destructor
+  ~CDSeekButton();
 };
 
 #endif
