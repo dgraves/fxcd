@@ -46,7 +46,7 @@ void CDBMPIcon::swapColor(FXColor before,FXColor after)
         data[i+2]=FXBLUEVAL(before);
       }
     }
-    render();
     if(after==transp) transp=before;
+    render();
   }
 }

@@ -85,8 +85,8 @@ FXbool CDInfo::getRemoteCDDBInfo(const CDPlayer& cddesc,disc_data* info,FXWindow
 
   printf("Checking %s for disc info: ",cddbaddr.text());
 
-  strncpy(hello.hello_program,"fxcd",sizeof(hello.hello_program));
-  strncpy(hello.hello_version,"1.0.0",sizeof(hello.hello_version));
+  strncpy(hello.hello_program,PACKAGE,sizeof(hello.hello_program));
+  strncpy(hello.hello_version,VERSION,sizeof(hello.hello_version));
 
   strncpy(host.host_server.server_name,cddbaddr.text(),sizeof(host.host_server.server_name));
   host.host_server.server_port=(cddbproto==PROTO_CDDBP)?cddbpport:cddbport;

@@ -3,6 +3,7 @@ AC_INIT(CDPlayer.h)
 AM_INIT_AUTOMAKE(fxcd, 0.9.6)
 
 dnl Checks for programs.
+AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
@@ -15,10 +16,15 @@ if test -z "$RESWRAP"; then
 fi
 
 dnl Checks for libraries.
+AC_CHECK_HEADERS(fox/fx.h,,AC_MSG_ERROR("fox/fx.h not found"))
 dnl Replace `main' with a function in -lFOX:
-AC_CHECK_LIB(FOX, main)
+dnl AC_CHECK_LIB(FOX, main)
+LIBS="${LIBS} -lFOX"
+
 dnl Replace `main' with a function in -lcdaudio:
-AC_CHECK_LIB(cdaudio, main)
+AC_CHECK_HEADERS(cdaudio.h,,AC_MSG_ERROR("cdaudio.h not found"))
+dnl AC_CHECK_LIB(cdaudio, main)
+LIBS="${LIBS} -lcdaudio"
 
 dnl Checks for header files.
 AC_HEADER_STDC
