@@ -25,6 +25,7 @@ extern "C" {
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
 #include "CDPlayer.h"
+#include "CDChoiceDialog.h"
 #include "CDInfo.h"
 
 CDInfo::CDInfo()
@@ -71,7 +72,7 @@ FXbool CDInfo::getLocalCDDBInfo(const CDPlayer& cddesc,disc_data* info)
   return FALSE;
 }
 
-FXbool CDInfo::getRemoteCDDBInfo(const CDPlayer& cddesc,disc_data* info)
+FXbool CDInfo::getRemoteCDDBInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner)
 {
   int sock;
   char http_string[512];
@@ -106,8 +107,16 @@ FXbool CDInfo::getRemoteCDDBInfo(const CDPlayer& cddesc,disc_data* info)
     FXint result=cddb_query(cddesc.getDescriptor(),sock,(cddbproto==PROTO_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
     if(result!=-1&&query.query_match!=QUERY_NOMATCH)
     {
-      entry.entry_genre=query.query_list[0].list_genre;
-      entry.entry_id=query.query_list[0].list_id;
+      FXint choice=0;
+      if(query.query_matches>1&&owner!=NULL)
+      {
+        CDChoiceDialog dialog(owner,&query);
+        if(dialog.execute())
+	  choice=dialog.getSelection();
+      }
+
+      entry.entry_genre=query.query_list[choice].list_genre;
+      entry.entry_id=query.query_list[choice].list_id;
 
       if(cddbproto==PROTO_HTTP)
       {

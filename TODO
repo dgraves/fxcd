@@ -27,7 +27,7 @@ the drive was sub-par so maybe that's the answer to give to anyone who experienc
 
 -Fixed? When the cd player starts while a disk is already playing, the stopped flag is not properly set to FALSE
 
-When there are multiple cddb entries, provide a choice.  
+-Done! When there are multiple cddb entries, provide a choice.  
 
 Batch mode for network info retrieval - will require mods to libcdaudio.  
 

@@ -3,8 +3,8 @@ I=-I/home/graves/software/include
 L=-L/home/graves/software/lib
 LIBS=-lFOX -lcdaudio
 
-fxcd: cd.o CDWindow.o CDPlayer.o CDSeekButton.o CDPreferences.o CDInfo.o CDBMPIcon.o CDServerDialog.o
-	$(CC) -o fxcd cd.o CDWindow.o CDPlayer.o CDInfo.o CDSeekButton.o CDPreferences.o CDBMPIcon.o CDServerDialog.o $(L) $(LIBS)
+fxcd: cd.o CDWindow.o CDPlayer.o CDSeekButton.o CDPreferences.o CDInfo.o CDBMPIcon.o CDServerDialog.o CDChoiceDialog.o
+	$(CC) -o fxcd cd.o CDWindow.o CDPlayer.o CDInfo.o CDSeekButton.o CDPreferences.o CDBMPIcon.o CDServerDialog.o CDChoiceDialog.o $(L) $(LIBS)
 
 cd.o: cd.cpp CDWindow.h
 	$(CC) -c cd.cpp $(I)
@@ -26,6 +26,9 @@ CDSeekButton.o: CDSeekButton.cpp CDSeekButton.h
 
 CDServerDialog.o: CDServerDialog.cpp CDServerDialog.h
 	$(CC) -c CDServerDialog.cpp $(I)
+
+CDChoiceDialog.o: CDChoiceDialog.cpp CDChoiceDialog.h
+	$(CC) -c CDChoiceDialog.cpp $(I)
 
 CDBMPIcon.o: CDBMPIcon.cpp CDBMPIcon.h
 	$(CC) -c CDBMPIcon.cpp $(I)

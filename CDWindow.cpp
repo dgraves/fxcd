@@ -480,9 +480,6 @@ FXbool CDWindow::checkDevices()
 
 FXbool CDWindow::loadDiscData()
 {
-  albumTitle->setText(" ");
-  trackTitle->clearItems();
-
   FXint band=bandTitle->getCurrentItem();
   FXString* deviceStr=(FXString*)bandTitle->getItemData(band);
   FXString title;
@@ -515,6 +512,7 @@ FXbool CDWindow::loadDiscData()
     albumTitle->setTipText(data.data_title);
 
     //Load all tracks
+    trackTitle->clearItems();
     for(i=cdplayer.getStartTrack();i<=cdplayer.getNumTracks();i++)
     {
       const struct track_info* track=cdplayer.getTrackInfo(i-1);
@@ -536,7 +534,7 @@ FXbool CDWindow::getData(struct disc_data* data)
 {
   if(!remoteInfo) return cdinfo.getLocalCDDBInfo(cdplayer,data);
   if(localFirst&&cdinfo.getLocalCDDBInfo(cdplayer,data)) return TRUE;
-  if(useCDDB&&cdinfo.getRemoteCDDBInfo(cdplayer,data)) return TRUE;
+  if(useCDDB&&cdinfo.getRemoteCDDBInfo(cdplayer,data,this)) return TRUE;
   if(useCDIndex&&cdinfo.getCDIndexInfo(cdplayer,data)) return TRUE;
   if(!localFirst&&cdinfo.getLocalCDDBInfo(cdplayer,data)) return TRUE;
   cdinfo.defaultSettings(cdplayer,data);
@@ -1265,7 +1263,7 @@ long CDWindow::onCmdTrack(FXObject*,FXSelector,void* ptr)
 long CDWindow::onUpdTrack(FXObject*,FXSelector,void* data)
 {
   FXint track=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())?cdplayer.getCurrentTrack()-1:0;
-  if(track>-1&&track<cdplayer.getNumTracks())
+  if(track>-1&&track<trackTitle->getNumItems()&&track<cdplayer.getNumTracks())
   {
     trackTitle->setCurrentItem(track);
     trackTitle->setTipText(trackTitle->getItemText(track));
