@@ -14,7 +14,9 @@
 
 -Done! [By zeroing cd-rom volume.  This is actually how OSS mixers handle mute.]  Mute does not work.  
 
-Batch mode for network info retrieval.  
+-Fixed? Changing colors for the mute icons (two colors each) has problems with one color becoming the transparency or both colors becoming the same.  
+
+Batch mode for network info retrieval - will require mods to libcdaudio.  
 
 CD device discovery
 
@@ -30,13 +32,9 @@ cdaudio host_addressing string retrieved from server contains additional proto l
 
 Possibly use FXThreadEx to get cd info in background.  
 
-Changing colors for the mute icons (two colors each) has problems with
-one color becoming the transparency or both colors becoming the same.  There
-will need to be a special handler for those icons, possibly using masks.  
-
 When drive door is closed manually with no disc in the tray the cd player still thinks drive door is open.  
 
-Increase seek speed with respect to seek length
+Increase seek speed with respect to seek duration
 
 Toshiba DVD-ROM performs like expected but Generic CD-ROM has exhibited 2 problems:
   1.  It does not report its state as being completed when a disc plays to end.  So,

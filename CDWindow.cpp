@@ -561,6 +561,13 @@ void CDWindow::setDisplayForeground(FXColor color)
 {
   FXint i;
 
+  //Needed for dual color icons.  If they are equal, modify slightly.  
+  if(color==lcdbackcolor)
+  {
+    FXuchar r=FXREDVAL(color),g=FXGREENVAL(color),b=FXBLUEVAL(color);
+    color=FXRGB((r<255)?r+1:r-1,(g<255)?g+1:g-1,(b<255)?b+1:b-1);
+  }
+
   //Fonts
   bandTitle->setTextColor(color);
   albumTitle->setTextColor(color);
@@ -584,6 +591,13 @@ FXColor CDWindow::getDisplayForeground() const
 void CDWindow::setDisplayBackground(FXColor color)
 {
   FXint i;
+
+  //Needed for dual color icons.  If they are equal, modify slightly.  
+  if(color==lcdforecolor)
+  {
+    FXuchar r=FXREDVAL(color),g=FXGREENVAL(color),b=FXBLUEVAL(color);
+    color=FXRGB((r<255)?r+1:r-1,(g<255)?g+1:g-1,(b<255)?b+1:b-1);
+  }
 
   //Fonts
   bandTitle->setBackColor(color);
