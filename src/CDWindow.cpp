@@ -426,7 +426,7 @@ FXbool CDWindow::checkDevices()
   for(i=0;i<bandtitle->getNumItems();i++)
   {
     devname=(FXString*)bandtitle->getItemData(i);
-    if(cdplayer.init(devname->text()))
+    if(cdplayer.init(*devname))
     {
       if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       {
