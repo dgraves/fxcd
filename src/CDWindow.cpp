@@ -197,8 +197,6 @@ void CDWindow::create()
 {
   cdbmp_array::iterator iter;
 
-  readRegistry();
-
   FXMainWindow::create();
 
   // Create icons
@@ -211,6 +209,7 @@ void CDWindow::create()
   for(iter=lcdbmp.begin();iter!=lcdbmp.end();++iter)
     (*iter)->create();
 
+  readRegistry();
   checkDevices();
   handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandtitle->getCurrentItem());
 
@@ -242,9 +241,9 @@ void CDWindow::readRegistry()
   cdplayer.setRepeatMode(getApp()->reg().readUnsignedEntry("SETTINGS","repeatmode",cdplayer.getRepeatMode()));
 
   // Colors and fonts
-  getApp()->reg().readColorEntry("SETTINGS","lcdforecolor",DEFAULTFORE);
-  getApp()->reg().readColorEntry("SETTINGS","lcdbackcolor",DEFAULTBACK);
-  getApp()->reg().readColorEntry("SETTINGS","iconcolor",DEFAULTBACK);
+  dfg=getApp()->reg().readColorEntry("SETTINGS","lcdforecolor",DEFAULTFORE);
+  dbg=getApp()->reg().readColorEntry("SETTINGS","lcdbackcolor",DEFAULTBACK);
+  ic=getApp()->reg().readColorEntry("SETTINGS","iconcolor",DEFAULTBACK);
   fontspec=getApp()->reg().readStringEntry("SETTINGS","font",NULL);
 
   setDisplayForeground(dfg);

@@ -26,7 +26,7 @@
 
 int main(int argc, char** argv)
 {
-  FXApp app("fxcd", "FoxAccessories");
+  FXApp app("fxcd",FXString::null);
   app.init(argc,argv);
 
   CDWindow* win=new CDWindow(&app);
