@@ -36,11 +36,13 @@ When drive door is closed manually with no disc in the tray the cd player still 
 
 Increase seek speed with respect to seek duration
 
-Toshiba DVD-ROM performs like expected but Generic CD-ROM has exhibited 2 problems:
-  1.  It does not report its state as being completed when a disc plays to end.  So,
+Seeking through all random tracks may not obey CDREPEAT_DISC
+
+Fixed both? Toshiba DVD-ROM performs like expected but Generic CD-ROM has exhibited 2 problems:
+Fixed with hack?  1.  It does not report its state as being completed when a disc plays to end.  So,
       because of this repeat album is not working here.  For some reason it reports this
       state when it starts playing, before it reports the play state.  I guess you get what you pay for.  
-  2.  Ejecting when CD is playing stops the cd but does not eject.  Eject must be pressed again to make it happen.  
+Fixed?  2.  Ejecting when CD is playing stops the cd but does not eject.  Eject must be pressed again to make it happen.  
       gtcd and kscd als exhibit this behavior (but neither of them can ever eject the cd).  
 This may not be worth worrying about.  Once, RealJukebox told me it could not record a CD because
 the drive was sub-par so maybe that's the answer to give to anyone who experiences these problems.  

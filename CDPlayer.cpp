@@ -53,7 +53,6 @@ CDPlayer::CDPlayer()
 CDPlayer::~CDPlayer()
 {
   //Not stopping it here.  Just closing handle.  
-  //stop();
   finish();
 }
 
@@ -315,8 +314,6 @@ FXbool CDPlayer::skipNext()
       }
       else
       {
-	//cd_stop(media);
-        //currentTrack=discInfo.disc_first_track;
 	stop();
         return TRUE;
       }
@@ -330,8 +327,6 @@ FXbool CDPlayer::skipNext()
       currentTrack=discInfo.disc_first_track;
     else
     {
-      //cd_stop(media);
-      //currentTrack=discInfo.disc_first_track;
       stop();
       return TRUE;
     }
@@ -367,8 +362,6 @@ FXbool CDPlayer::skipPrev()
 	}
         else
 	{
-          //cd_stop(media);
-          //currentTrack=discInfo.disc_first_track;
 	  stop();
           return TRUE;
 	}
@@ -443,6 +436,10 @@ FXbool CDPlayer::openTray()
     {
       polldisc();
     }while(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED);
+
+    //Give it a few milliseconds to settle
+    struct timeval tv={0,10000};
+    select(0,NULL,NULL,NULL,&tv);
   }
 
   cd_eject(media);
@@ -503,10 +500,25 @@ FXbool CDPlayer::update()
         if(++blinkMode>=10) blinkMode=0;
 	break;
 
+      default:
+      {
+	//The cd-rom isn't playing, but this flag indicates it should be.  
+	if(stopped) break;
+
+	//Some of them (the ones that require this hack)
+	//need a few milliseconds to settle
+        struct timeval tv={0,10000};
+        select(0,NULL,NULL,NULL,&tv);
+      }
+
       case CDAUDIO_COMPLETED:
         //Continuous play - some cheaper CD-ROMS constantly report this when
         //they are idle.  So we have the stopped flag.
-        if(!stopped&&(repeatMode==CDREPEAT_DISC))
+	if(!stopped&&(repeatMode==CDREPEAT_TRACK))
+	{
+	  cd_play(media,currentTrack);
+	}
+        else if(!stopped&&(repeatMode==CDREPEAT_DISC))
 	{
           //Start from begining
           if(random)
