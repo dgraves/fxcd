@@ -98,7 +98,8 @@ CDWindow::CDWindow(FXApp* app)
   iconclr(FXRGB(0,0,0)),
   font(NULL),
   timer(NULL),
-  tooltip(NULL)
+  tooltip(NULL),
+  prefsbox(NULL)
 {
   // Create icons for mute button
   mutebmp.push_back(new CDBMPIcon(getApp(),nomute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
@@ -371,17 +372,14 @@ void CDWindow::writeRegistry()
 
 FXbool CDWindow::checkDevices()
 {
-  FXint i,player=0,total=0;
-  FXbool stored=FALSE;
+  FXint i,n,player=0;
+  FXuint total=0;
+  FXString entnam;
   FXString* devname=NULL;
 
-  //Look in registry for CD-ROMs
+  // Look in registry for CD-ROMs
   if(getApp()->reg().existingSection("DEVICES"))
   {
-    FXint n;
-    FXString entnam;
-
-    stored=TRUE;
     n=getApp()->reg().readIntEntry("DEVICES","total",0);
     for(i=0;i<n;i++)
     {
@@ -396,49 +394,32 @@ FXbool CDWindow::checkDevices()
     }
   }
 
-  if(!stored||total<=0)
+  // Scan for devices if the registry is empty
+  if(total==0)
   {
-#ifndef WIN32
-    devname=new FXString("/dev/cdrom");
-    bandtitle->appendItem(*devname,NULL,(void*)devname);
-    total=1;
-#else
-    FXchar drive[4];
-    for(i='A';i<='Z';i++)
-    {
-      sprintf(drive,"%c:\\",i);
-      if(GetDriveType(drive)==DRIVE_CDROM)
-      {
-        total++;
-        devname=new FXString;
-        devname->format("%c:",i);
-        bandtitle->appendItem(*devname,NULL,(void*)devname);
-      }
-    }
-#endif
-  }
+    std::vector<FXString> devices;
+    std::vector<FXString>::iterator iter;
 
-  if(!stored)
-  {
-    //Commit them to registry
-    FXint n=bandtitle->getNumItems();
-    FXString* entstr;
-    FXString entnam;
-
-    getApp()->reg().writeIntEntry("DEVICES","total",n);
-    for(i=0;i<total;i++)
+    scanDevices(devices);
+    for(iter=devices.begin();iter!=devices.end();++iter)
     {
-      entnam.format("device%d",i);
-      entstr=(FXString*)bandtitle->getItemData(i);
-      getApp()->reg().writeStringEntry("DEVICES",entnam.text(),entstr->text());
+      devname=new FXString(*iter);
+      bandtitle->appendItem(*devname,NULL,(void*)devname);
+
+      // Add item to registry
+      entnam.format("device%d",total);
+      getApp()->reg().writeStringEntry("DEVICES",entnam.text(),devname->text());
+      total++;
     }
 
-    //Make sure it is committed now
+    // Commit to registry
+    getApp()->reg().writeIntEntry("DEVICES","total",total);
     getApp()->reg().write();
   }
 
   //See if a device is currently active
-  for(i=0;i<bandtitle->getNumItems();i++)
+  n=bandtitle->getNumItems();
+  for(i=0;i<n;i++)
   {
     devname=(FXString*)bandtitle->getItemData(i);
     if(cdplayer.init(*devname))
@@ -878,8 +859,17 @@ long CDWindow::onUpdStatusTrack(FXObject* sender,FXSelector,void*)
 
 long CDWindow::onCmdPrefs(FXObject*,FXSelector,void*)
 {
-  CDPreferences dialog(this);
-  dialog.execute();
+  if(prefsbox==NULL)
+  {
+    prefsbox=new CDPreferences(this);
+    prefsbox->create();
+    prefsbox->show(PLACEMENT_OWNER);
+  }
+  else
+  {
+    prefsbox->show();
+  }
+  
   return 1;
 }
 

@@ -37,6 +37,7 @@
 
 FXDEFMAP(CDPreferences) CDPreferencesMap[]={
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_ACCEPT,CDPreferences::onCmdAccept),
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_APPLY,CDPreferences::onCmdApply),
   FXMAPFUNC(SEL_SELECTED,CDPreferences::ID_LIST,CDPreferences::onCmdList),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEADD,CDPreferences::onCmdDeviceAdd),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEREM,CDPreferences::onCmdDeviceRemove),
@@ -47,7 +48,7 @@ FXDEFMAP(CDPreferences) CDPreferencesMap[]={
 FXIMPLEMENT(CDPreferences,FXDialogBox,CDPreferencesMap,ARRAYNUMBER(CDPreferencesMap))
 
 CDPreferences::CDPreferences(CDWindow* owner)
-: FXDialogBox(owner,"CD Player Preferences",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,0,0, 0,0,0,0),
+: FXDialogBox(owner,"CD Player Preferences",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,400,0, 0,0,0,0),
   showmenubar(owner->menubar->shown()),
   showstatusbar(owner->statusbar->shown()),
   showtooltips(owner->tooltip!=NULL),
@@ -80,6 +81,7 @@ CDPreferences::CDPreferences(CDWindow* owner)
   FXVerticalFrame* contents=new FXVerticalFrame(this,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXHorizontalFrame* buttons=new FXHorizontalFrame(contents,PACK_UNIFORM_WIDTH|LAYOUT_BOTTOM|LAYOUT_FILL_X);
   new FXButton(buttons,"&Accept",NULL,this,CDPreferences::ID_ACCEPT,BUTTON_INITIAL|BUTTON_DEFAULT|LAYOUT_RIGHT|FRAME_RAISED|FRAME_THICK,0,0,0,0, 20,20);
+  new FXButton(buttons,"A&pply",NULL,this,CDPreferences::ID_APPLY,LAYOUT_RIGHT|FRAME_RAISED|FRAME_THICK,0,0,0,0, 20,20);
   new FXButton(buttons,"&Cancel",NULL,this,FXDialogBox::ID_CANCEL,LAYOUT_RIGHT|FRAME_RAISED|FRAME_THICK,0,0,0,0, 20,20);
   new FXHorizontalSeparator(contents,SEPARATOR_RIDGE|LAYOUT_BOTTOM|LAYOUT_FILL_X);
 
@@ -222,10 +224,91 @@ FXuint CDPreferences::getPanel() const
 
 long CDPreferences::onCmdAccept(FXObject*,FXSelector,void*)
 {
-//    if(!cdwindow->addDevice(devnam))
-//      FXMessageBox::error(this,MBOX_OK,"Invalid CD Audio Device","%s is not a valid CD audio device.  ",devnam.text());
-//  if(!cdwindow->removeDevice(devnam))
-//    FXMessageBox::error(this,MBOX_OK,"Remove Device Error","%s could not be removed.  ",devnam.text());
+  handle(this,MKUINT(ID_APPLY,SEL_COMMAND),NULL);
+  getApp()->stopModal(this,TRUE);
+  hide();
+  return 1;
+}
+
+long CDPreferences::onCmdApply(FXObject*,FXSelector,void*)
+{
+  FXString adderr=FXString::null;
+  FXString remerr=FXString::null;
+  std::list<FXString>::iterator iter;
+
+  if(!showmenubar&&cdwindow->menubar->shown())
+  {
+    cdwindow->menubar->hide();
+    cdwindow->resize(cdwindow->getWidth(),cdwindow->getDefaultHeight());
+  }
+  else if(showmenubar&&!cdwindow->menubar->shown())
+  {
+    cdwindow->menubar->show();
+    cdwindow->resize(cdwindow->getWidth(),cdwindow->getDefaultHeight());
+  }
+
+  if(!showstatusbar&&cdwindow->statusbar->shown())
+  {
+    cdwindow->statusbar->hide();
+    cdwindow->resize(cdwindow->getWidth(),cdwindow->getDefaultHeight());
+  }
+  else if(showstatusbar&&!cdwindow->statusbar->shown())
+  {
+    cdwindow->statusbar->show();
+    cdwindow->resize(cdwindow->getWidth(),cdwindow->getDefaultHeight());
+  }
+
+  if(showtooltips&&cdwindow->tooltip==NULL)
+  {
+    cdwindow->tooltip=new FXToolTip(getApp(),TOOLTIP_NORMAL);
+    cdwindow->tooltip->create();
+  }
+  else if(!showtooltips&&cdwindow->tooltip!=NULL)
+  {
+    delete cdwindow->tooltip;
+    cdwindow->tooltip=NULL;
+  }
+
+  cdwindow->setDisplayForeground(lcdforeclr);
+  cdwindow->setDisplayBackground(lcdbackclr);
+  cdwindow->setIconColor(iconclr);
+
+  cdwindow->startmode=startmode;
+  cdwindow->stoponexit=stoponexit;
+  cdwindow->cdplayer.setIntro(intro);
+  cdwindow->cdplayer.setIntroLength(introtime);
+  cdwindow->cdplayer.setRandom(random);
+  cdwindow->cdplayer.setRepeatMode(repeatmode);
+  cdwindow->canvas->setTimeMode(timemode);
+
+  for(iter=adddev.begin();iter!=adddev.end();++iter)
+  {
+    if(!cdwindow->addDevice(*iter))
+    {
+      adderr+=*iter;
+      adderr+="\n";
+    }
+  }
+
+  if(!adderr.empty())
+  {
+    FXMessageBox::error(this,MBOX_OK,"Add Device Error","Error adding the following CD Audio Devices:\n\n%s",adderr.text());
+  }
+
+  for(iter=remdev.begin();iter!=remdev.end();++iter)
+  {
+    if(!cdwindow->removeDevice(*iter))
+    {
+      remerr+=*iter;
+      remerr+="\n";
+    }
+  }
+
+  if(!remerr.empty())
+  {
+    FXMessageBox::error(this,MBOX_OK,"Remove Device Error","Error adding the following CD Audio Devices:\n\n%s",remerr.text());
+  }
+
   return 1;
 }
 
@@ -291,6 +374,29 @@ long CDPreferences::onUpdDeviceRemove(FXObject* sender,FXSelector,void*)
 
 long CDPreferences::onCmdDeviceScan(FXObject*,FXSelector,void*)
 {
+  FXint i,n;
+  std::vector<FXString> devices;
+  std::vector<FXString>::iterator iter;
+
+  scanDevices(devices);
+
+  for(iter=devices.begin();iter!=devices.end();++iter)
+  {
+    n=devlist->getNumItems();
+    for(i=0;i<n;i++)
+    {
+      if(*iter==devlist->getItemText(i))
+        break;
+    }
+
+    if(i==n)
+    {
+      devlist->appendItem(*iter);
+      if(std::find(adddev.begin(),adddev.end(),*iter)==adddev.end())
+        adddev.push_back(*iter);
+    }
+  }
+
   return 1;
 }
 

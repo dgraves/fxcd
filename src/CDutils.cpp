@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #endif
 
+#include <algorithm>
 #include "fox/fx.h"
 #include "cdlyte.h"
 #include "CDutils.h"
@@ -67,9 +68,9 @@ FXbool checkDevice(const FXString& device)
 
 void scanDevices(std::vector<FXString>& devices)
 {
+  FXint i;
   FXString device;
 #ifdef WIN32
-  FXint;
   for(i='A';i<='Z';i++)
   {
     device=FXStringFormat("%c:\\",i);
@@ -80,9 +81,79 @@ void scanDevices(std::vector<FXString>& devices)
   }
 #else
   std::vector<FXString> actual;
+  FXint j;
+  FXbool exists;
+  FXString link;
+  FXchar *special[]={"/dev/cdrom","/dev/dvd","/dev/cdrw",NULL};
+  FXchar *letters[]={"/dev/hd%d",NULL};
+  FXchar *numbers[]={"/dev/scd%d","/dev/sr%d","/dev/cd%d","dev/cdrom%d","/dev/cdroms/cdrom%d",
+                     "/dev/cd%dc","/dev/acd%dc","/dev/matcd%dc","/dev/mcd%dc","/dev/scd%dc","/dev/rsr%dc",NULL};
 
-  // Check for the followinf devices: /dev/cdrom, /dev/dvd, /dev/cdrw
-  // /dev/hd?, /dev/scd?, /dev/sr?, /dev/cd?, /dev/cdroms/cdrom?
-  // /dev/cd?c, /dev/acd?c, /dev/matcd?c, /dev/mcd?c, /dev/scd?c, /dev/rsr?c
+  for(i=0;special[i]!=NULL;i++)
+  {
+    device=special[i];
+    if(checkDevice(device))
+    {
+      // The device exists - make sure it is not a duplicate
+      link=FXFile::symlink(device);
+      if(link.empty())
+        link=device;
+      if(std::find(actual.begin(),actual.end(),link)==actual.end())
+      {
+        actual.push_back(link);
+        devices.push_back(device);
+      }
+    }
+  }
+
+  for(i=0;letters[i]!=NULL;i++)
+  {
+    exists=TRUE;
+    for(j=0;exists;j++)
+    {
+      device=FXStringFormat(letters[i],'a'+j);
+      if(checkDevice(device))
+      {
+        // The device exists - make sure it is not a duplicate
+        link=FXFile::symlink(device);
+        if(link.empty())
+          link=device;
+        if(std::find(actual.begin(),actual.end(),link)==actual.end())
+        {
+          actual.push_back(link);
+          devices.push_back(device);
+        }
+      }
+      else
+      {
+        exists=FALSE;
+      }
+    }
+  }
+
+  for(i=0;numbers[i]!=NULL;i++)
+  {
+    exists=TRUE;
+    for(j=0;exists;j++)
+    {
+      device=FXStringFormat(numbers[i],j);
+      if(checkDevice(device))
+      {
+        // The device exists - make sure it is not a duplicate
+        link=FXFile::symlink(device);
+        if(link.empty())
+          link=device;
+        if(std::find(actual.begin(),actual.end(),link)==actual.end())
+        {
+          actual.push_back(link);
+          devices.push_back(device);
+        }
+      }
+      else
+      {
+        exists=FALSE;
+      }
+    }
+  }
 #endif
 }
