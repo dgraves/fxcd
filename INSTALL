@@ -1,3 +1,37 @@
+Windows
+=======
+
+Use the fxcd project files (fxcd.dsw) found in the win32 subdirectory to
+build fxcd.  This will build fxcd.
+
+
+UNIX and UNIX-like platforms
+============================
+
+To build and install fxcd:
+  ./configure
+  make
+  make install
+
+If you have installed FOX or libcdaudio in a non-standard location, 
+you can tell configure where to find them by specifying locations for
+include files, lib files, and the FOX reswrap utility like so:
+
+  RESWRAP=/home/username/software/bin/reswrap \
+  CPPFLAGS=-I/home/username/software/include \
+  LIBS=-L/home/username/software/lib \
+  ./configure
+
+This tells configure to look for
+include files in /home/username/software/include
+library files in /home/username/software/lib
+and reswrap in /home/username/software/bin/reswrap
+
+Use RESWRAP variable to specify the location of reswrap.
+Use CPPFLAGS to specify the -I include directive.
+Use LIBS to specify the -L library directive.
+
+
 Basic Installation
 ==================
 
