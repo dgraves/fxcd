@@ -130,5 +130,6 @@ AC_OUTPUT([Makefile
            include/Makefile
            src/Makefile
            windows/Makefile
+           include/CDdefs.h
           ])
 
