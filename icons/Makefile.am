@@ -38,7 +38,7 @@ all: ../icons.h ../icons.cpp
 	$(RESWRAP) -i -o ../icons.h $^
 
 ../icons.cpp: $(ICONS)
-	$(RESWRAP) -e -0 ../icons.cpp $^
+	$(RESWRAP) -e -o ../icons.cpp $^
 
 CLEANFILES = ../icons.h ../icons.cpp
 
