@@ -35,6 +35,7 @@ protected:
   FXbool nodisc;              //Indicates known presence of disc in cdrom
   FXbool audiodisc;           //Is disc audio or data
   FXbool stopped;             //Was a stop requested (or did the disc finish)
+  FXbool mute;                //Is muted
 
   FXint currentTrack;         //track currently playing (or to play)
   FXint blinkMode;            //should blink if paused?
@@ -107,6 +108,9 @@ public:
 
   FXbool getRandom() const;
   void setRandom(FXbool mode);
+
+  FXbool getMute() const;
+  void setMute(FXbool mode);
   
   FXint getVolume() const;
   void setVolume(FXint volume);

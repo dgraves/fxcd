@@ -33,6 +33,7 @@ CDPlayer::CDPlayer()
   nodisc(TRUE),
   audiodisc(FALSE),
   stopped(TRUE),
+  mute(FALSE),
   currentTrack(0),
   blinkMode(0),
   repeatMode(CDREPEAT_NONE),
@@ -135,39 +136,46 @@ void CDPlayer::setvol()
     volCurrent.vol_back.right=volCurrent.vol_back.left=volLevel;
   }
 
-  if(cd_set_volume(media,volCurrent)<0)
-    perror("cd_set_volume");
+  //Don't change anything if we are mute
+  if(!mute)
+  {
+    if(cd_set_volume(media,volCurrent)<0)
+      perror("cd_set_volume");
+  }
 }
 
 //Check for volume change from other application
 void CDPlayer::checkvol()
 {
-  disc_volume volume;
-  if(cd_get_volume(media,&volume)<0)
+  if(!mute)
   {
-    perror("cd_get_volume");
-    return;
-  }
-
-  //Someone has been modifying our audio settings.  
-  //Only update volume and balance if level changed by third party 
-  if(memcmp(&volume,&volCurrent,sizeof(volume))!=0)
-  {
-    memcpy(&volCurrent,&volume,sizeof(volume));
-    volLevel=(volume.vol_front.left>volume.vol_front.right)?volume.vol_front.left:volume.vol_front.right;
-
-    if(volume.vol_front.left<volume.vol_front.right)
-      volBalance=1.0-(((FXfloat)volume.vol_front.left)/((FXfloat)volume.vol_front.right));
-    else if(volume.vol_front.right<volume.vol_front.left)
-      volBalance=(((FXfloat)volume.vol_front.right)/((FXfloat)volume.vol_front.left))-1.0;
-    else
-      volBalance=0.0;
-
-    if(volBalance!=0.0)
+    disc_volume volume;
+    if(cd_get_volume(media,&volume)<0)
     {
-      //Truncate to 2 digits
-      volBalance=(FXint)(100.0*volBalance);
-      volBalance/=100.0;
+      perror("cd_get_volume");
+      return;
+    }
+
+    //Someone has been modifying our audio settings.  
+    //Only update volume and balance if level changed by third party 
+    if(memcmp(&volume,&volCurrent,sizeof(volume))!=0)
+    {
+      memcpy(&volCurrent,&volume,sizeof(volume));
+      volLevel=(volume.vol_front.left>volume.vol_front.right)?volume.vol_front.left:volume.vol_front.right;
+
+      if(volume.vol_front.left<volume.vol_front.right)
+        volBalance=1.0-(((FXfloat)volume.vol_front.left)/((FXfloat)volume.vol_front.right));
+      else if(volume.vol_front.right<volume.vol_front.left)
+        volBalance=(((FXfloat)volume.vol_front.right)/((FXfloat)volume.vol_front.left))-1.0;
+      else
+        volBalance=0.0;
+
+      if(volBalance!=0.0)
+      {
+        //Truncate to 2 digits
+        volBalance=(FXint)(100.0*volBalance);
+        volBalance/=100.0;
+      }
     }
   }
 }
@@ -649,6 +657,29 @@ void CDPlayer::setRandom(FXbool mode)
   {
     srand(time(NULL));
     makeRandomList();
+  }
+}
+
+FXbool CDPlayer::getMute() const
+{
+  return mute;
+}
+
+void CDPlayer::setMute(FXbool mode)
+{
+  if(mode!=mute)
+  {
+    mute=mode;
+    if(mute&&media!=-1)
+    {
+      //Volume level set to zero
+      disc_volume volume;
+      memset(&volume,0,sizeof(volume));
+      if(cd_set_volume(media,volume)<0)
+        perror("cd_set_volume");
+    }
+    else if(media!=-1)
+      setvol();      //Bring the volume back
   }
 }
 

@@ -35,6 +35,7 @@ enum
 };
 
 class CDBMPIcon;
+class CDPreferences;
 
 class CDWindow : public FXMainWindow
 {
@@ -91,6 +92,7 @@ protected:
   struct disc_timeval seekTime;
   CDPlayer cdplayer;
   CDInfo cdinfo;
+  CDPreferences* cdprefs;
 
   CDWindow(){}
   void doDraw(FXint,const struct disc_info*);

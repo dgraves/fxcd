@@ -272,6 +272,8 @@ CDWindow::CDWindow(FXApp* app)
   new FXButton(buttons,"\tPrevious track",bicolor[5],this,ID_PREV,FRAME_THICK|FRAME_RAISED,0,0,0,0, 2,2,1,1);
   new FXButton(buttons,"\tNext track",bicolor[6],this,ID_NEXT,FRAME_THICK|FRAME_RAISED,0,0,0,0, 2,2,1,1);
   new FXButton(buttons,"\tEject",bicolor[7],this,ID_EJECT,FRAME_THICK|FRAME_RAISED|LAYOUT_RIGHT,0,0,0,0, 2,2,1,1);
+
+  cdprefs=new CDPreferences(this);
 }
 
 CDWindow::~CDWindow()
@@ -938,8 +940,7 @@ long CDWindow::onCmdFont(FXObject*,FXSelector,void*)
 
 long CDWindow::onCmdPrefs(FXObject*,FXSelector,void*)
 {
-  CDPreferences prefs(this);
-  prefs.execute();
+  cdprefs->show(PLACEMENT_OWNER);
   return 1;
 }
 
@@ -1101,6 +1102,7 @@ long CDWindow::onUpdVolume(FXObject* sender,FXSelector,void*)
 
 long CDWindow::onCmdMute(FXObject*,FXSelector,void*)
 {
+  cdplayer.setMute(!cdplayer.getMute());
   return 1;
 }
 

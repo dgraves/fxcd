@@ -8,11 +8,19 @@
 
 -Fixed? Ejecting a CD while player is running causes player to crash.
 
--Done Implement settings button and menu option.  
+-Done! Implement settings button and menu option.  
+
+-Done! Add advanced buttons for CDDB and CDindex settings to set cgi scripts.  
+
+-Done! [By zeroing cd-rom volume.  This is actually how OSS mixers handle mute.]  Mute does not work.  
+
+Batch mode for network info retrieval.  
+
+CD device discovery
+
+Support for audio mixers other than the cd player (OSS, ALSA, Solaris, Irix, etc)
 
 Add submission of disc data to freedb and cdindex.  
-
-Add advanced buttons for CDDB and CDindex settings to set cgi scripts.  
 
 Updates to libcdaudio:
  * Make it work on Windows!!
@@ -27,8 +35,6 @@ one color becoming the transparency or both colors becoming the same.  There
 will need to be a special handler for those icons, possibly using masks.  
 
 When drive door is closed manually with no disc in the tray the cd player still thinks drive door is open.  
-
-Mute does not work.  
 
 Increase seek speed with respect to seek length
 
