@@ -18,14 +18,20 @@
 
 #include <errno.h>
 #include <time.h>
+#include <algorithm>
 #include "cdlyte.h"
 #include "fox/fx.h"
-#include "fox/FXArray.h"
-#include "fox/FXElement.h"
 #include "CDPlayer.h"
 
 #define VOLUME_TO_FLOAT(v) (((FXfloat)v)/100.0f)
 #define VOLUME_TO_INT(v)   ((FXint)(v*100))
+
+// Function for random track generation
+ptrdiff_t rand_func(ptrdiff_t max)
+{
+  double num=static_cast<double>(rand())/static_cast<double>(RAND_MAX);
+  return static_cast<ptrdiff_t>(num*max);
+}
 
 CDPlayer::CDPlayer()
 : media(-1),
@@ -184,22 +190,20 @@ FXbool CDPlayer::checkvol()
 void CDPlayer::makeRandomList()
 {
   FXint i;
-  randomArray.clear();
   for(i=discInfo.disc_first_track;i<=discInfo.disc_total_tracks;i++)
-    randomArray.append(i);
+    randomArray.push_back(i);
+  std::random_shuffle(randomArray.begin(),randomArray.end(),rand_func);
 }
 
 //Returns track num between 1 and total.
 //If finished, returns 0 currentTrack=getRandomTrack();
 FXint CDPlayer::getRandomTrack()
 {
-  FXint selection=0,no=randomArray.no();
-  if(no>0)
+  FXint selection=0;
+  if(!randomArray.empty())
   {
-    //We need a number between 0 and no-1
-    FXint index=(no>1)?rand()%no:0;
-    selection=randomArray[index];
-    randomArray.remove(index);
+    selection=randomArray.back();
+    randomArray.pop_back();
   }
   return selection;
 }
@@ -597,6 +601,11 @@ FXint CDPlayer::getNumTracks() const
 void CDPlayer::getDiscLength(struct disc_timeval& dtv) const
 {
   memcpy(&dtv, &discInfo.disc_length, sizeof(struct disc_timeval));
+}
+
+void CDPlayer::getTrackLength(FXint track, struct disc_timeval& dtv) const
+{
+  memcpy(&dtv, &discInfo.disc_track[track].track_length, sizeof(struct disc_timeval));
 }
 
 void CDPlayer::getDiscTime(struct disc_timeval& dtv) const

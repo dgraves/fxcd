@@ -19,6 +19,8 @@
 #ifndef _CDPLAYER_H_
 #define _CDPLAYER_H_
 
+#include <vector>
+
 enum
 {
   CDREPEAT_NONE=0,
@@ -46,7 +48,7 @@ protected:
   struct disc_timeval introTime;    // Length of time for intro play
   struct disc_volume volCurrent;    // Use to test for volume change by other party
   struct disc_info discInfo;        // Info for current disc
-  FXArray<FXint> randomArray;       // List of random tracks
+  std::vector<int> randomArray;       // List of random tracks
 protected:
   void load();
   void polldisc();
@@ -126,6 +128,9 @@ public:
 
   /// Retrieve length of disc
   void getDiscLength(struct disc_timeval& dtv) const;
+
+  /// Retrieve length of specified track
+  void getTrackLength(FXint track, struct disc_timeval& dtv) const;
 
   /// Retrieve current time position for the currently playing disc
   void getDiscTime(struct disc_timeval& dtv) const;

@@ -46,13 +46,12 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_CHANGED,CDWindow::ID_VOLUME,CDWindow::onCmdVolume),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_VOLUME,CDWindow::onCmdVolume),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_VOLUME,CDWindow::onUpdVolume),
-  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_MUTE,CDWindow::onCmdMute),
+//  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_MUTE,CDWindow::onCmdMute),
   FXMAPFUNC(SEL_CHANGED,CDWindow::ID_BALANCE,CDWindow::onCmdBalance),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_BALANCE,CDWindow::onCmdBalance),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_BALANCE,CDWindow::onUpdBalance),
 
   FXMAPFUNCS(SEL_LEFTBUTTONPRESS,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onActivateSeeker),
-  FXMAPFUNCS(SEL_LEFTBUTTONRELEASE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onDeactivateSeeker),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_SEEKREVERSE,CDWindow::onCmdSeekReverse),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_SEEKFORWARD,CDWindow::onCmdSeekForward),
   FXMAPFUNCS(SEL_UPDATE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onUpdSeekBtns),
@@ -65,8 +64,7 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_PLAY,CDWindow::onCmdPlay),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_PLAY,CDWindow::onUpdPlay),
 
-  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_EJECT,CDWindow::onCmdEject),
-  FXMAPFUNC(SEL_UPDATE,CDWindow::ID_EJECT,CDWindow::onUpdEject)
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_EJECT,CDWindow::onCmdEject)
 };
 
 FXIMPLEMENT(CDWindow,FXMainWindow,CDWindowMap,ARRAYNUMBER(CDWindowMap))
@@ -81,53 +79,53 @@ CDWindow::CDWindow(FXApp* app)
   stoponexit(TRUE),
   startmode(CDSTART_NONE),
   timemode(CDTIME_TRACK),
-  lcdforecolor(DEFAULTFORE),
-  lcdbackcolor(DEFAULTBACK),
-  iconcolor(DEFAULTBACK),
+  lcdforeclr(DEFAULTFORE),
+  lcdbackclr(DEFAULTBACK),
+  iconclr(DEFAULTBACK),
   font(NULL),
-  volLevel(-1),
-  volBalance(0.0),
+  vollevel(-1),
+  volbalance(0.0),
   timer(NULL),
   tooltip(NULL)
 {
   // Create icons for mute button
-  mutebmp[0]=new CDBMPIcon(getApp(),mute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  mutebmp[1]=new CDBMPIcon(getApp(),nomute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  mutebmp.push_back(new CDBMPIcon(getApp(),mute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  mutebmp.push_back(new CDBMPIcon(getApp(),nomute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
 
   // Create icons for button controls
-  btnbmp[0]=new CDBMPIcon(getApp(),reverse_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  btnbmp[1]=new CDBMPIcon(getApp(),forward_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  btnbmp[2]=new CDBMPIcon(getApp(),stop_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  btnbmp[3]=new CDBMPIcon(getApp(),play_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  btnbmp[4]=new CDBMPIcon(getApp(),pause_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  btnbmp[5]=new CDBMPIcon(getApp(),prev_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  btnbmp[6]=new CDBMPIcon(getApp(),next_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  btnbmp[7]=new CDBMPIcon(getApp(),eject_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  btnbmp.push_back(new CDBMPIcon(getApp(),reverse_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  btnbmp.push_back(new CDBMPIcon(getApp(),forward_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  btnbmp.push_back(new CDBMPIcon(getApp(),stop_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  btnbmp.push_back(new CDBMPIcon(getApp(),play_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  btnbmp.push_back(new CDBMPIcon(getApp(),pause_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  btnbmp.push_back(new CDBMPIcon(getApp(),prev_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  btnbmp.push_back(new CDBMPIcon(getApp(),next_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  btnbmp.push_back(new CDBMPIcon(getApp(),eject_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
 
   // Create icons for display
-  lcdbmp[0]=new CDBMPIcon(getApp(),zero_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[1]=new CDBMPIcon(getApp(),one_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[2]=new CDBMPIcon(getApp(),two_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[3]=new CDBMPIcon(getApp(),three_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[4]=new CDBMPIcon(getApp(),four_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[5]=new CDBMPIcon(getApp(),five_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[6]=new CDBMPIcon(getApp(),six_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[7]=new CDBMPIcon(getApp(),seven_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[8]=new CDBMPIcon(getApp(),eight_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[9]=new CDBMPIcon(getApp(),nine_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[10]=new CDBMPIcon(getApp(),dash_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[11]=new CDBMPIcon(getApp(),colon_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[12]=new CDBMPIcon(getApp(),intro_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[13]=new CDBMPIcon(getApp(),rand_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[14]=new CDBMPIcon(getApp(),repeatn_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[15]=new CDBMPIcon(getApp(),repeatt_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[16]=new CDBMPIcon(getApp(),repeatd_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
-  lcdbmp[17]=new CDBMPIcon(getApp(),prefs_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  lcdbmp.push_back(new CDBMPIcon(getApp(),zero_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),one_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),two_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),three_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),four_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),five_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),six_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),seven_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),eight_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),nine_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),dash_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),colon_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),intro_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),rand_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),repeatn_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),repeatt_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),repeatd_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  lcdbmp.push_back(new CDBMPIcon(getApp(),prefs_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
 
   // Connect data targets
   stoponexittgt.connect(stoponexit);
   startmodetgt.connect(startmode);
-  timemodetgt.connsect(timemode);
+  timemodetgt.connect(timemode);
   repeatmodetgt.connect(cdplayer.repeatMode);
 
   // Create menubar and statusbar
@@ -154,9 +152,9 @@ CDWindow::CDWindow(FXApp* app)
   canvas=new FXCanvas(canvasItems,this,ID_CANVAS,LAYOUT_FILL_X|LAYOUT_FILL_Y);
 
   FXVerticalFrame* textfields=new FXVerticalFrame(display,LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0, 0,0);
-  bandTitle=new FXListBox(textfields,2,this,ID_BAND,LAYOUT_FILL_X);
-  albumTitle=new FXLabel(textfields,NODISC_MSG,NULL,JUSTIFY_LEFT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  trackTitle=new FXListBox(textfields,8,this,ID_TRACK,LAYOUT_FILL_X);
+  bandtitle=new FXListBox(textfields,this,ID_BAND,LAYOUT_FILL_X);
+  albumtitle=new FXLabel(textfields,NODISC_MSG,NULL,JUSTIFY_LEFT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  tracktitle=new FXListBox(textfields,this,ID_TRACK,LAYOUT_FILL_X);
 
   // Volume controls
   new FXHorizontalSeparator(contents,SEPARATOR_GROOVE|LAYOUT_FILL_X);
@@ -197,14 +195,24 @@ CDWindow::CDWindow(FXApp* app)
 
 void CDWindow::create()
 {
-  FXint i;
+  cdbmp_array::iterator iter;
+
+  readRegistry();
 
   FXMainWindow::create();
-  for(i=0;i<12;i++)
-    lcdbmp[i]->create();
+
+  // Create icons
+  for(iter=mutebmp.begin();iter!=mutebmp.end();++iter)
+    (*iter)->create();
+
+  for(iter=btnbmp.begin();iter!=btnbmp.end();++iter)
+    (*iter)->create();
+
+  for(iter=lcdbmp.begin();iter!=lcdbmp.end();++iter)
+    (*iter)->create();
 
   checkDevices();
-  handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandTitle->getCurrentItem());
+  handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandtitle->getCurrentItem());
 
   timer=getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
 
@@ -232,7 +240,7 @@ void CDWindow::readRegistry()
   stoponexit=getApp()->reg().readIntEntry("SETTINGS","stoponexit",stoponexit);
   startmode=getApp()->reg().readIntEntry("SETTINGS","startaction",startmode);
   cdplayer.setRepeatMode(getApp()->reg().readUnsignedEntry("SETTINGS","repeatmode",cdplayer.getRepeatMode()));
-  
+
   // Colors and fonts
   getApp()->reg().readColorEntry("SETTINGS","lcdforecolor",DEFAULTFORE);
   getApp()->reg().readColorEntry("SETTINGS","lcdbackcolor",DEFAULTBACK);
@@ -266,9 +274,9 @@ void CDWindow::writeRegistry()
   getApp()->reg().writeIntEntry("SETTINGS","startaction",startmode);
   getApp()->reg().writeUnsignedEntry("SETTINGS","repeatmode",cdplayer.getRepeatMode());
 
-  getApp()->reg().writeColorEntry("SETTINGS","lcdforecolor",lcdforecolor);
-  getApp()->reg().writeColorEntry("SETTINGS","lcdbackcolor",lcdbackcolor);
-  getApp()->reg().writeColorEntry("SETTINGS","iconcolor",iconcolor);
+  getApp()->reg().writeColorEntry("SETTINGS","lcdforecolor",lcdforeclr);
+  getApp()->reg().writeColorEntry("SETTINGS","lcdbackcolor",lcdbackclr);
+  getApp()->reg().writeColorEntry("SETTINGS","iconcolor",iconclr);
 
   getDisplayFont()->getFontDesc(fontdesc);
   fxunparsefontdesc(fontspec,fontdesc);
@@ -299,7 +307,7 @@ FXbool CDWindow::checkDevices()
       {
 	total++;
 	devname=new FXString(entstr);
-        bandTitle->appendItem(*devname,NULL,(void*)devname);
+        bandtitle->appendItem(*devname,NULL,(void*)devname);
       }
     }
   }
@@ -308,7 +316,7 @@ FXbool CDWindow::checkDevices()
   {
 #ifndef WIN32
     devname=new FXString("/dev/cdrom");
-    bandTitle->appendItem(*devname,NULL,(void*)devname);
+    bandtitle->appendItem(*devname,NULL,(void*)devname);
     total=1;
 #else
     FXchar drive[4];
@@ -320,7 +328,7 @@ FXbool CDWindow::checkDevices()
         total++;
         devname=new FXString;
         devname->format("%c:",i);
-        bandTitle->appendItem(*devname,NULL,(void*)devname);
+        bandtitle->appendItem(*devname,NULL,(void*)devname);
       }
     }
 #endif
@@ -329,7 +337,7 @@ FXbool CDWindow::checkDevices()
   if(!stored)
   {
     //Commit them to registry
-    FXint n=bandTitle->getNumItems();
+    FXint n=bandtitle->getNumItems();
     FXString* entstr;
     FXString entnam;
 
@@ -337,7 +345,7 @@ FXbool CDWindow::checkDevices()
     for(i=0;i<total;i++)
     {
       entnam.format("device%d",i);
-      entstr=(FXString*)bandTitle->getItemData(i);
+      entstr=(FXString*)bandtitle->getItemData(i);
       getApp()->reg().writeStringEntry("DEVICES",entnam.text(),entstr->text());
     }
 
@@ -346,9 +354,9 @@ FXbool CDWindow::checkDevices()
   }
 
   //See if a device is currently active
-  for(i=0;i<bandTitle->getNumItems();i++)
+  for(i=0;i<bandtitle->getNumItems();i++)
   {
-    devname=(FXString*)bandTitle->getItemData(i);
+    devname=(FXString*)bandtitle->getItemData(i);
     if(cdplayer.init(devname->text()))
     {
       if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
@@ -361,31 +369,31 @@ FXbool CDWindow::checkDevices()
     }
   }
 
-  bandTitle->setCurrentItem(player);
-  bandTitle->setNumVisible(total);
+//  bandtitle->setCurrentItem(player);
+  bandtitle->setNumVisible(total);
 
   return true;
 }
 
 FXbool CDWindow::loadDiscData()
 {
-  FXint band=bandTitle->getCurrentItem();
-  FXString* deviceStr=(FXString*)bandTitle->getItemData(band);
+  FXint band=bandtitle->getCurrentItem();
+  FXString* deviceStr=(FXString*)bandtitle->getItemData(band);
   FXString title;
 
   if(!cdplayer.isValid()||!cdplayer.isDiscPresent()||!cdplayer.isAudioDisc())
   {
       //Relabel for empty media
       title.format("%s - <%s>",NODISC_MSG,deviceStr->text());
-      bandTitle->setItemText(band,title);
-      bandTitle->setTipText(title);
-      albumTitle->setText(NODISC_MSG);
-      albumTitle->setTipText(NODISC_MSG);
-      trackTitle->clearItems();
-      trackTitle->appendItem(NODISC_MSG);
-      trackTitle->setTipText(NODISC_MSG);
-      trackTitle->setCurrentItem(0);
-      trackTitle->setNumVisible(1);
+      bandtitle->setItemText(band,title);
+      bandtitle->setTipText(title);
+      albumtitle->setText(NODISC_MSG);
+      albumtitle->setTipText(NODISC_MSG);
+      tracktitle->clearItems();
+      tracktitle->appendItem(NODISC_MSG);
+      tracktitle->setTipText(NODISC_MSG);
+      tracktitle->setCurrentItem(0);
+      tracktitle->setNumVisible(1);
   }
   else
   {
@@ -396,27 +404,28 @@ FXbool CDWindow::loadDiscData()
     cddb_init_disc_data(&data);
     getData(&data);
     title.format("%s - <%s>",data.data_artist,deviceStr->text());
-    bandTitle->setItemText(band,title);
-    bandTitle->setTipText(title);
-    albumTitle->setText(data.data_title);
-    albumTitle->setTipText(data.data_title);
+    bandtitle->setItemText(band,title);
+    bandtitle->setTipText(title);
+    albumtitle->setText(data.data_title);
+    albumtitle->setTipText(data.data_title);
 
     //Load all tracks
-    trackTitle->clearItems();
+    tracktitle->clearItems();
     for(i=cdplayer.getStartTrack();i<=cdplayer.getNumTracks();i++)
     {
-      const struct track_info* track=cdplayer.getTrackInfo(i-1);
-      if(track->track_type==CDLYTE_TRACK_AUDIO)
+      struct track_info track;
+      cdplayer.getTrackInfo(i-1,track);
+      if(track.track_type==CDLYTE_TRACK_AUDIO)
       {
-        title.format("%d. %s (%d:%02d)",i,data.data_track[i-1].track_title,track->track_length.minutes,track->track_length.seconds);
-        trackTitle->appendItem(title);
+        title.format("%d. %s (%d:%02d)",i,data.data_track[i-1].track_title,track.track_length.minutes,track.track_length.seconds);
+        tracktitle->appendItem(title);
       }
     }
 
     cddb_free_disc_data(&data);
 
     //Size our drop down list - no empty list spaces
-    trackTitle->setNumVisible((cdplayer.getNumTracks()>8)?8:cdplayer.getNumTracks());
+    tracktitle->setNumVisible((cdplayer.getNumTracks()>8)?8:cdplayer.getNumTracks());
   }
 
   return TRUE;
@@ -434,96 +443,99 @@ void CDWindow::doDraw(FXint track,const struct disc_info* di)
 
 void CDWindow::setDisplayFont(FXFont* font)
 {
-  bandTitle->setFont(font);
-  trackTitle->setFont(font);
-  albumTitle->setFont(font);
+  bandtitle->setFont(font);
+  tracktitle->setFont(font);
+  albumtitle->setFont(font);
   resize(290,getDefaultHeight());
 }
 
 FXFont* CDWindow::getDisplayFont() const
 {
-  return albumTitle->getFont();
+  return albumtitle->getFont();
 }
 
 void CDWindow::setDisplayForeground(FXColor color)
 {
-  FXint i;
+  cdbmp_array::iterator iter;
 
   //Needed for dual color icons.  If they are equal, modify slightly.
-  if(color==lcdbackcolor)
+  if(color==lcdbackclr)
   {
     FXuchar r=FXREDVAL(color),g=FXGREENVAL(color),b=FXBLUEVAL(color);
     color=FXRGB((r<255)?r+1:r-1,(g<255)?g+1:g-1,(b<255)?b+1:b-1);
   }
 
   //Fonts
-  bandTitle->setTextColor(color);
-  albumTitle->setTextColor(color);
-  trackTitle->setTextColor(color);
+  bandtitle->setTextColor(color);
+  albumtitle->setTextColor(color);
+  tracktitle->setTextColor(color);
 
   //Icons
-  for(i=0;i<18;i++)
-    lcdbmp[i]->swapColor(lcdforecolor,color);
+  for(iter=mutebmp.begin();iter!=mutebmp.end();++iter)
+    (*iter)->swapColor(lcdforeclr,color);
 
-  mutebmp[0]->swapColor(lcdforecolor,color);
-  mutebmp[1]->swapColor(lcdforecolor,color);
+  for(iter=lcdbmp.begin();iter!=lcdbmp.end();++iter)
+    (*iter)->swapColor(lcdforeclr,color);
 
-  lcdforecolor=color;
+  lcdforeclr=color;
 }
 
 FXColor CDWindow::getDisplayForeground() const
 {
-  return lcdforecolor;
+  return lcdforeclr;
 }
 
 void CDWindow::setDisplayBackground(FXColor color)
 {
-  FXint i;
+  cdbmp_array::iterator iter;
 
   //Needed for dual color icons.  If they are equal, modify slightly.
-  if(color==lcdforecolor)
+  if(color==lcdforeclr)
   {
     FXuchar r=FXREDVAL(color),g=FXGREENVAL(color),b=FXBLUEVAL(color);
     color=FXRGB((r<255)?r+1:r-1,(g<255)?g+1:g-1,(b<255)?b+1:b-1);
   }
 
   //Fonts
-  bandTitle->setBackColor(color);
-  albumTitle->setBackColor(color);
-  trackTitle->setBackColor(color);
+  bandtitle->setBackColor(color);
+  albumtitle->setBackColor(color);
+  tracktitle->setBackColor(color);
 
   //Widgets
-  for(i=0;i<18;i++)
-    lcdbmp[i]->swapColor(lcdbackcolor,color);
+  for(iter=mutebmp.begin();iter!=mutebmp.end();++iter)
+    (*iter)->swapColor(lcdbackclr,color);
 
-  mutebmp[0]->swapColor(lcdbackcolor,color);
-  mutebmp[1]->swapColor(lcdbackcolor,color);
+  for(iter=lcdbmp.begin();iter!=lcdbmp.end();++iter)
+    (*iter)->swapColor(lcdbackclr,color);
 
-  lcdbackcolor=color;
+  lcdbackclr=color;
 }
 
 FXColor CDWindow::getDisplayBackground() const
 {
-  return lcdbackcolor;
+  return lcdbackclr;
 }
 
 void CDWindow::setIconColor(FXColor color)
 {
-  FXint i;
-  for(i=0;i<8;i++)
-    btnbmp[i]->swapColor(iconcolor,color);
+  cdbmp_array::iterator iter;
 
-  iconcolor=color;
+  for(iter=btnbmp.begin();iter!=btnbmp.end();++iter)
+    (*iter)->swapColor(iconclr,color);
+
+  iconclr=color;
 }
 
 FXColor CDWindow::getIconColor() const
 {
-  return iconcolor;
+  return iconclr;
 }
 
 long CDWindow::onPaint(FXObject*,FXSelector,void*)
 {
-  doDraw(cdplayer.getCurrentTrack(),cdplayer.getDiscInfo());
+  struct disc_info di;
+  cdplayer.getDiscInfo(di);
+  doDraw(cdplayer.getCurrentTrack(),&di);
   return 1;
 }
 
@@ -536,6 +548,8 @@ long CDWindow::onMouseDown(FXObject*,FXSelector,void*)
 //Timer to keep track of disc state
 long CDWindow::onTimeout(FXObject*,FXSelector,void*)
 {
+  struct disc_info di;
+
   if(cdplayer.isValid())
   {
     cdplayer.update();
@@ -554,7 +568,8 @@ long CDWindow::onTimeout(FXObject*,FXSelector,void*)
     }
   }
 
-  doDraw(cdplayer.getCurrentTrack(),cdplayer.getDiscInfo());
+  cdplayer.getDiscInfo(di);
+  doDraw(cdplayer.getCurrentTrack(),&di);
 
   return 1;
 }
@@ -580,7 +595,7 @@ long CDWindow::onUpdStatusDisc(FXObject* sender,FXSelector,void*)
   if(cdplayer.isDiscPresent())
   {
     struct disc_timeval length;
-    cdplayer.getDiscLength(&length);
+    cdplayer.getDiscLength(length);
     str.format("%02d:%02d",length.minutes,length.seconds);
   }
 
@@ -593,9 +608,9 @@ long CDWindow::onUpdStatusTrack(FXObject* sender,FXSelector,void*)
   FXString str("00:00");
   if(cdplayer.isDiscPresent())
   {
-    struct track_info track;
-    cdplayer.getTrackInfo(cdplayer.getCurrentTrack()-1,&track);
-    str.format("%02d:%02d",track.track_length.minutes,track.track_length.seconds);
+    struct disc_timeval length;
+    cdplayer.getTrackLength(cdplayer.getCurrentTrack()-1,length);
+    str.format("%02d:%02d",length.minutes,length.seconds);
   }
   sender->handle(this,MKUINT(ID_SETSTRINGVALUE,SEL_COMMAND),(void*)&str);
   return 1;
@@ -627,9 +642,9 @@ long CDWindow::onCmdFont(FXObject*,FXSelector,void*)
 long CDWindow::onCmdBand(FXObject*,FXSelector,void* ptr)
 {
   FXint band=(FXint)(FXival)ptr;
-  if(band>=0&&band<bandTitle->getNumItems())
+  if(band>=0&&band<bandtitle->getNumItems())
   {
-    FXString* devname=(FXString*)bandTitle->getItemData(band);
+    FXString* devname=(FXString*)bandtitle->getItemData(band);
 
     if(cdplayer.isValid())
     {
@@ -654,10 +669,10 @@ long CDWindow::onCmdTrack(FXObject*,FXSelector,void* ptr)
 long CDWindow::onUpdTrack(FXObject*,FXSelector,void*)
 {
   FXint track=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())?cdplayer.getCurrentTrack()-1:0;
-  if(track>-1&&track<trackTitle->getNumItems()&&track<cdplayer.getNumTracks())
+  if(track>-1&&track<tracktitle->getNumItems()&&track<cdplayer.getNumTracks())
   {
-    trackTitle->setCurrentItem(track);
-    trackTitle->setTipText(trackTitle->getItemText(track));
+    tracktitle->setCurrentItem(track);
+    tracktitle->setTipText(tracktitle->getItemText(track));
   }
   return 1;
 }
@@ -706,7 +721,7 @@ long CDWindow::onUpdBalance(FXObject* sender,FXSelector,void*)
   {
     volbalance=cdplayer.getBalance();
 
-    FXint value=100+(FXint)(100*volBalance);
+    FXint value=100+(FXint)(100*volbalance);
     sender->handle(this,MKUINT(ID_SETVALUE,SEL_COMMAND),(void*)(FXival)value);
   }
   return 1;
@@ -715,8 +730,7 @@ long CDWindow::onUpdBalance(FXObject* sender,FXSelector,void*)
 long CDWindow::onActivateSeeker(FXObject*,FXSelector,void*)
 {
   seektrack=cdplayer.getCurrentTrack();
-  seektime.minutes=cdplayer.getTrackTime()->minutes;
-  seektime.seconds=cdplayer.getTrackTime()->seconds;
+  cdplayer.getTrackTime(seektime);
   return 1;
 }
 
@@ -761,10 +775,7 @@ long CDWindow::onCmdSeekReverse(FXObject*,FXSelector,void*)
       }
       else
       {
-        struct track_info track;
-        cdplayer.getTrackInfo(seektrack-1,&track);
-        seektime.minutes=track->track_length.minutes;
-        seektime.seconds=track->track_length.seconds;
+        cdplayer.getTrackLength(seektrack,seektime);
       }
     }
   }
@@ -785,29 +796,26 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
   }
   else
   {
-    const struct track_info* track=cdplayer.getTrackInfo(seekTrack-1);
-    boundary.minutes=track->track_length.minutes;
-    boundary.seconds=track->track_length.seconds;
+    cdplayer.getTrackLength(seektrack,boundary);
   }
 
-  seekTime.seconds++;
-  if(seekTime.seconds>59)
+  seektime.seconds++;
+  if(seektime.seconds>59)
   {
-    seekTime.minutes++;
-    seekTime.seconds=00;
+    seektime.minutes++;
+    seektime.seconds=00;
   }
 
   //Check to see if we skipped over track boundary
-  if((seekTime.minutes>=boundary.minutes)&&(seekTime.seconds>boundary.seconds))
+  if((seektime.minutes>=boundary.minutes)&&(seektime.seconds>boundary.seconds))
   {
-    //It may be necessary to test if track is audio - if data and audio tracks are intermixed
     FXint mode=cdplayer.getRepeatMode();
     if(cdplayer.getRandom())
     {
       if(mode!=CDREPEAT_TRACK)
       {
-        seekTrack=cdplayer.randomTrack();
-        if(seekTrack==0)
+        seektrack=cdplayer.randomTrack();
+        if(seektrack==0)
 	{
 	  cdplayer.stop();
 	  return 1;
@@ -818,10 +826,10 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
     {
       if(mode!=CDREPEAT_TRACK)
       {
-        if(seekTrack<cdplayer.getNumTracks())
-          seekTrack++;
+        if(seektrack<cdplayer.getNumTracks())
+          seektrack++;
         else if(mode==CDREPEAT_DISC)
-	  seekTrack=cdplayer.getStartTrack();
+	  seektrack=cdplayer.getStartTrack();
         else
 	{
 	  cdplayer.stop();
@@ -829,11 +837,11 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
 	}
       }
     }
-    seekTime.minutes=0;
-    seekTime.seconds=0;
+    seektime.minutes=0;
+    seektime.seconds=0;
   }
 
-  cdplayer.playTrackPos(seekTrack,&seekTime);
+  cdplayer.playTrackPos(seektrack,&seektime);
 
   return 1;
 }
@@ -908,23 +916,16 @@ long CDWindow::onUpdSkipBtns(FXObject* sender,FXSelector,void*)
 
 long CDWindow::onCmdEject(FXObject*,FXSelector,void*)
 {
-  if(cdplayer.isDoorOpen())
+  if(cdplayer.isTrayOpen())
     cdplayer.closeTray();
   else
     cdplayer.openTray();
   return 1;
 }
 
-long CDWindow::onUpdEject(FXObject* sender,FXSelector,void*)
-{
-  //FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)?ID_DISABLE:ID_ENABLE;
-  //sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
-  return 1;
-}
-
-
 CDWindow::~CDWindow()
 {
+  cdbmp_array::iterator iter;
   FXint i,n=bandtitle->getNumItems();
   FXString* devnam=NULL;
 
@@ -934,30 +935,18 @@ CDWindow::~CDWindow()
     delete devnam;
   }
 
-  delete timeTarget;
-  delete repeatTarget;
-  delete startTarget;
-  delete proxyAddrTarget;
-  delete proxyPortTarget;
-  delete cddbProtoTarget;
-  delete cddbAddrTarget;
   delete font;
 
-  delete timemenu;
-  delete repeatmenu;
-  delete optionsmenu;
   delete filemenu;
 
-  for(i=17;i>=0;i--)
-    delete dcifore[i];
+  for(iter=lcdbmp.begin();iter!=lcdbmp.end();++iter)
+    delete (*iter);
 
-  for(i=7;i>=0;i--)
-    delete bicolor[i];
+  for(iter=btnbmp.begin();iter!=btnbmp.end();++iter)
+    delete (*iter);
 
-  delete randd;
-  delete introd;
-  delete nomuteIcon;
-  delete muteIcon;
+  for(iter=mutebmp.begin();iter!=mutebmp.end();++iter)
+    delete (*iter);
 }
 
 /*

@@ -22,7 +22,6 @@
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
 #include "CDPlayer.h"
-#include "CDInfo.h"
 #include "CDWindow.h"
 
 int main(int argc, char** argv)

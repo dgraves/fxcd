@@ -19,6 +19,8 @@
 #ifndef _CDWINDOW_H_
 #define _CDWINDOW_H_
 
+#include <vector>
+
 enum
 {
   CDTIME_DISC    =0,      // Show elapsed disc time in time display
@@ -37,6 +39,8 @@ enum
 class CDBMPIcon;
 class CDPreferences;
 
+typedef std::vector<CDBMPIcon*> cdbmp_array;
+
 class CDWindow : public FXMainWindow
 {
   FXDECLARE(CDWindow)
@@ -52,7 +56,7 @@ protected:
   FXint               vollevel;	         // Stored volume to check against cdplayer for external changes
   FXfloat             volbalance;        // Stored balance to check against cdplayer for external changes
   FXint               seektrack;         // Currently seeking in this track
-  struct disc_timeval seekTime;          // Current seek time in track
+  struct disc_timeval seektime;          // Current seek time in track
   CDPlayer            cdplayer;          // The cd player
 protected:
   FXDataTarget        stoponexittgt;
@@ -60,9 +64,9 @@ protected:
   FXDataTarget        timemodetgt;
   FXDataTarget        repeatmodetgt;
 protected:
-  CDBMPIcon*          mutebmp[2];        // Mute icons
-  CDBMPIcon*          btnbmp[8];         // Icons for cd player controls
-  CDBMPIcon*          lcdbmp[18];        // Icons for the display
+  cdbmp_array         mutebmp;           // Mute icons
+  cdbmp_array         btnbmp;            // Icons for cd player controls
+  cdbmp_array         lcdbmp;            // Icons for the display
   FXTimer*            timer;             // Player update timer
   FXCanvas*           canvas;            // Time display
   FXListBox*          bandtitle;         // List for LCD artist name display
@@ -94,6 +98,7 @@ public:
   long onUpdTrack(FXObject*,FXSelector,void*);
   long onCmdVolume(FXObject*,FXSelector,void*);
   long onUpdVolume(FXObject*,FXSelector,void*);
+  long onCmdMute(FXObject*,FXSelector,void*);
   long onCmdBalance(FXObject*,FXSelector,void*);
   long onUpdBalance(FXObject*,FXSelector,void*);
   long onActivateSeeker(FXObject*,FXSelector,void*);
@@ -108,7 +113,6 @@ public:
   long onCmdPlay(FXObject*,FXSelector,void*);
   long onUpdPlay(FXObject*,FXSelector,void*);
   long onCmdEject(FXObject*,FXSelector,void*);
-  long onUpdEject(FXObject*,FXSelector,void*);
 public:
   enum
   {
@@ -139,6 +143,7 @@ public:
     ID_BAND,
     ID_TRACK,
     ID_VOLUME,
+    ID_MUTE,
     ID_BALANCE,
     ID_SEEKREVERSE,
     ID_SEEKFORWARD,
