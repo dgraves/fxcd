@@ -432,15 +432,18 @@ FXbool CDPlayer::openTray()
   if(media<0)
     return FALSE;
 
-  if(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED)
-    stop();
-    //cd_stop(media);
-
-  //Don't eject until disk is stopped - best solution?
-  do
+  //Some cd players continue to act as if playing if ejected while playing, and ignore stop requests while tray is open.  
+  //So check for present disc to avoid infinite loop.  
+  if(nodisc==FALSE&&(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED))
   {
-    polldisc();
-  }while(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED);
+    stop();
+
+    //Don't eject until disk is stopped - best solution?
+    do
+    {
+      polldisc();
+    }while(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED);
+  }
 
   cd_eject(media);
   open=TRUE;
