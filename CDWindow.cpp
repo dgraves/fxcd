@@ -203,7 +203,7 @@ CDWindow::CDWindow(FXApp* app)
     new FXMenuSeparator(optionsmenu);
     new FXMenuCommand(optionsmenu,"&Preferences...\tCtrl+P",NULL,this,ID_PREFS);
   infomenu=new FXMenuPane(this);
-    new FXMenuTitle(menubar,"&Info",NULL,infomenu);
+    new FXMenuTitle(menubar,"&Internet",NULL,infomenu);
     new FXMenuCommand(infomenu,"Use &Remote Data Source",NULL,this,ID_REMOTEINFO);
     new FXMenuCommand(infomenu,"Check &Local Source First",NULL,this,ID_LOCALFIRST);
     new FXMenuSeparator(infomenu);

@@ -25,16 +25,22 @@ extern "C" {
 #include "CDPlayer.h"
 #include "CDInfo.h"
 #include "CDWindow.h"
+#include "CDServerDialog.h"
 #include "CDPreferences.h"
 
-FXIMPLEMENT(CDPreferences,FXDialogBox,NULL,0)
+FXDEFMAP(CDPreferences) CDPreferencesMap[]={
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_SERVERLIST,CDPreferences::onCmdServerList),
+  FXMAPFUNCS(SEL_COMMAND,CDPreferences::ID_ADVANCEDCDDB,CDPreferences::ID_ADVANCEDCDINDEX,CDPreferences::onCmdAdvanced)
+};
+
+FXIMPLEMENT(CDPreferences,FXDialogBox,CDPreferencesMap,ARRAYNUMBER(CDPreferencesMap))
 
 CDPreferences::CDPreferences(CDWindow* owner)
 : FXDialogBox(owner,"CD Player Preferences",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,0,0, 10,10,10,10, 4,4),
   cdwindow(owner)
 {
   FXHorizontalFrame* buttons=new FXHorizontalFrame(this,PACK_UNIFORM_WIDTH|LAYOUT_SIDE_BOTTOM|LAYOUT_RIGHT);
-  new FXButton(buttons,"&Accept",NULL,this,FXDialogBox::ID_ACCEPT,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT,0,0,0,0, 20,20);
+  new FXButton(buttons,"&OK",NULL,this,FXDialogBox::ID_ACCEPT,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT,0,0,0,0, 20,20);
   new FXButton(buttons,"&Cancel",NULL,this,FXDialogBox::ID_CANCEL,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT,0,0,0,0, 20,20);
 
   new FXHorizontalSeparator(this,SEPARATOR_RIDGE|LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X);
@@ -105,8 +111,8 @@ CDPreferences::CDPreferences(CDWindow* owner)
   new FXCheckButton(appgen,"Show Status Bar",cdwindow,CDWindow::ID_TOGGLESTATUS,CHECKBUTTON_NORMAL|LAYOUT_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW);
   new FXCheckButton(appgen,"Show Tool Tips",cdwindow,CDWindow::ID_TOGGLETIPS,CHECKBUTTON_NORMAL|LAYOUT_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW);
 
-  //Info
-  FXTabItem* infotab=new FXTabItem(tabbook,"CD &Info",NULL,LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  //Internet
+  FXTabItem* infotab=new FXTabItem(tabbook,"&Internet",NULL,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXVerticalFrame* infoframe=new FXVerticalFrame(tabbook,FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y);
 
   FXHorizontalFrame* infodefault=new FXHorizontalFrame(infoframe,LAYOUT_FILL_X|LAYOUT_BOTTOM);
@@ -127,11 +133,12 @@ CDPreferences::CDPreferences(CDWindow* owner)
   FXVerticalFrame* cddbframe=new FXVerticalFrame(infocddb,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXHorizontalFrame* cddbbuttons=new FXHorizontalFrame(cddbframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   new FXCheckButton(cddbbuttons,"Use CDDB",cdwindow,CDWindow::ID_CDDB,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
-  new FXButton(cddbbuttons,"Get Server List",NULL,this,ID_SERVERLIST,FRAME_THICK|FRAME_SUNKEN|LAYOUT_RIGHT,0,0,0,0, 20,20);
-  FXHorizontalFrame* cddbproto=new FXHorizontalFrame(cddbframe,LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
+  new FXButton(cddbbuttons,"Advanced...",NULL,this,ID_ADVANCEDCDDB,FRAME_THICK|FRAME_RAISED|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
+  FXHorizontalFrame* cddbproto=new FXHorizontalFrame(cddbframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   new FXLabel(cddbproto,"Method:",NULL,LAYOUT_CENTER_Y);
   new FXRadioButton(cddbproto,"HTTP",cdwindow->cddbProtoTarget,FXDataTarget::ID_OPTION+PROTO_HTTP,RADIOBUTTON_NORMAL|LAYOUT_CENTER_Y);
   new FXRadioButton(cddbproto,"CDDBP",cdwindow->cddbProtoTarget,FXDataTarget::ID_OPTION+PROTO_CDDBP,RADIOBUTTON_NORMAL|LAYOUT_CENTER_Y);
+  new FXButton(cddbproto,"Get Server List",NULL,this,ID_SERVERLIST,FRAME_THICK|FRAME_RAISED|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
   FXHorizontalFrame* cddbserv=new FXHorizontalFrame(cddbframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   new FXLabel(cddbserv,"Server:",NULL,LAYOUT_CENTER_Y);
   new FXTextField(cddbserv,0,cdwindow->cddbAddrTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X);
@@ -140,10 +147,55 @@ CDPreferences::CDPreferences(CDWindow* owner)
 
   FXGroupBox* infocdindex=new FXGroupBox(infoframe,"CD Index Settings",GROUPBOX_TITLE_LEFT|FRAME_RIDGE|LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXVerticalFrame* cdindexframe=new FXVerticalFrame(infocdindex,LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  new FXCheckButton(cdindexframe,"Use CD Index",cdwindow,CDWindow::ID_CDINDEX,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
+  FXHorizontalFrame* cdindexbuttons=new FXHorizontalFrame(cdindexframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
+  new FXCheckButton(cdindexbuttons,"Use CD Index",cdwindow,CDWindow::ID_CDINDEX,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
+  new FXButton(cdindexbuttons,"Advanced...",NULL,this,ID_ADVANCEDCDINDEX,FRAME_THICK|FRAME_RAISED|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
   FXHorizontalFrame* cdindexserv=new FXHorizontalFrame(cdindexframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
-  new FXLabel(cdindexserv,"CD Index Server:",NULL,LAYOUT_CENTER_Y);
+  new FXLabel(cdindexserv,"Server:",NULL,LAYOUT_CENTER_Y);
   new FXTextField(cdindexserv,0,cdwindow->cdindexAddrTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X);
   FXSpinner* cdinspinner=new FXSpinner(cdindexserv,4,cdwindow->cdindexPortTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_RIGHT);
   cdinspinner->setRange(0,65535);
+}
+
+long CDPreferences::onCmdServerList(FXObject*,FXSelector,void*)
+{
+  struct cddb_serverlist list;
+  if(cdwindow->cdinfo.getCDDBServerList(&list))
+  {
+    CDServerDialog dialog(this,&list);
+    if(dialog.execute())
+    {
+      FXint index=dialog.getSelection();
+      struct cddb_host* host=&list.list_host[index];
+
+      cdwindow->cdinfo.setCDDBProtocol((host->host_protocol==CDDB_MODE_HTTP)?PROTO_HTTP:PROTO_CDDBP);
+      cdwindow->cdinfo.setCDDBAddress(host->host_server.server_name);
+      cdwindow->cdinfo.setCDDBPort(host->host_server.server_port);
+      if(host->host_protocol==CDDB_MODE_HTTP)
+      {
+	//For current broken get we need to trim down string
+	//cdwindow->setCDDBScript(host->host_addressing);
+	FXString script(host->host_addressing);
+	cdwindow->cdinfo.setCDDBScript(script.before(' '));
+      }
+    }
+  }
+  else
+  {
+    FXMessageBox::error(this,MBOX_OK,"Get Server List Error","Could not connect to %s:%d",cdwindow->cdinfo.getCDDBAddress().text(),cdwindow->cdinfo.getCDDBPort());
+  }
+
+  return 1;
+}
+
+long CDPreferences::onCmdAdvanced(FXObject*,FXSelector sel,void*)
+{
+  FXInputDialog dialog(this,"Advanced Server Settings",(SELID(sel)==ID_ADVANCEDCDDB)?"CDDB Script to Execute":"CD Index Script to Execute");
+  dialog.setText((SELID(sel)==ID_ADVANCEDCDDB)?cdwindow->cdinfo.getCDDBScript():cdwindow->cdinfo.getCDIndexScript());
+  if(dialog.execute())
+  {
+    if(SELID(sel)==ID_ADVANCEDCDDB) cdwindow->cdinfo.setCDDBScript(dialog.getText());
+    else cdwindow->cdinfo.setCDIndexScript(dialog.getText());
+  }
+  return 1;
 }

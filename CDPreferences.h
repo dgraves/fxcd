@@ -29,11 +29,15 @@ protected:
   CDPreferences(){}
 public:
   CDPreferences(CDWindow* owner);
-  //virtual void create();
+
+  long onCmdServerList(FXObject*,FXSelector,void*);
+  long onCmdAdvanced(FXObject*,FXSelector,void*);
 
   enum
   {
     ID_SERVERLIST=FXDialogBox::ID_LAST,
+    ID_ADVANCEDCDDB,
+    ID_ADVANCEDCDINDEX,
     ID_LAST
   };
 };

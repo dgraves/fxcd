@@ -16,7 +16,9 @@ Add advanced buttons for CDDB and CDindex settings to set cgi scripts.
 
 Updates to libcdaudio:
  * Make it work on Windows!!
- * Update CDDB code to work with latest freedb protocol levels.  
+ * Update CDDB code to work with latest protocol levels.  
+
+cdaudio host_addressing string retrieved from server contains additional proto level4 info
 
 Possibly use FXThreadEx to get cd info in background.  
 
