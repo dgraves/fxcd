@@ -266,7 +266,6 @@ FXbool CDPlayer::play()
     }
     if(cd_play(media,currentTrack)<0)
     {
-      DWORD err=GetLastError();
       return FALSE;
     }
     stopped=FALSE;
