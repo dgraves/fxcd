@@ -16,9 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern "C" {
-#include "cdaudio.h"
-}
+#include "cdlyte.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
@@ -34,7 +32,7 @@ FXDEFMAP(CDPreferences) CDPreferencesMap[]={
   FXMAPFUNC(SEL_UPDATE,CDPreferences::ID_DEVICEREM,CDPreferences::onUpdDeviceRemove),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEFAULTDEVS,CDPreferences::onCmdDefaultDevs),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_SERVERLIST,CDPreferences::onCmdServerList),
-  FXMAPFUNCS(SEL_COMMAND,CDPreferences::ID_ADVANCEDCDDB,CDPreferences::ID_ADVANCEDCDINDEX,CDPreferences::onCmdAdvanced)
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_ADVANCEDCDDB,CDPreferences::onCmdAdvanced)
 };
 
 FXIMPLEMENT(CDPreferences,FXDialogBox,CDPreferencesMap,ARRAYNUMBER(CDPreferencesMap))
@@ -166,17 +164,6 @@ CDPreferences::CDPreferences(CDWindow* owner)
   new FXTextField(cddbserv,0,cdwindow->cddbAddrTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X);
   FXSpinner* cddbspinner=new FXSpinner(cddbserv,4,cdwindow,CDWindow::ID_CDDBPORT,FRAME_THICK|FRAME_SUNKEN|LAYOUT_RIGHT);
   cddbspinner->setRange(0,65535);
-
-  FXGroupBox* infocdindex=new FXGroupBox(infoframe,"CD Index Settings",GROUPBOX_TITLE_LEFT|FRAME_RIDGE|LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  FXVerticalFrame* cdindexframe=new FXVerticalFrame(infocdindex,LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  FXHorizontalFrame* cdindexbuttons=new FXHorizontalFrame(cdindexframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
-  new FXCheckButton(cdindexbuttons,"Use CD Index",cdwindow,CDWindow::ID_CDINDEX,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
-  new FXButton(cdindexbuttons,"Advanced...",NULL,this,ID_ADVANCEDCDINDEX,FRAME_THICK|FRAME_RAISED|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
-  FXHorizontalFrame* cdindexserv=new FXHorizontalFrame(cdindexframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
-  new FXLabel(cdindexserv,"Server:",NULL,LAYOUT_CENTER_Y);
-  new FXTextField(cdindexserv,0,cdwindow->cdindexAddrTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X);
-  FXSpinner* cdinspinner=new FXSpinner(cdindexserv,4,cdwindow->cdindexPortTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_RIGHT);
-  cdinspinner->setRange(0,65535);
 }
 
 void CDPreferences::show(FXuint placement)
@@ -270,12 +257,11 @@ long CDPreferences::onCmdServerList(FXObject*,FXSelector,void*)
 
 long CDPreferences::onCmdAdvanced(FXObject*,FXSelector sel,void*)
 {
-  FXInputDialog dialog(this,"Advanced Server Settings",(SELID(sel)==ID_ADVANCEDCDDB)?"CDDB Script to Execute":"CD Index Script to Execute");
-  dialog.setText((SELID(sel)==ID_ADVANCEDCDDB)?cdwindow->cdinfo.getCDDBScript():cdwindow->cdinfo.getCDIndexScript());
+  FXInputDialog dialog(this,"Advanced Server Settings","CDDB Script to Execute");
+  dialog.setText(cdwindow->cdinfo.getCDDBScript());
   if(dialog.execute())
   {
-    if(SELID(sel)==ID_ADVANCEDCDDB) cdwindow->cdinfo.setCDDBScript(dialog.getText());
-    else cdwindow->cdinfo.setCDIndexScript(dialog.getText());
+    cdwindow->cdinfo.setCDDBScript(dialog.getText());
   }
   return 1;
 }

@@ -22,9 +22,9 @@ dnl AC_CHECK_LIB(FOX, main)
 LIBS="${LIBS} -lFOX"
 
 dnl Replace `main' with a function in -lcdaudio:
-AC_CHECK_HEADERS(cdaudio.h,,AC_MSG_ERROR("cdaudio.h not found"))
-dnl AC_CHECK_LIB(cdaudio, main)
-LIBS="${LIBS} -lcdaudio"
+AC_CHECK_HEADERS(cdlyte.h,,AC_MSG_ERROR("cdlyte.h not found"))
+dnl AC_CHECK_LIB(cdlyte, main)
+LIBS="${LIBS} -lcdlyte"
 
 dnl Checks for header files.
 AC_HEADER_STDC

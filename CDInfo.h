@@ -33,13 +33,10 @@ protected:
   FXuint cddbproto;
   FXushort cddbpport;
   FXushort cddbport;
-  FXushort cdindexport;
   FXushort proxyport;
   FXString cddbaddr;
-  FXString cdindexaddr; 
   FXString proxyaddr;
   FXString cddbexec;
-  FXString cdindexexec;
 
 public:
   CDInfo();
@@ -47,7 +44,6 @@ public:
   void defaultSettings(const CDPlayer& cddesc,disc_data* info);
   FXbool getLocalCDDBInfo(const CDPlayer& cddesc,disc_data* info);
   FXbool getRemoteCDDBInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner=NULL);
-  FXbool getCDIndexInfo(const CDPlayer& cddesc,disc_data* info);
 
   FXbool getProxy() const;
   void setProxy(FXbool use);
@@ -67,17 +63,11 @@ public:
   FXString getCDDBAddress() const;
   void setCDDBAddress(const FXString& addr);
 
-  FXString getCDIndexAddress() const;
-  void setCDIndexAddress(const FXString& addr);
-
   FXString getProxyAddress() const;
   void setProxyAddress(const FXString& addr);
 
   FXString getCDDBScript() const;
   void setCDDBScript(const FXString& script);
-
-  FXString getCDIndexScript() const;
-  void setCDIndexScript(const FXString& script);
 
   FXbool getCDDBServerList(struct cddb_serverlist* list) const;
 };

@@ -19,13 +19,14 @@
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>
-extern "C" {
-#include "cdaudio.h"
-}
+#include "cdlyte.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
 #include "CDPlayer.h"
+
+#define VOLUME_TO_FLOAT(v) (((FXfloat)v)/100.0f)
+#define VOLUME_TO_INT(v)   ((FXint)(v*100))
 
 CDPlayer::CDPlayer()
 : media(-1),
@@ -81,13 +82,13 @@ void CDPlayer::load()
   else
   {
     //If it's playing it can't be stopped
-    if(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED)
+    if(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED)
       stopped=FALSE;
 
     //Is audio disc?
     for(i=discInfo.disc_first_track;i<=discInfo.disc_total_tracks;i++)
     {
-      if(discInfo.disc_track[i-1].track_type==CDAUDIO_TRACK_AUDIO)
+      if(discInfo.disc_track[i-1].track_type==CDLYTE_TRACK_AUDIO)
       {
         audiodisc=TRUE;
         break;
@@ -97,7 +98,7 @@ void CDPlayer::load()
     //Make the current track be the first track - or track being played
     if(!audiodisc)
       currentTrack=0;
-    else if(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED)
+    else if(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED)
       currentTrack=discInfo.disc_current_track;
     else
       currentTrack=discInfo.disc_first_track;
@@ -113,7 +114,7 @@ void CDPlayer::polldisc()
 {
   struct disc_status status;
   cd_poll(media,&status);
-  cd_update(&discInfo,status);
+  cd_update(&discInfo,&status);
 }
 
 //Set the volume
@@ -121,28 +122,28 @@ void CDPlayer::setvol()
 {
   if(volBalance>0.0)
   {
-    volCurrent.vol_front.left=(FXint)(volLevel*(1.0-volBalance));
-    volCurrent.vol_back.left=(FXint)(volLevel*(1.0-volBalance));
-    volCurrent.vol_front.right=volLevel;
-    volCurrent.vol_back.right=volLevel;
+    volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel)*(1.0-volBalance);
+    volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel)*(1.0-volBalance);
+    volCurrent.vol_front.right=VOLUME_TO_FLOAT(volLevel);
+    volCurrent.vol_back.right=VOLUME_TO_FLOAT(volLevel);
   }
   else if(volBalance<0.0)
   {
-    volCurrent.vol_front.right=(FXint)(volLevel*(1.0+volBalance));
-    volCurrent.vol_back.right=(FXint)(volLevel*(1.0+volBalance));
-    volCurrent.vol_front.left=volLevel;
-    volCurrent.vol_back.left=volLevel;
+    volCurrent.vol_front.right=VOLUME_TO_FLOAT(volLevel)*(1.0+volBalance);
+    volCurrent.vol_back.right=VOLUME_TO_FLOAT(volLevel)*(1.0+volBalance);
+    volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel);
+    volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel);
   }
   else
   {
-    volCurrent.vol_front.right=volCurrent.vol_front.left=volLevel;
-    volCurrent.vol_back.right=volCurrent.vol_back.left=volLevel;
+    volCurrent.vol_front.right=volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel);
+    volCurrent.vol_back.right=volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel);
   }
 
   //Don't change anything if we are mute
   if(!mute)
   {
-    if(cd_set_volume(media,volCurrent)<0)
+    if(cd_set_volume(media,&volCurrent)<0)
       perror("cd_set_volume");
   }
 }
@@ -164,7 +165,7 @@ void CDPlayer::checkvol()
     if(memcmp(&volume,&volCurrent,sizeof(volume))!=0)
     {
       memcpy(&volCurrent,&volume,sizeof(volume));
-      volLevel=(volume.vol_front.left>volume.vol_front.right)?volume.vol_front.left:volume.vol_front.right;
+      volLevel=VOLUME_TO_INT((volume.vol_front.left>volume.vol_front.right)?volume.vol_front.left:volume.vol_front.right);
 
       if(volume.vol_front.left<volume.vol_front.right)
         volBalance=1.0-(((FXfloat)volume.vol_front.left)/((FXfloat)volume.vol_front.right));
@@ -172,13 +173,6 @@ void CDPlayer::checkvol()
         volBalance=(((FXfloat)volume.vol_front.right)/((FXfloat)volume.vol_front.left))-1.0;
       else
         volBalance=0.0;
-
-      if(volBalance!=0.0)
-      {
-        //Truncate to 2 digits
-        volBalance=(FXint)(100.0*volBalance);
-        volBalance/=100.0;
-      }
     }
   }
 }
@@ -245,8 +239,8 @@ FXbool CDPlayer::play()
   if(media<0)
     return FALSE;
 
-  if((discInfo.disc_mode!=CDAUDIO_PLAYING)||
-     (discInfo.disc_mode!=CDAUDIO_PAUSED))
+  if((discInfo.disc_mode!=CDLYTE_PLAYING)||
+     (discInfo.disc_mode!=CDLYTE_PAUSED))
   {
     if(random)
     {
@@ -266,7 +260,7 @@ FXbool CDPlayer::pause()
   if(media<0)
     return FALSE;
 
-  if(discInfo.disc_mode==CDAUDIO_PLAYING)
+  if(discInfo.disc_mode==CDLYTE_PLAYING)
   {
     if(cd_pause(media)<0)
       return FALSE;
@@ -281,7 +275,7 @@ FXbool CDPlayer::resume()
   if(media<0)
     return FALSE;
 
-  if(discInfo.disc_mode==CDAUDIO_PAUSED)
+  if(discInfo.disc_mode==CDLYTE_PAUSED)
   {
     if(cd_resume(media)<0)
       return FALSE;
@@ -295,8 +289,8 @@ FXbool CDPlayer::stop()
   if(media<0)
     return FALSE;
 
-  if((discInfo.disc_mode==CDAUDIO_PLAYING)||
-     (discInfo.disc_mode==CDAUDIO_PAUSED))
+  if((discInfo.disc_mode==CDLYTE_PLAYING)||
+     (discInfo.disc_mode==CDLYTE_PAUSED))
   {
     if(cd_stop(media)<0)
       return FALSE;
@@ -340,12 +334,12 @@ FXbool CDPlayer::skipNext()
     }
   }
 
-  if(discInfo.disc_mode==CDAUDIO_PLAYING)
+  if(discInfo.disc_mode==CDLYTE_PLAYING)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
   }
-  else if(discInfo.disc_mode==CDAUDIO_PAUSED)
+  else if(discInfo.disc_mode==CDLYTE_PAUSED)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
@@ -385,12 +379,12 @@ FXbool CDPlayer::skipPrev()
       currentTrack--;
   }
 
-  if(discInfo.disc_mode==CDAUDIO_PLAYING)
+  if(discInfo.disc_mode==CDLYTE_PLAYING)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
   }
-  else if(discInfo.disc_mode==CDAUDIO_PAUSED)
+  else if(discInfo.disc_mode==CDLYTE_PAUSED)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
@@ -445,7 +439,7 @@ FXbool CDPlayer::openTray()
 
   //Some cd players continue to act as if playing if ejected while playing, and ignore stop requests while tray is open.  
   //So check for present disc to avoid infinite loop.  
-  if(nodisc==FALSE&&(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED))
+  if(nodisc==FALSE&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
   {
     if(!stop())
       return FALSE;
@@ -454,7 +448,7 @@ FXbool CDPlayer::openTray()
     do
     {
       polldisc();
-    }while(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED);
+    }while(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED);
 
     //Give it a few milliseconds to settle
     struct timeval tv={0,10000};
@@ -500,7 +494,7 @@ FXbool CDPlayer::update()
       //What's happening
       switch(discInfo.disc_mode)
       {
-      case CDAUDIO_PLAYING:
+      case CDLYTE_PLAYING:
         //Check for track change
         if((currentTrack!=discInfo.disc_current_track)||
            (intro&&((discInfo.disc_track_time.minutes>=introTime.minutes)&&
@@ -516,7 +510,7 @@ FXbool CDPlayer::update()
 	}
 	break;
 
-      case CDAUDIO_PAUSED:
+      case CDLYTE_PAUSED:
         //Make time blink
         if(++blinkMode>=10) blinkMode=0;
 	break;
@@ -532,7 +526,7 @@ FXbool CDPlayer::update()
         select(0,NULL,NULL,NULL,&tv);
       }
 
-      case CDAUDIO_COMPLETED:
+      case CDLYTE_COMPLETED:
         //Continuous play - some cheaper CD-ROMS constantly report this when
         //they are idle.  So we have the stopped flag.
 	if(!stopped&&(repeatMode==CDREPEAT_TRACK))
@@ -641,9 +635,9 @@ FXint CDPlayer::getCurrentTrack() const
 void CDPlayer::setCurrentTrack(FXint track)
 {
   currentTrack=track;
-  if(discInfo.disc_mode==CDAUDIO_PLAYING)
+  if(discInfo.disc_mode==CDLYTE_PLAYING)
     cd_play(media,currentTrack);
-  else if(discInfo.disc_mode==CDAUDIO_PAUSED)
+  else if(discInfo.disc_mode==CDLYTE_PAUSED)
   {
     cd_play(media,currentTrack);
     cd_pause(media);
@@ -711,7 +705,7 @@ void CDPlayer::setMute(FXbool mode)
       //Volume level set to zero
       disc_volume volume;
       memset(&volume,0,sizeof(volume));
-      if(cd_set_volume(media,volume)<0)
+      if(cd_set_volume(media,&volume)<0)
         perror("cd_set_volume");
     }
     else if(media!=-1)

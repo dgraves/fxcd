@@ -47,7 +47,7 @@ long CDSeekButton::onLeftBtnPress(FXObject* sender,FXSelector sel,void* data)
   flags|=FLAG_PRESSED;
   flags&=~FLAG_UPDATE;
   if(state!=STATE_ENGAGED) setState(STATE_DOWN);
-  if(target) target->handle(this,MKUINT(message,SEL_ACTIVATE),NULL);
+  if(target) target->handle(this,MKUINT(message,SEL_LEFTBUTTONPRESS),NULL);
   repeater=getApp()->addTimeout((rate<0)?getApp()->getScrollSpeed():rate,this,ID_REPEAT);
   fired=FALSE; 
   return 1;
@@ -60,8 +60,8 @@ long CDSeekButton::onLeftBtnRelease(FXObject*,FXSelector,void* ptr)
   if(state!=STATE_ENGAGED) setState(STATE_UP);
   if(repeater) getApp()->removeTimeout(repeater);
   repeater=NULL;
-  if(!fired){ if(target) target->handle(this,MKUINT(message,SEL_COMMAND),(void*)1); }
-  if(target) target->handle(this,MKUINT(message,SEL_DEACTIVATE),NULL);
+  if(!fired){ if(target) target->handle(this,MKUINT(message,SEL_LEFTBUTTONRELEASE),(void*)1); }
+  if(target) target->handle(this,MKUINT(message,SEL_COMMAND),NULL);
   fired=FALSE;
   return 1;
 }

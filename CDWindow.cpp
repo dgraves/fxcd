@@ -16,9 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern "C" {
-#include "cdaudio.h"
-}
+#include "cdlyte.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
@@ -61,8 +59,6 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_CDDB,CDWindow::onUpdCDDB),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_CDDBPORT,CDWindow::onCmdCDDBPort),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_CDDBPORT,CDWindow::onUpdCDDBPort),
-  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_CDINDEX,CDWindow::onCmdCDIndex),
-  FXMAPFUNC(SEL_UPDATE,CDWindow::ID_CDINDEX,CDWindow::onUpdCDIndex),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_GETINFO,CDWindow::onCmdGetInfo),
   FXMAPFUNCS(SEL_COMMAND,CDWindow::ID_COLORFORE,CDWindow::ID_COLORICONS,CDWindow::onCmdColor),
   FXMAPFUNCS(SEL_CHANGED,CDWindow::ID_COLORFORE,CDWindow::ID_COLORICONS,CDWindow::onCmdColor),
@@ -95,8 +91,8 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_BALANCE,CDWindow::onCmdBalance),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_BALANCE,CDWindow::onUpdBalance),
 
-  FXMAPFUNCS(SEL_ACTIVATE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onActivateSeeker),
-  FXMAPFUNCS(SEL_DEACTIVATE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onDeactivateSeeker),
+  FXMAPFUNCS(SEL_LEFTBUTTONPRESS,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onActivateSeeker),
+  FXMAPFUNCS(SEL_LEFTBUTTONRELEASE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onDeactivateSeeker),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_SEEKREVERSE,CDWindow::onCmdSeekReverse),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_SEEKFORWARD,CDWindow::onCmdSeekForward),
   FXMAPFUNCS(SEL_UPDATE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onUpdSeekBtns),
@@ -131,7 +127,6 @@ CDWindow::CDWindow(FXApp* app)
   remoteInfo(FALSE),
   localFirst(TRUE),
   useCDDB(TRUE),
-  useCDIndex(TRUE),
   stopOnExit(TRUE),
   startMode(CDSTART_NONE),
   timeMode(CDTIME_TRACK),
@@ -178,8 +173,6 @@ CDWindow::CDWindow(FXApp* app)
   proxyPortTarget=new FXDataTarget(cdinfo.proxyport);
   cddbProtoTarget=new FXDataTarget(cdinfo.cddbproto);
   cddbAddrTarget=new FXDataTarget(cdinfo.cddbaddr);
-  cdindexAddrTarget=new FXDataTarget(cdinfo.cdindexaddr);
-  cdindexPortTarget=new FXDataTarget(cdinfo.cdindexport);
 
   menubar=new FXMenubar(this,LAYOUT_SIDE_TOP|LAYOUT_FILL_X);
   filemenu=new FXMenuPane(this);
@@ -211,7 +204,6 @@ CDWindow::CDWindow(FXApp* app)
     new FXMenuCommand(infomenu,"Check &Local Source First",NULL,this,ID_LOCALFIRST);
     new FXMenuSeparator(infomenu);
     new FXMenuCommand(infomenu,"Use &CDDB",NULL,this,ID_CDDB);
-    new FXMenuCommand(infomenu,"Use CD&Index",NULL,this,ID_CDINDEX);
     new FXMenuSeparator(infomenu);
     new FXMenuCommand(infomenu,"&Update Now",NULL,this,ID_GETINFO);
 
@@ -259,8 +251,8 @@ CDWindow::CDWindow(FXApp* app)
   new FXFrame(balanceFrame,LAYOUT_FIX_WIDTH,0,0,2);
   new FXLabel(balanceFrame,"Balance: ",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   FXSlider* balanceSlider=new FXSlider(balanceFrame,this,ID_BALANCE,SLIDER_HORIZONTAL|LAYOUT_FILL_X|LAYOUT_CENTER_Y);
-  volumeSlider->setRange(0,255);
-  volumeSlider->setIncrement(5);
+  volumeSlider->setRange(0,100);
+  volumeSlider->setIncrement(1);
   balanceSlider->setRange(0,200);
   balanceSlider->setIncrement(2);
 
@@ -336,7 +328,6 @@ void CDWindow::create()
   remoteInfo=getApp()->reg().readIntEntry("SETTINGS","remoteInfo",remoteInfo);
   localFirst=getApp()->reg().readIntEntry("SETTINGS","localFirst",localFirst);
   useCDDB=getApp()->reg().readIntEntry("SETTINGS","useCDDB",useCDDB);
-  useCDIndex=getApp()->reg().readIntEntry("SETTINGS","useCDIndex",useCDIndex);
   cdinfo.setProxy(getApp()->reg().readIntEntry("SETTINGS","proxy",cdinfo.getProxy()));
   cdinfo.setProxyAddress(getApp()->reg().readStringEntry("SETTINGS","proxyAddr",cdinfo.getProxyAddress().text()));
   cdinfo.setProxyPort(getApp()->reg().readUnsignedEntry("SETTINGS","proxyPort",cdinfo.getProxyPort()));
@@ -344,10 +335,7 @@ void CDWindow::create()
   cdinfo.setCDDBAddress(getApp()->reg().readStringEntry("SETTINGS","cddbAddr",cdinfo.getCDDBAddress().text()));
   cdinfo.cddbpport=getApp()->reg().readUnsignedEntry("SETTINGS","cddbpPort",cdinfo.cddbpport);
   cdinfo.cddbport=getApp()->reg().readUnsignedEntry("SETTINGS","cddbPort",cdinfo.cddbport);
-  cdinfo.setCDIndexAddress(getApp()->reg().readStringEntry("SETTINGS","cdindexAddr",cdinfo.getCDIndexAddress().text()));
-  cdinfo.setCDIndexPort(getApp()->reg().readUnsignedEntry("SETTINGS","cdindexPort",cdinfo.getCDIndexPort()));
   cdinfo.setCDDBScript(getApp()->reg().readStringEntry("SETTINGS","cddbScript",cdinfo.getCDDBScript().text()));
-  cdinfo.setCDIndexScript(getApp()->reg().readStringEntry("SETTINGS","cdindexScript",cdinfo.getCDIndexScript().text()));
   if(!getApp()->reg().readIntEntry("SETTINGS","showMenu",TRUE)) menubar->hide();
   if(!getApp()->reg().readIntEntry("SETTINGS","showStatus",TRUE)) statusbar->hide();
   if(getApp()->reg().readIntEntry("SETTINGS","showTips",TRUE)) tooltip=new FXTooltip(getApp(),TOOLTIP_NORMAL);
@@ -378,11 +366,11 @@ void CDWindow::create()
   timer=getApp()->addTimeout(TIMED_UPDATE,this,ID_TIMEOUT);
 
   //Start action
-  if((startMode==CDSTART_STOP)&&(cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED))
+  if((startMode==CDSTART_STOP)&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
     cdplayer.stop();
-  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()==CDAUDIO_PAUSED))
+  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()==CDLYTE_PAUSED))
     cdplayer.resume();
-  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()!=CDAUDIO_PLAYING))
+  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()!=CDLYTE_PLAYING))
     cdplayer.play();
 }
 
@@ -462,7 +450,7 @@ FXbool CDWindow::checkDevices()
     devname=(FXString*)bandTitle->getItemData(i);
     if(cdplayer.init(devname->text()))
     {
-      if(cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED)
+      if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       {
 	player=i;
 	cdplayer.finish();
@@ -516,9 +504,9 @@ FXbool CDWindow::loadDiscData()
     for(i=cdplayer.getStartTrack();i<=cdplayer.getNumTracks();i++)
     {
       const struct track_info* track=cdplayer.getTrackInfo(i-1);
-      if(track->track_type==CDAUDIO_TRACK_AUDIO)
+      if(track->track_type==CDLYTE_TRACK_AUDIO)
       {
-        title.format("%d. %s (%d:%02d)",i,data.data_track[i-1].track_name,track->track_length.minutes,track->track_length.seconds);
+        title.format("%d. %s (%d:%02d)",i,data.data_track[i-1].track_title,track->track_length.minutes,track->track_length.seconds);
         trackTitle->appendItem(title);
       }
     }
@@ -535,7 +523,6 @@ FXbool CDWindow::getData(struct disc_data* data)
   if(!remoteInfo) return cdinfo.getLocalCDDBInfo(cdplayer,data);
   if(localFirst&&cdinfo.getLocalCDDBInfo(cdplayer,data)) return TRUE;
   if(useCDDB&&cdinfo.getRemoteCDDBInfo(cdplayer,data,this)) return TRUE;
-  if(useCDIndex&&cdinfo.getCDIndexInfo(cdplayer,data)) return TRUE;
   if(!localFirst&&cdinfo.getLocalCDDBInfo(cdplayer,data)) return TRUE;
   cdinfo.defaultSettings(cdplayer,data);
   return FALSE;
@@ -554,9 +541,9 @@ void CDWindow::doDraw(FXint track,const struct disc_info* di)
 
   struct disc_timeval drawTime;
 
-  if(di->disc_mode==CDAUDIO_PLAYING||di->disc_mode==CDAUDIO_PAUSED)
+  if(di->disc_mode==CDLYTE_PLAYING||di->disc_mode==CDLYTE_PAUSED)
   {
-    if((di->disc_mode==CDAUDIO_PAUSED)&&cdplayer.blink())
+    if((di->disc_mode==CDLYTE_PAUSED)&&cdplayer.blink())
     {
       text.format("%02d--:--",track);
     }
@@ -766,7 +753,7 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
 
   if(stopOnExit==TRUE)
   {
-    if(cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED)
+    if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       cdplayer.stop();
     if(timer) timer=getApp()->removeTimeout(timer);
     cdplayer.finish();
@@ -784,7 +771,6 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
   getApp()->reg().writeIntEntry("SETTINGS","remoteInfo",remoteInfo);
   getApp()->reg().writeIntEntry("SETTINGS","localFirst",localFirst);
   getApp()->reg().writeIntEntry("SETTINGS","useCDDB",useCDDB);
-  getApp()->reg().writeIntEntry("SETTINGS","useCDIndex",useCDIndex);
   getApp()->reg().writeIntEntry("SETTINGS","proxy",cdinfo.getProxy());
   getApp()->reg().writeStringEntry("SETTINGS","proxyAddr",cdinfo.getProxyAddress().text());
   getApp()->reg().writeUnsignedEntry("SETTINGS","proxyPort",cdinfo.getProxyPort());
@@ -792,10 +778,7 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
   getApp()->reg().writeStringEntry("SETTINGS","cddbAddr",cdinfo.getCDDBAddress().text());
   getApp()->reg().writeUnsignedEntry("SETTINGS","cddbpPort",cdinfo.cddbpport);
   getApp()->reg().writeUnsignedEntry("SETTINGS","cddbPort",cdinfo.cddbport);
-  getApp()->reg().writeStringEntry("SETTINGS","cdindexAddr",cdinfo.getCDIndexAddress().text());
-  getApp()->reg().writeUnsignedEntry("SETTINGS","cdindexPort",cdinfo.getCDIndexPort());
   getApp()->reg().writeStringEntry("SETTINGS","cddbScript",cdinfo.getCDDBScript().text());
-  getApp()->reg().writeStringEntry("SETTINGS","cdindexScript",cdinfo.getCDIndexScript().text());
   getApp()->reg().writeIntEntry("SETTINGS","showMenu",menubar->shown());
   getApp()->reg().writeIntEntry("SETTINGS","showStatus",statusbar->shown());
   getApp()->reg().writeIntEntry("SETTINGS","showTips",tooltip!=NULL);
@@ -830,7 +813,7 @@ long CDWindow::onUpdStatusDisc(FXObject* sender,FXSelector,void*)
 long CDWindow::onUpdStatusTrack(FXObject* sender,FXSelector,void*)
 {
   FXString str("00:00");
-  //if(cdplayer.isDiscPresent()&&(cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED))
+  //if(cdplayer.isDiscPresent()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
   if(cdplayer.isDiscPresent())
   {
     const struct track_info* track=cdplayer.getTrackInfo(cdplayer.getCurrentTrack()-1);
@@ -978,19 +961,6 @@ long CDWindow::onUpdCDDBPort(FXObject* sender,FXSelector,void*)
 {
   FXint value=cdinfo.getCDDBPort();
   sender->handle(this,MKUINT(ID_SETINTVALUE,SEL_COMMAND),(void*)&value);
-  return 1;
-}
-
-long CDWindow::onCmdCDIndex(FXObject*,FXSelector,void*)
-{
-  useCDIndex=!useCDIndex;
-  return 1;
-}
-
-long CDWindow::onUpdCDIndex(FXObject* sender,FXSelector,void*)
-{
-  FXuint msg=(useCDIndex)?ID_CHECK:ID_UNCHECK;
-  sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
 
@@ -1185,20 +1155,15 @@ long CDWindow::onCmdDefaultInternet(FXObject*,FXSelector,void*)
   remoteInfo=FALSE;
   localFirst=TRUE;
   useCDDB=TRUE;
-  useCDIndex=TRUE;
   cdinfo.setProxy(FALSE);
   cdinfo.setProxyAddress("0.0.0.0");
   cdinfo.setProxyPort(0);
   cdinfo.setCDDBAddress("www.freedb.org");
   cdinfo.setCDDBProtocol(PROTO_CDDBP);
-  //cdinfo.setCDDBPort(CDDBP_DEFAULT_PORT);
-  cdinfo.setCDDBPort(8880);
+  cdinfo.setCDDBPort(CDDBP_DEFAULT_PORT);
   cdinfo.setCDDBProtocol(PROTO_HTTP);
   cdinfo.setCDDBPort(HTTP_DEFAULT_PORT);
-  cdinfo.setCDIndexAddress("www.cdindex.org");
-  cdinfo.setCDIndexPort(HTTP_DEFAULT_PORT);
   cdinfo.setCDDBScript("cgi-bin/cddb.cgi");
-  cdinfo.setCDIndexScript("cgi-bin/cdi/get.pl");
 
   return 1;
 }
@@ -1255,7 +1220,7 @@ long CDWindow::onCmdBand(FXObject*,FXSelector,void* data)
 long CDWindow::onCmdTrack(FXObject*,FXSelector,void* ptr)
 {
   cdplayer.setCurrentTrack(((FXint)ptr)+1);
-  if(cdplayer.getStatus()!=CDAUDIO_PLAYING&&cdplayer.getStatus()!=CDAUDIO_PAUSED)
+  if(cdplayer.getStatus()!=CDLYTE_PLAYING&&cdplayer.getStatus()!=CDLYTE_PAUSED)
     cdplayer.play();
   return 1;
 }
@@ -1275,7 +1240,7 @@ long CDWindow::onCmdVolume(FXObject*,FXSelector,void* data)
 {
   FXString str;
   volLevel=(FXint)data;
-  str.format("Volume: %d%",100*(FXfloat)volLevel/255.0);
+  str.format("Volume: %d%",volLevel);
   statusbar->getStatusline()->setText(str);
   cdplayer.setVolume(volLevel);
 
@@ -1460,7 +1425,7 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdSeekBtns(FXObject* sender,FXSelector,void*)
 {
-  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED))?ID_ENABLE:ID_DISABLE;
+  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))?ID_ENABLE:ID_DISABLE;
   sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
@@ -1473,16 +1438,16 @@ long CDWindow::onCmdStop(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdStop(FXObject* sender,FXSelector,void*)
 {
-  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED))?ID_ENABLE:ID_DISABLE;
+  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))?ID_ENABLE:ID_DISABLE;
   sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
 
 long CDWindow::onCmdPlay(FXObject*,FXSelector,void*)
 {
-  if(cdplayer.getStatus()==CDAUDIO_PLAYING)
+  if(cdplayer.getStatus()==CDLYTE_PLAYING)
     cdplayer.pause();
-  else if(cdplayer.getStatus()==CDAUDIO_PAUSED)
+  else if(cdplayer.getStatus()==CDLYTE_PAUSED)
     cdplayer.resume();
   else
     cdplayer.play();
@@ -1497,7 +1462,7 @@ long CDWindow::onUpdPlay(FXObject* sender,FXSelector,void*)
 
   if(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
   {
-    state=(cdplayer.getStatus()==CDAUDIO_PLAYING)?TRUE:FALSE;
+    state=(cdplayer.getStatus()==CDLYTE_PLAYING)?TRUE:FALSE;
     msg=ID_ENABLE;
   }
 
@@ -1537,7 +1502,7 @@ long CDWindow::onCmdEject(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdEject(FXObject* sender,FXSelector,void*)
 {
-  //FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED)?ID_DISABLE:ID_ENABLE;
+  //FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)?ID_DISABLE:ID_ENABLE;
   //sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }

@@ -1,4 +1,4 @@
-/* CDPreferences.h
+/* CDBMPIcon.cpp
  * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or

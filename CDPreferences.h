@@ -47,7 +47,6 @@ public:
     ID_DEFAULTDEVS,
     ID_SERVERLIST,
     ID_ADVANCEDCDDB,
-    ID_ADVANCEDCDINDEX,
     ID_LAST
   };
 };

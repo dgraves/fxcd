@@ -16,9 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern "C" {
-#include "cdaudio.h"
-}
+#include "cdlyte.h"
 #include "fox/fx.h"
 #include "CDChoiceDialog.h"
 
@@ -32,6 +30,7 @@ CDChoiceDialog::CDChoiceDialog(FXWindow* owner,const struct cddb_query* entries)
 : FXDialogBox(owner,"CD Info Selection",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,360,250, 10,10,10,10, 4,4)
 {
   FXint i;
+  FXchar b[BUFSIZ];
   FXString s;
 
   FXHorizontalFrame* buttons=new FXHorizontalFrame(this,PACK_UNIFORM_WIDTH|LAYOUT_SIDE_BOTTOM|LAYOUT_RIGHT);
@@ -44,55 +43,14 @@ CDChoiceDialog::CDChoiceDialog(FXWindow* owner,const struct cddb_query* entries)
   new FXLabel(labelframe,"There are multiple data entries to choose from:",NULL,LAYOUT_CENTER_Y);
   FXHorizontalFrame* listframe=new FXHorizontalFrame(this,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
   list=new FXIconList(listframe,this,ID_LIST,ICONLIST_BROWSESELECT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  list->appendHeader("Genre",NULL,80);
+  list->appendHeader("Category",NULL,80);
   list->appendHeader("Artist",NULL,100);
   list->appendHeader("Title",NULL,155);
 
   for(i=0;i<entries->query_matches;i++)
   {
-    FXString genre;
-    switch(entries->query_list[i].list_genre)
-    {
-    case CDDB_BLUES:
-      genre="Blues";
-      break;
-    case CDDB_CLASSICAL:
-      genre="Classical";
-      break;
-    case CDDB_COUNTRY:
-      genre="Country";
-      break;
-    case CDDB_DATA:
-      genre="Data";
-      break;
-    case CDDB_FOLK:
-      genre="Folk";
-      break;
-    case CDDB_JAZZ:
-      genre="Jazz";
-      break;
-    case CDDB_MISC:
-      genre="Misc";
-      break;
-    case CDDB_NEWAGE:
-      genre="New Age";
-      break;
-    case CDDB_REGGAE:
-      genre="Reggae";
-      break;
-    case CDDB_ROCK:
-      genre="Rock";
-      break;
-    case CDDB_SOUNDTRACK:
-      genre="Soundtrack";
-      break;
-    case CDDB_UNKNOWN:
-    default:
-      genre="Unknown";
-    }
-
-    s.format("%s\t%s\t%s",genre.text(),entries->query_list[i].list_artist,entries->query_list[i].list_title);
-
+    cddb_category(entries->query_list[i].list_category,b,sizeof(b));
+    s.format("%s\t%s\t%s",b,entries->query_list[i].list_artist,entries->query_list[i].list_title);
     list->appendItem(s);
   }
 }

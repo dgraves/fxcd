@@ -213,7 +213,6 @@ public:
     ID_PROXYSERVER,
     ID_CDDB,
     ID_CDDBPORT,
-    ID_CDINDEX,
     ID_GETINFO,
 
     ID_COLORFORE,
