@@ -55,6 +55,14 @@ protected:
   struct disc_timeval seekTime;          // Current seek time in track
   CDPlayer            cdplayer;          // The cd player
 protected:
+  FXDataTarget        stoponexittgt;
+  FXDataTarget        startmodetgt;
+  FXDataTarget        timemodetgt;
+  FXDataTarget        repeatmodetgt;
+protected:
+  CDBMPIcon*          mutebmp[2];        // Mute icons
+  CDBMPIcon*          btnbmp[8];         // Icons for cd player controls
+  CDBMPIcon*          lcdbmp[18];        // Icons for the display
   FXTimer*            timer;             // Player update timer
   FXCanvas*           canvas;            // Time display
   FXListBox*          bandtitle;         // List for LCD artist name display
@@ -66,10 +74,12 @@ protected:
   FXToolTip*          tooltip;
 protected:
   CDWindow() { }
-  void doDraw(FXint,const struct disc_info*);
+  void readRegistry();
+  void writeRegistry();
   FXbool checkDevices();                      // Check for available cdrom devices
   FXbool loadDiscData();                      // Load data for currently open device
   FXbool getData(struct disc_data* data);
+  void doDraw(FXint,const struct disc_info*);
 public:
   long onPaint(FXObject*,FXSelector,void*);
   long onMouseDown(FXObject*,FXSelector,void*);
@@ -78,15 +88,12 @@ public:
   long onUpdStatusDisc(FXObject*,FXSelector,void*);
   long onUpdStatusTrack(FXObject*,FXSelector,void*);
   long onCmdPrefs(FXObject*,FXSelector,void*);
-  long onCmdColor(FXObject*,FXSelector,void*);
-  long onUpdColor(FXObject*,FXSelector,void*);
   long onCmdFont(FXObject*,FXSelector,void*);
   long onCmdBand(FXObject*,FXSelector,void*);
   long onCmdTrack(FXObject*,FXSelector,void*);
   long onUpdTrack(FXObject*,FXSelector,void*);
   long onCmdVolume(FXObject*,FXSelector,void*);
   long onUpdVolume(FXObject*,FXSelector,void*);
-  long onCmdMute(FXObject*,FXSelector,void*);
   long onCmdBalance(FXObject*,FXSelector,void*);
   long onUpdBalance(FXObject*,FXSelector,void*);
   long onActivateSeeker(FXObject*,FXSelector,void*);
@@ -115,9 +122,6 @@ public:
 
     ID_PREFS,
 
-    ID_COLORFORE,
-    ID_COLORBACK,
-    ID_COLORICONS,
     ID_FONT,
 
     ID_CDROMADD,
@@ -135,7 +139,6 @@ public:
     ID_BAND,
     ID_TRACK,
     ID_VOLUME,
-    ID_MUTE,
     ID_BALANCE,
     ID_SEEKREVERSE,
     ID_SEEKFORWARD,
