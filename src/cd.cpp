@@ -21,6 +21,7 @@
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
+#include "CDTypes.h"
 #include "CDPlayer.h"
 #include "CDWindow.h"
 

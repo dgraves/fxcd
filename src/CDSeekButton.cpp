@@ -1,5 +1,5 @@
 /* CDSeekButton.cpp
- * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -83,4 +83,7 @@ long CDSeekButton::onRepeat(FXObject*,FXSelector,void* ptr)
   return 1;
 }
 
-
+CDSeekButton::~CDSeekButton()
+{
+  if(repeater) repeater=getApp()->removeTimeout(repeater);
+}

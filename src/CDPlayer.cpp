@@ -23,8 +23,8 @@
 #include "fox/fx.h"
 #include "CDPlayer.h"
 
-#define VOLUME_TO_FLOAT(v) (((FXfloat)v)/100.0f)
-#define VOLUME_TO_INT(v)   ((FXint)(v*100))
+#define VOLUME_TO_FLOAT(v) (((FXfloat)(v))/100.0f)
+#define VOLUME_TO_INT(v)   ((FXint)((v)*100.0f))
 
 // Function for random track generation
 ptrdiff_t rand_func(ptrdiff_t max)
@@ -513,6 +513,9 @@ FXbool CDPlayer::update()
             currentTrack=discInfo.disc_current_track;
 	}
 	break;
+      case CDLYTE_PAUSED:
+        //No action
+        break;
       default:
       {
 	//The cd-rom is no longer playing, but if 'stopped' is false it should repeat.
