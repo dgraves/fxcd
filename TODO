@@ -8,18 +8,27 @@
 
 -Fixed? Ejecting a CD while player is running causes player to crash.
 
+-Done Implement settings button and menu option.  
+
+Add submission of disc data to freedb and cdindex.  
+
+Add advanced buttons for CDDB and CDindex settings to set cgi scripts.  
+
+Updates to libcdaudio:
+ * Make it work on Windows!!
+ * Update CDDB code to work with latest freedb protocol levels.  
+
 Possibly use FXThreadEx to get cd info in background.  
 
-Changing icon colors will usually require a restart of the app.  Each icon
-should each have a mask indicating which places to recolor.  This will fix the problem.  Currently the problem is due to colors being slightly different after being restored from a pixmap.  
+Changing colors for the mute icons (two colors each) has problems with
+one color becoming the transparency or both colors becoming the same.  There
+will need to be a special handler for those icons, possibly using masks.  
 
 When drive door is closed manually with no disc in the tray the cd player still thinks drive door is open.  
 
 Mute does not work.  
 
 Increase seek speed with respect to seek length
-
--Done (mostly) Implement settings button and menu option.  
 
 Toshiba DVD-ROM performs like expected but Generic CD-ROM has exhibited 2 problems:
   1.  It does not report its state as being completed when a disc plays to end.  So,
