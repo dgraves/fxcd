@@ -18,7 +18,7 @@
 
 #include "cdlyte.h"
 #include "fox/fx.h"
-#include "CDTypes.h"
+#include "CDdefs.h"
 #include "CDPlayer.h"
 #include "CDListBox.h"
 #include "CDSeekButton.h"
@@ -83,7 +83,7 @@ FXIMPLEMENT(CDWindow,FXMainWindow,CDWindowMap,ARRAYNUMBER(CDWindowMap))
 #define DEFAULTBACK       FXRGB(0,0,0)
 
 CDWindow::CDWindow(FXApp* app)
-: FXMainWindow(app,"fxcd",NULL,NULL,DECOR_ALL,0,0,0,0),
+: FXMainWindow(app,PROG_PACKAGE,NULL,NULL,DECOR_ALL,0,0,0,0),
   stoponexit(TRUE),
   startmode(CDSTART_NONE),
   lcdforeclr(FXRGB(255,255,255)),
@@ -230,7 +230,7 @@ CDWindow::CDWindow(FXApp* app)
     new FXMenuTitle(menubar,"&Help",NULL,helpmenu);
     new FXMenuCheck(helpmenu,"&Tool tips\tCtl-B",this,ID_TOGGLETOOLTIPS);
     new FXMenuSeparator(helpmenu);
-    new FXMenuCommand(helpmenu,"&About fxcd...",NULL,this,ID_ABOUT);
+    new FXMenuCommand(helpmenu,"&About "PROG_PACKAGE"...",NULL,this,ID_ABOUT);
 
   // Connect data targets
   stoponexittgt.connect(stoponexit);
@@ -672,7 +672,7 @@ long CDWindow::onUpdToggleTooltips(FXObject* sender,FXSelector,void*)
 
 long CDWindow::onCmdAbout(FXObject*,FXSelector,void*)
 {
-  FXString msg("Compact Disc Player\nVersion "VERSION"\n\nCopyright (C) 2000-2004 Dustin Graves (dgraves@computer.org)\n\n"\
+  FXString msg("Compact Disc Player\nVersion "PROG_VERSION"\n\nCopyright (C) 2000-2004 Dustin Graves (dgraves@computer.org)\n\n"\
 "This software uses the FOX Platform Independent GUI Toolkit Library.\n"\
 "The FOX Library is Copyright (C) 1997,2000-2004 Jeroen van der Zijp and is\n"\
 "available freely under the GNU Lesser Public License at the following site:\n"\
@@ -683,7 +683,7 @@ long CDWindow::onCmdAbout(FXObject*,FXSelector,void*)
   new FXButton(buttons,"&Close",NULL,&about,FXDialogBox::ID_ACCEPT,BUTTON_INITIAL|BUTTON_DEFAULT|LAYOUT_RIGHT|FRAME_RAISED|FRAME_THICK,0,0,0,0, 20,20);
   new FXHorizontalSeparator(&about,SEPARATOR_RIDGE|LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X);
   FXVerticalFrame* aboutframe=new FXVerticalFrame(&about,LAYOUT_SIDE_TOP|LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  new FXLabel(aboutframe,"About fxcd");
+  new FXLabel(aboutframe,"About "PROG_PACKAGE);
   new FXHorizontalSeparator(aboutframe,SEPARATOR_LINE|LAYOUT_FILL_X);
   FXHorizontalFrame* aboutlabels=new FXHorizontalFrame(aboutframe,LAYOUT_FILL_X|LAYOUT_FILL_Y);
 //  new FXLabel(aboutlabels,NULL,bigcalc,JUSTIFY_LEFT|LAYOUT_CENTER_Y,0,0,0,0, 20,20,20,20);

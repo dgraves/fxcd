@@ -21,6 +21,10 @@
 
 #include <vector>
 
+//Version number - for windows
+#define PROG_VERSION "0.9.6"
+#define PROG_PACKAGE "fxcd"
+
 class CDBMPIcon;
 
 typedef std::vector<CDBMPIcon*> cdbmp_array;
