@@ -45,6 +45,7 @@ protected:
   FXint currentTrack;               // Track currently playing (or to play)
   FXint volLevel;                   // Volume level (0-100%)
   FXfloat volBalance;               // Left-right volume balance
+  struct disc_timeval playlen;      // Actual length of playable audio on disc in seconds
   struct disc_timeval introTime;    // Length of time for intro play
   struct disc_volume volCurrent;    // Use to test for volume change by other party
   struct disc_info discInfo;        // Info for current disc
@@ -125,6 +126,9 @@ public:
 
   /// Get total number of tracks present on disc
   FXint getNumTracks() const;
+
+  /// Retrieve length of audio on disc
+  void getPlayLength(struct disc_timeval& dtv) const;
 
   /// Retrieve length of disc
   void getDiscLength(struct disc_timeval& dtv) const;
