@@ -131,6 +131,7 @@ public:
   long onUpdRandom(FXObject*,FXSelector,void*);
   long onCmdRepeatSwitch(FXObject*,FXSelector,void*);
   long onUpdRepeatSwitch(FXObject*,FXSelector,void*);
+  long onCmdPrefs(FXObject*,FXSelector,void*);
   long onCmdStopOnExit(FXObject*,FXSelector,void*);
   long onUpdStopOnExit(FXObject*,FXSelector,void*);
   long onCmdRemoteInfo(FXObject*,FXSelector,void*);
@@ -149,7 +150,8 @@ public:
   long onCmdColor(FXObject*,FXSelector,void*);
   long onUpdColor(FXObject*,FXSelector,void*);
   long onCmdFont(FXObject*,FXSelector,void*);
-  long onCmdPrefs(FXObject*,FXSelector,void*);
+  long onCmdCDROMAdd(FXObject*,FXSelector,void*);
+  long onCmdCDROMRemove(FXObject*,FXSelector,void*);
   long onCmdToggleMenu(FXObject*,FXSelector,void*);
   long onUpdToggleMenu(FXObject*,FXSelector,void*);
   long onCmdToggleStatus(FXObject*,FXSelector,void*);
@@ -158,7 +160,8 @@ public:
   long onUpdToggleTips(FXObject*,FXSelector,void*);
   long onCmdDefaultOptions(FXObject*,FXSelector,void*);
   long onCmdDefaultAppearance(FXObject*,FXSelector,void*);
-  long onCmdDefaultInfo(FXObject*,FXSelector,void*);
+  long onCmdDefaultInternet(FXObject*,FXSelector,void*);
+  long onCmdDefaultHardware(FXObject*,FXSelector,void*);
   long onCmdBand(FXObject*,FXSelector,void*);
   long onCmdTrack(FXObject*,FXSelector,void*);
   long onUpdTrack(FXObject*,FXSelector,void*);
@@ -218,13 +221,17 @@ public:
     ID_COLORICONS,
     ID_FONT,
 
+    ID_CDROMADD,
+    ID_CDROMREM,
+
     ID_TOGGLEMENU,
     ID_TOGGLESTATUS,
     ID_TOGGLETIPS,
 
     ID_DEFAULTOPTIONS,
     ID_DEFAULTAPPEARANCE,
-    ID_DEFAULTINFO,
+    ID_DEFAULTHARDWARE,
+    ID_DEFAULTINTERNET,
 
     ID_BAND,
     ID_TRACK,

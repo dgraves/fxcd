@@ -48,6 +48,7 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_RANDOM,CDWindow::onUpdRandom),
   FXMAPFUNCS(SEL_COMMAND,CDWindow::ID_REPEATNONESWITCH,CDWindow::ID_REPEATDISCSWITCH,CDWindow::onCmdRepeatSwitch),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_REPEATSWITCH,CDWindow::onUpdRepeatSwitch),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_PREFS,CDWindow::onCmdPrefs),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_STOPONEXIT,CDWindow::onCmdStopOnExit),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_STOPONEXIT,CDWindow::onUpdStopOnExit),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_REMOTEINFO,CDWindow::onCmdRemoteInfo),
@@ -67,7 +68,8 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNCS(SEL_CHANGED,CDWindow::ID_COLORFORE,CDWindow::ID_COLORICONS,CDWindow::onCmdColor),
   FXMAPFUNCS(SEL_UPDATE,CDWindow::ID_COLORFORE,CDWindow::ID_COLORICONS,CDWindow::onUpdColor),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_FONT,CDWindow::onCmdFont),
-  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_PREFS,CDWindow::onCmdPrefs),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_CDROMADD,CDWindow::onCmdCDROMAdd),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_CDROMREM,CDWindow::onCmdCDROMRemove),
 
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TOGGLEMENU,CDWindow::onCmdToggleMenu),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_TOGGLEMENU,CDWindow::onUpdToggleMenu),
@@ -78,7 +80,8 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
 
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTOPTIONS,CDWindow::onCmdDefaultOptions),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTAPPEARANCE,CDWindow::onCmdDefaultAppearance),
-  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTINFO,CDWindow::onCmdDefaultInfo),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTINTERNET,CDWindow::onCmdDefaultInternet),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTHARDWARE,CDWindow::onCmdDefaultHardware),
 
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_BAND,CDWindow::onCmdBand),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TRACK,CDWindow::onCmdTrack),
@@ -278,7 +281,14 @@ CDWindow::CDWindow(FXApp* app)
 
 CDWindow::~CDWindow()
 {
-  FXint i;
+  FXint i,n=bandTitle->getNumItems();
+  FXString* devnam=NULL;
+
+  for(i=0;i<n;i++)
+  {
+    devnam=(FXString*)bandTitle->getItemData(i);
+    delete devnam;
+  }
 
   delete timeTarget;
   delete repeatTarget;
@@ -310,7 +320,7 @@ CDWindow::~CDWindow()
 
 void CDWindow::create()
 {
-  FXint i,band=0;
+  FXint i;
   const FXchar* fontspec;
   FXFontDesc fontdesc;
 
@@ -363,7 +373,7 @@ void CDWindow::create()
   resize(290,getDefaultHeight());
 
   checkDevices();
-  handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)band);
+  handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandTitle->getCurrentItem());
 
   timer=getApp()->addTimeout(TIMED_UPDATE,this,ID_TIMEOUT);
 
@@ -378,16 +388,92 @@ void CDWindow::create()
 
 FXbool CDWindow::checkDevices()
 {
+  FXint i,player=0,total=0;
+  FXbool stored=FALSE;
   FXString* devname=NULL;
 
+  //Look in registry for CD-ROMs
+  if(getApp()->reg().existingSection("DEVICES"))
+  {
+    FXint n;
+    FXString entnam;
+
+    stored=TRUE;
+    n=getApp()->reg().readIntEntry("DEVICES","total",0);
+    for(i=0;i<n;i++)
+    {
+      entnam.format("device%d",i);
+      const FXchar* entstr=getApp()->reg().readStringEntry("DEVICES",entnam.text(),NULL);
+      if(entstr!=NULL)
+      {
+	total++;
+	devname=new FXString(entstr);
+        bandTitle->appendItem(*devname,NULL,(void*)devname);
+      }
+    }    
+  }
+
+  if(!stored||total<=0)
+  {
 #ifndef WIN32
-  //Test for all cdrom devices (at some point)
-  devname=new FXString("/dev/cdrom");
-  bandTitle->appendItem(devname->text(),NULL,(void*)devname);
-  bandTitle->setCurrentItem(0);
-  bandTitle->setNumVisible(1);
+    //On Linux and *BSD we could use SDL code to check for devices.  
+    //Once I have configure for this app I'll try to add that.  
+    devname=new FXString("/dev/cdrom");
+    bandTitle->appendItem(*devname,NULL,(void*)devname);
+    total=1;
 #else
+    FXchar drive[4];
+    for(i='A';i<='Z';i++)
+    {
+      sprintf(drive,"%c:\\",i);
+      if(GetDriveType(drive)==DRIVE_CDROM)
+      {
+        total++;
+        devname=new FXString;
+        devname->format("%c:",i);
+        bandTitle->appendItem(*devname,NULL,(void*)devname);
+      }
+    }
 #endif
+  }
+
+  if(!stored)
+  {
+    //Commit them to registry
+    FXint n=bandTitle->getNumItems();
+    FXString* entstr;
+    FXString entnam;
+
+    getApp()->reg().writeIntEntry("DEVICES","total",n);
+    for(i=0;i<total;i++)
+    {
+      entnam.format("device%d",i);
+      entstr=(FXString*)bandTitle->getItemData(i);
+      getApp()->reg().writeStringEntry("DEVICES",entnam.text(),entstr->text());
+    }
+
+    //Make sure it is committed now
+    getApp()->reg().write();
+  }
+
+  //See if a device is currently active
+  for(i=0;i<bandTitle->getNumItems();i++)
+  {
+    devname=(FXString*)bandTitle->getItemData(i);
+    if(cdplayer.init(devname->text()))
+    {
+      if(cdplayer.getStatus()==CDAUDIO_PLAYING||cdplayer.getStatus()==CDAUDIO_PAUSED)
+      {
+	player=i;
+	cdplayer.finish();
+	break;
+      }
+      cdplayer.finish();
+    }
+  }  
+
+  bandTitle->setCurrentItem(player);
+  bandTitle->setNumVisible(total);
 
   return true;
 }
@@ -811,6 +897,12 @@ long CDWindow::onUpdRepeatSwitch(FXObject* sender,FXSelector,void*)
   return 1;
 }
 
+long CDWindow::onCmdPrefs(FXObject*,FXSelector,void*)
+{
+  cdprefs->show(PLACEMENT_OWNER);
+  return 1;
+}
+
 long CDWindow::onCmdStopOnExit(FXObject*,FXSelector,void*)
 {
   stopOnExit=!stopOnExit;
@@ -953,9 +1045,57 @@ long CDWindow::onCmdFont(FXObject*,FXSelector,void*)
   return 1;
 }
 
-long CDWindow::onCmdPrefs(FXObject*,FXSelector,void*)
+long CDWindow::onCmdCDROMAdd(FXObject*,FXSelector,void* data)
 {
-  cdprefs->show(PLACEMENT_OWNER);
+  FXint n=getApp()->reg().readIntEntry("DEVICES","total",0);
+  FXString* devnam=new FXString(*((FXString*)data));
+  FXString entnam;
+
+  bandTitle->appendItem(*devnam,NULL,(void*)devnam);
+  bandTitle->setNumVisible(n+1);
+
+  entnam.format("device%d",n);
+  getApp()->reg().writeIntEntry("DEVICES","total",n+1);
+  getApp()->reg().writeStringEntry("DEVICES",entnam.text(),devnam->text());
+
+  getApp()->reg().write();
+
+  return 1;
+}
+
+long CDWindow::onCmdCDROMRemove(FXObject*,FXSelector,void* data)
+{
+  FXint i,n=getApp()->reg().readIntEntry("DEVICES","total",0);
+  FXint item=(FXint)data;
+  FXString entnam;
+  FXbool stopngo=(item==bandTitle->getCurrentItem())?TRUE:FALSE;
+
+  if(item<bandTitle->getNumItems())
+  {
+    FXString* devnam=(FXString*)bandTitle->getItemData(item);
+    bandTitle->removeItem(item);
+    bandTitle->setNumVisible(n-1);
+    delete devnam;
+
+    getApp()->reg().writeIntEntry("DEVICES","total",n-1);
+    for(i=item;i<(n-1);i++)
+    {
+      //Bump each item up
+      entnam.format("device%d",i+1);
+      const FXchar* entstr=getApp()->reg().readStringEntry("DEVICES",entnam.text(),NULL);
+    
+      entnam.format("device%d",i);
+      getApp()->reg().writeStringEntry("DEVICES",entnam.text(),entstr);
+    }
+    entnam.format("device%d",n-1);
+    getApp()->reg().deleteEntry("DEVICES",entnam.text());
+    getApp()->reg().write();
+
+    //We deleted the current device, so we must restart it
+    if(stopngo)
+      handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandTitle->getCurrentItem());
+  }
+
   return 1;
 }
 
@@ -1042,7 +1182,7 @@ long CDWindow::onCmdDefaultAppearance(FXObject*,FXSelector,void*)
   return 1;
 }
 
-long CDWindow::onCmdDefaultInfo(FXObject*,FXSelector,void*)
+long CDWindow::onCmdDefaultInternet(FXObject*,FXSelector,void*)
 {
   remoteInfo=FALSE;
   localFirst=TRUE;
@@ -1065,12 +1205,52 @@ long CDWindow::onCmdDefaultInfo(FXObject*,FXSelector,void*)
   return 1;
 }
 
+long CDWindow::onCmdDefaultHardware(FXObject*,FXSelector,void*)
+{
+  //clear and reload devices
+  FXint i,n=bandTitle->getNumItems();
+  FXString* devnam=NULL;
+
+  for(i=0;i<n;i++)
+  {
+    devnam=(FXString*)bandTitle->getItemData(i);
+    delete devnam;
+  }
+  bandTitle->clearItems();
+
+  //Clear devices from registry
+  getApp()->reg().deleteSection("DEVICES");
+  getApp()->reg().write();
+
+  //Regenerate
+  if(cdplayer.isValid())
+  {
+    cdplayer.stop();
+    cdplayer.finish();
+  }
+
+  checkDevices();
+  handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandTitle->getCurrentItem());
+
+  return 1;
+}
+
 long CDWindow::onCmdBand(FXObject*,FXSelector,void* data)
 {
   FXint band=(FXint)data;
-  FXString* devname=(FXString*)bandTitle->getItemData(band);
-  cdplayer.init(devname->text());
-  loadDiscData();
+  if(band>=0&&band<bandTitle->getNumItems())
+  {
+    FXString* devname=(FXString*)bandTitle->getItemData(band);
+
+    if(cdplayer.isValid())
+    {
+      cdplayer.stop();
+      cdplayer.finish();
+    }
+
+    cdplayer.init(devname->text());
+    loadDiscData();
+  }
   return 1;
 }
 

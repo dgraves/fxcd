@@ -26,16 +26,26 @@ class CDPreferences : public FXDialogBox
   FXDECLARE(CDPreferences)
 protected:
   CDWindow* cdwindow;
+  FXList* devlist;
   CDPreferences(){}
 public:
   CDPreferences(CDWindow* owner);
 
+  virtual void show(FXuint placement);
+
+  long onCmdDeviceAdd(FXObject*,FXSelector,void*);
+  long onCmdDeviceRemove(FXObject*,FXSelector,void*);
+  long onUpdDeviceRemove(FXObject*,FXSelector,void*);
+  long onCmdDefaultDevs(FXObject*,FXSelector,void*);
   long onCmdServerList(FXObject*,FXSelector,void*);
   long onCmdAdvanced(FXObject*,FXSelector,void*);
 
   enum
   {
-    ID_SERVERLIST=FXDialogBox::ID_LAST,
+    ID_DEVICEADD=FXDialogBox::ID_LAST,
+    ID_DEVICEREM,
+    ID_DEFAULTDEVS,
+    ID_SERVERLIST,
     ID_ADVANCEDCDDB,
     ID_ADVANCEDCDINDEX,
     ID_LAST

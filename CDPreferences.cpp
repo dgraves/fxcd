@@ -29,6 +29,10 @@ extern "C" {
 #include "CDPreferences.h"
 
 FXDEFMAP(CDPreferences) CDPreferencesMap[]={
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEADD,CDPreferences::onCmdDeviceAdd),
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEREM,CDPreferences::onCmdDeviceRemove),
+  FXMAPFUNC(SEL_UPDATE,CDPreferences::ID_DEVICEREM,CDPreferences::onUpdDeviceRemove),
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEFAULTDEVS,CDPreferences::onCmdDefaultDevs),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_SERVERLIST,CDPreferences::onCmdServerList),
   FXMAPFUNCS(SEL_COMMAND,CDPreferences::ID_ADVANCEDCDDB,CDPreferences::ID_ADVANCEDCDINDEX,CDPreferences::onCmdAdvanced)
 };
@@ -85,7 +89,8 @@ CDPreferences::CDPreferences(CDWindow* owner)
   FXVerticalFrame* stopframe=new FXVerticalFrame(stopmode,LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
   new FXCheckButton(stopframe,"Stop Play on Exit",cdwindow,CDWindow::ID_STOPONEXIT,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
 
-  //Settings
+
+  //Appearance
   FXTabItem* apptab=new FXTabItem(tabbook,"&Appearance",NULL,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXVerticalFrame* appframe=new FXVerticalFrame(tabbook,FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y);
 
@@ -111,12 +116,29 @@ CDPreferences::CDPreferences(CDWindow* owner)
   new FXCheckButton(appgen,"Show Status Bar",cdwindow,CDWindow::ID_TOGGLESTATUS,CHECKBUTTON_NORMAL|LAYOUT_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW);
   new FXCheckButton(appgen,"Show Tool Tips",cdwindow,CDWindow::ID_TOGGLETIPS,CHECKBUTTON_NORMAL|LAYOUT_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW);
 
+
+  //Hardware
+  FXTabItem* hardtab=new FXTabItem(tabbook,"&Hardware",NULL,LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* hardframe=new FXVerticalFrame(tabbook,FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y);
+
+  FXHorizontalFrame* harddefault=new FXHorizontalFrame(hardframe,LAYOUT_FILL_X|LAYOUT_BOTTOM);
+  new FXButton(harddefault,"Defaults",NULL,this,ID_DEFAULTDEVS,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
+
+  FXGroupBox* harddev=new FXGroupBox(hardframe,"CD-ROM Device",GROUPBOX_TITLE_LEFT|FRAME_RIDGE|LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXHorizontalFrame* devframe=new FXHorizontalFrame(harddev,LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* devlistframe=new FXVerticalFrame(devframe,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0, 0,0);
+  devlist=new FXList(devlistframe,10,NULL,0,LIST_BROWSESELECT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* devbuttons=new FXVerticalFrame(devframe,PACK_UNIFORM_WIDTH|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
+  new FXButton(devbuttons,"&Add",NULL,this,ID_DEVICEADD,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
+  new FXButton(devbuttons,"&Remove",NULL,this,ID_DEVICEREM,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
+
+
   //Internet
   FXTabItem* infotab=new FXTabItem(tabbook,"&Internet",NULL,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXVerticalFrame* infoframe=new FXVerticalFrame(tabbook,FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y);
 
   FXHorizontalFrame* infodefault=new FXHorizontalFrame(infoframe,LAYOUT_FILL_X|LAYOUT_BOTTOM);
-  new FXButton(infodefault,"Defaults",NULL,cdwindow,CDWindow::ID_DEFAULTINFO,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
+  new FXButton(infodefault,"Defaults",NULL,cdwindow,CDWindow::ID_DEFAULTINTERNET,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
 
   FXVerticalFrame* infoserv=new FXVerticalFrame(infoframe,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   new FXCheckButton(infoserv,"Use Remote Data Source",cdwindow,CDWindow::ID_REMOTEINFO,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
@@ -155,6 +177,64 @@ CDPreferences::CDPreferences(CDWindow* owner)
   new FXTextField(cdindexserv,0,cdwindow->cdindexAddrTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X);
   FXSpinner* cdinspinner=new FXSpinner(cdindexserv,4,cdwindow->cdindexPortTarget,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_RIGHT);
   cdinspinner->setRange(0,65535);
+}
+
+void CDPreferences::show(FXuint placement)
+{
+  //Load bandTitle contents to list
+  FXint i,n=cdwindow->bandTitle->getNumItems();
+  FXString* devnam;
+  devlist->clearItems();
+  for(i=0;i<n;i++)
+  {
+    devnam=(FXString*)cdwindow->bandTitle->getItemData(i);
+    devlist->appendItem(*devnam);
+  }
+  FXDialogBox::show(placement);
+}
+
+long CDPreferences::onCmdDeviceAdd(FXObject*,FXSelector,void*)
+{
+  FXInputDialog dialog(this,"Add CD-ROM Device","Device name:");
+  if(dialog.execute())
+  {
+    FXString devnam=dialog.getText();
+    devlist->appendItem(devnam);
+    cdwindow->handle(this,MKUINT(CDWindow::ID_CDROMADD,SEL_COMMAND),(void*)&devnam);
+  }
+  return 1;
+}
+
+long CDPreferences::onCmdDeviceRemove(FXObject*,FXSelector,void*)
+{
+  FXint item=devlist->getCurrentItem();
+  devlist->removeItem(item);
+  cdwindow->handle(this,MKUINT(CDWindow::ID_CDROMREM,SEL_COMMAND),(void*)item);
+  return 1;
+}
+
+long CDPreferences::onUpdDeviceRemove(FXObject* sender,FXSelector,void*)
+{
+  FXuint msg=(devlist->getNumItems()<2)?ID_DISABLE:ID_ENABLE;
+  sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
+  return 1;
+}
+
+long CDPreferences::onCmdDefaultDevs(FXObject*,FXSelector,void*)
+{
+  cdwindow->handle(this,MKUINT(CDWindow::ID_DEFAULTHARDWARE,SEL_COMMAND),NULL);
+
+  //Load bandTitle contents to list
+  FXint i,n=cdwindow->bandTitle->getNumItems();
+  FXString* devnam;
+  devlist->clearItems();
+  for(i=0;i<n;i++)
+  {
+    devnam=(FXString*)cdwindow->bandTitle->getItemData(i);
+    devlist->appendItem(*devnam);
+  }
+
+  return 1;
 }
 
 long CDPreferences::onCmdServerList(FXObject*,FXSelector,void*)

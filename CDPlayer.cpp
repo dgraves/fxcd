@@ -80,6 +80,10 @@ void CDPlayer::load()
   }
   else
   {
+    //If it's playing it can't be stopped
+    if(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED)
+      stopped=FALSE;
+
     //Is audio disc?
     for(i=discInfo.disc_first_track;i<=discInfo.disc_total_tracks;i++)
     {
@@ -249,7 +253,8 @@ FXbool CDPlayer::play()
       makeRandomList();
       currentTrack=getRandomTrack();
     }
-    cd_play(media,currentTrack);
+    if(cd_play(media,currentTrack)<0)
+      return FALSE;
     stopped=FALSE;
   }
 
@@ -263,7 +268,8 @@ FXbool CDPlayer::pause()
 
   if(discInfo.disc_mode==CDAUDIO_PLAYING)
   {
-    cd_pause(media);
+    if(cd_pause(media)<0)
+      return FALSE;
     blinkMode=0;
   }
 
@@ -276,7 +282,10 @@ FXbool CDPlayer::resume()
     return FALSE;
 
   if(discInfo.disc_mode==CDAUDIO_PAUSED)
-    cd_resume(media);
+  {
+    if(cd_resume(media)<0)
+      return FALSE;
+  }
 
   return TRUE;
 }
@@ -289,7 +298,8 @@ FXbool CDPlayer::stop()
   if((discInfo.disc_mode==CDAUDIO_PLAYING)||
      (discInfo.disc_mode==CDAUDIO_PAUSED))
   {
-    cd_stop(media);
+    if(cd_stop(media)<0)
+      return FALSE;
     stopped=TRUE;
     currentTrack=discInfo.disc_first_track;
   }
@@ -314,8 +324,7 @@ FXbool CDPlayer::skipNext()
       }
       else
       {
-	stop();
-        return TRUE;
+	return stop();
       }
     }
   }
@@ -327,17 +336,20 @@ FXbool CDPlayer::skipNext()
       currentTrack=discInfo.disc_first_track;
     else
     {
-      stop();
-      return TRUE;
+      return stop();
     }
   }
 
   if(discInfo.disc_mode==CDAUDIO_PLAYING)
-    cd_play(media,currentTrack);
+  {
+    if(cd_play(media,currentTrack)<0)
+      return FALSE;
+  }
   else if(discInfo.disc_mode==CDAUDIO_PAUSED)
   {
-    cd_play(media,currentTrack);
-    cd_pause(media);
+    if(cd_play(media,currentTrack)<0)
+      return FALSE;
+    cd_pause(media);  //We'll let this one slide by if it fails
   }
 
   return TRUE;
@@ -362,8 +374,7 @@ FXbool CDPlayer::skipPrev()
 	}
         else
 	{
-	  stop();
-          return TRUE;
+	  return stop();
 	}
       }
     }
@@ -375,11 +386,15 @@ FXbool CDPlayer::skipPrev()
   }
 
   if(discInfo.disc_mode==CDAUDIO_PLAYING)
-    cd_play(media,currentTrack);
+  {
+    if(cd_play(media,currentTrack)<0)
+      return FALSE;
+  }
   else if(discInfo.disc_mode==CDAUDIO_PAUSED)
   {
-    cd_play(media,currentTrack);
-    cd_pause(media);
+    if(cd_play(media,currentTrack)<0)
+      return FALSE;
+    cd_pause(media);  //We'll let this one slide by if it fails
   }  
 
   return TRUE;
@@ -391,7 +406,8 @@ FXbool CDPlayer::seekForward(FXuint seconds)
     return FALSE;
 
   struct disc_timeval seekTime={seconds/60,seconds%60,0};
-  cd_playctl(media,PLAY_START_POSITION,currentTrack,&seekTime);
+  if(cd_playctl(media,PLAY_START_POSITION,currentTrack,&seekTime)<0)
+    return FALSE;
 
   return TRUE;
 }
@@ -404,7 +420,8 @@ FXbool CDPlayer::seekReverse(FXuint seconds)
   struct disc_timeval seekTime;
   seekTime.minutes=discInfo.disc_track_time.minutes-(seconds/60);
   seekTime.seconds=discInfo.disc_track_time.seconds-(seconds%60);
-  cd_playctl(media,PLAY_START_POSITION,currentTrack,&seekTime);
+  if(cd_playctl(media,PLAY_START_POSITION,currentTrack,&seekTime)<0)
+    return FALSE;
 
   return TRUE;
 }
@@ -415,9 +432,10 @@ FXbool CDPlayer::playTrackPos(FXint track,const struct disc_timeval* time)
     return FALSE;
 
   currentTrack=track;
-  cd_playctl(media,PLAY_START_POSITION,track,time);
+  if(cd_playctl(media,PLAY_START_POSITION,track,time)<0)
+    return FALSE;
 
-  return true;
+  return TRUE;
 }
 
 FXbool CDPlayer::openTray()
@@ -429,7 +447,8 @@ FXbool CDPlayer::openTray()
   //So check for present disc to avoid infinite loop.  
   if(nodisc==FALSE&&(discInfo.disc_mode==CDAUDIO_PLAYING||discInfo.disc_mode==CDAUDIO_PAUSED))
   {
-    stop();
+    if(!stop())
+      return FALSE;
 
     //Don't eject until disk is stopped - best solution?
     do
@@ -442,7 +461,8 @@ FXbool CDPlayer::openTray()
     select(0,NULL,NULL,NULL,&tv);
   }
 
-  cd_eject(media);
+  if(cd_eject(media)<0)
+    return FALSE;
   open=TRUE;
 
   return TRUE;
@@ -453,7 +473,8 @@ FXbool CDPlayer::closeTray()
   if(media<0)
     return FALSE;
 
-  cd_close(media);
+  if(cd_close(media)<0)
+    return FALSE;
   open=FALSE;
 
   return TRUE;
