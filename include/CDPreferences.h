@@ -77,6 +77,7 @@ protected:
   CDPreferences() { }
 public:
   long onCmdAccept(FXObject*,FXSelector,void*);
+  long onCmdApply(FXObject*,FXSelector,void*);
   long onCmdList(FXObject*,FXSelector,void*);
   long onCmdDeviceAdd(FXObject*,FXSelector,void*);
   long onCmdDeviceRemove(FXObject*,FXSelector,void*);
@@ -86,6 +87,7 @@ public:
   enum
   {
     ID_ACCEPT=FXDialogBox::ID_LAST,
+    ID_APPLY,
     ID_LIST,
     ID_DEVICEADD,
     ID_DEVICEREM,
