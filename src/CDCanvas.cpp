@@ -169,8 +169,8 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
       //Format time for proper output
       if(timemode==CDTIME_DISC)
       {
-        drawTime.minutes=di->disc_time.minutes;
-        drawTime.seconds=di->disc_time.seconds;
+        // Subtract leadin from current disc position
+        cd_frames_to_msf(&drawTime,cd_msf_to_frames(&di->disc_time)-cd_msf_to_frames(&di->disc_track[0].track_pos));
       }
       else if(timemode==CDTIME_TRACK)
       {
