@@ -52,7 +52,7 @@ CDPlayer::CDPlayer()
 
 CDPlayer::~CDPlayer()
 {
-  //Not stopping it here.  Just closing handle.  
+  //Not stopping play.  Just closing handle.  
   finish();
 }
 
@@ -117,7 +117,7 @@ void CDPlayer::polldisc()
 }
 
 //Set the volume
-void CDPlayer::setvol()
+FXbool CDPlayer::setvol()
 {
   if(volBalance>0.0)
   {
@@ -143,20 +143,21 @@ void CDPlayer::setvol()
   if(!mute)
   {
     if(cd_set_volume(media,&volCurrent)<0)
-      perror("cd_set_volume");
+      return FALSE;
   }
+
+  return TRUE;
 }
 
 //Check for volume change from other application
-void CDPlayer::checkvol()
+FXbool CDPlayer::checkvol()
 {
   if(!mute)
   {
     disc_volume volume;
     if(cd_get_volume(media,&volume)<0)
     {
-      perror("cd_get_volume");
-      return;
+      return FALSE;
     }
 
     //Someone has been modifying our audio settings.  
@@ -174,6 +175,8 @@ void CDPlayer::checkvol()
         volBalance=0.0;
     }
   }
+
+  return TRUE;
 }
 
 //A list for random selections to be taken from
@@ -694,22 +697,28 @@ FXbool CDPlayer::getMute() const
   return mute;
 }
 
-void CDPlayer::setMute(FXbool mode)
+FXbool CDPlayer::setMute(FXbool mode)
 {
   if(mode!=mute)
   {
-    mute=mode;
-    if(mute&&media!=-1)
+    if(mode&&media!=-1)
     {
       //Volume level set to zero
       disc_volume volume;
       memset(&volume,0,sizeof(volume));
       if(cd_set_volume(media,&volume)<0)
-        perror("cd_set_volume");
+        return FALSE;
     }
     else if(media!=-1)
-      setvol();      //Bring the volume back
+    {
+      if(setvol()==FALSE)      //Bring the volume back
+        return FALSE;
+    }
+
+    mute=mode;
   }
+
+  return TRUE;
 }
 
 //Volume is checked in update
@@ -718,10 +727,10 @@ FXint CDPlayer::getVolume() const
   return volLevel;
 }
 
-void CDPlayer::setVolume(FXint volume)
+FXbool CDPlayer::setVolume(FXint volume)
 {
   volLevel=volume;
-  setvol();
+  return setvol();
 }
 
 //Volume is checked in update
@@ -730,10 +739,10 @@ FXfloat CDPlayer::getBalance() const
   return volBalance;
 }
 
-void CDPlayer::setBalance(FXfloat balance)
+FXbool CDPlayer::setBalance(FXfloat balance)
 {
   volBalance=balance;
-  setvol();
+  return setvol();
 }
 
 FXint CDPlayer::randomTrack()

@@ -50,10 +50,11 @@ protected:
   struct disc_info discInfo;            //info for current cd
   struct disc_timeval introTime;        //Length of time for intro play
 
+protected:
   void load();
   void polldisc();
-  void setvol();
-  void checkvol();
+  FXbool setvol();
+  FXbool checkvol();
   void makeRandomList();
   FXint getRandomTrack();
 
@@ -110,17 +111,17 @@ public:
   void setRandom(FXbool mode);
 
   FXbool getMute() const;
-  void setMute(FXbool mode);
+  FXbool setMute(FXbool mode);
   
   FXint getVolume() const;
-  void setVolume(FXint volume);
+  FXbool setVolume(FXint volume);
 
   FXfloat getBalance() const;
-  void setBalance(FXfloat balance);
+  FXbool setBalance(FXfloat balance);
 
   FXint randomTrack();
 
   FXbool blink() const;
 };
- 
+
 #endif
