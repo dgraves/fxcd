@@ -51,9 +51,9 @@ protected:
 
   FXWindow* dcwback[7];
 
-  FXMenubar* menubar; 
-  FXStatusbar* statusbar;
-  FXTooltip* tooltip;
+  FXMenuBar* menubar;
+  FXStatusBar* statusbar;
+  FXToolTip* tooltip;
   FXMenuPane* filemenu;
   FXMenuPane* optionsmenu;
   FXMenuPane* infomenu;
@@ -137,8 +137,6 @@ public:
   long onUpdLocalFirst(FXObject*,FXSelector,void*);
   long onCmdProxyServer(FXObject*,FXSelector,void*);
   long onUpdProxyServer(FXObject*,FXSelector,void*);
-  long onCmdCDDB(FXObject*,FXSelector,void*);
-  long onUpdCDDB(FXObject*,FXSelector,void*);
   long onCmdCDDBPort(FXObject*,FXSelector,void*);
   long onUpdCDDBPort(FXObject*,FXSelector,void*);
   long onCmdGetInfo(FXObject*,FXSelector,void*);

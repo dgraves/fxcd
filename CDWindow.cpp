@@ -55,8 +55,6 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_LOCALFIRST,CDWindow::onUpdLocalFirst),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_PROXYSERVER,CDWindow::onCmdProxyServer),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_PROXYSERVER,CDWindow::onUpdProxyServer),
-  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_CDDB,CDWindow::onCmdCDDB),
-  FXMAPFUNC(SEL_UPDATE,CDWindow::ID_CDDB,CDWindow::onUpdCDDB),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_CDDBPORT,CDWindow::onCmdCDDBPort),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_CDDBPORT,CDWindow::onUpdCDDBPort),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_GETINFO,CDWindow::onCmdGetInfo),
@@ -174,7 +172,7 @@ CDWindow::CDWindow(FXApp* app)
   cddbProtoTarget=new FXDataTarget(cdinfo.cddbproto);
   cddbAddrTarget=new FXDataTarget(cdinfo.cddbaddr);
 
-  menubar=new FXMenubar(this,LAYOUT_SIDE_TOP|LAYOUT_FILL_X);
+  menubar=new FXMenuBar(this,LAYOUT_SIDE_TOP|LAYOUT_FILL_X);
   filemenu=new FXMenuPane(this);
     new FXMenuTitle(menubar,"&File",NULL,filemenu);
     new FXMenuCommand(filemenu,"&Quit\tCtrl+Q",NULL,this,ID_QUIT);
@@ -207,8 +205,8 @@ CDWindow::CDWindow(FXApp* app)
     new FXMenuSeparator(infomenu);
     new FXMenuCommand(infomenu,"&Update Now",NULL,this,ID_GETINFO);
 
-  statusbar=new FXStatusbar(this,LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X);
-  statusbar->getStatusline()->setNormalText("");
+  statusbar=new FXStatusBar(this,LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X);
+  statusbar->getStatusLine()->setNormalText("");
   FXLabel* label=new FXLabel(statusbar,"00:00",NULL,FRAME_SUNKEN|LAYOUT_RIGHT);
   label->setTipText("Album Length");
   label->setTarget(this);
@@ -217,7 +215,7 @@ CDWindow::CDWindow(FXApp* app)
   label->setTipText("Track Length");
   label->setTarget(this);
   label->setSelector(ID_STATUSTRACK);
-  
+
   FXVerticalFrame* contents=new FXVerticalFrame(this,LAYOUT_FILL_X|LAYOUT_FILL_Y);
   FXHorizontalFrame* display=new FXHorizontalFrame(contents,FRAME_THICK|FRAME_SUNKEN|LAYOUT_SIDE_TOP|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0, 0,0);
   FXVerticalFrame* canvasItems=new FXVerticalFrame(display,LAYOUT_FIX_WIDTH|LAYOUT_FILL_Y,0,0,114,0, 0,0,0,0, 0,0);
@@ -289,8 +287,6 @@ CDWindow::~CDWindow()
   delete proxyPortTarget;
   delete cddbProtoTarget;
   delete cddbAddrTarget;
-  delete cdindexAddrTarget;
-  delete cdindexPortTarget;
   delete font;
 
   delete timemenu;
@@ -338,7 +334,7 @@ void CDWindow::create()
   cdinfo.setCDDBScript(getApp()->reg().readStringEntry("SETTINGS","cddbScript",cdinfo.getCDDBScript().text()));
   if(!getApp()->reg().readIntEntry("SETTINGS","showMenu",TRUE)) menubar->hide();
   if(!getApp()->reg().readIntEntry("SETTINGS","showStatus",TRUE)) statusbar->hide();
-  if(getApp()->reg().readIntEntry("SETTINGS","showTips",TRUE)) tooltip=new FXTooltip(getApp(),TOOLTIP_NORMAL);
+  if(getApp()->reg().readIntEntry("SETTINGS","showTips",TRUE)) tooltip=new FXToolTip(getApp(),TOOLTIP_NORMAL);
   FXColor dfg=getApp()->reg().readColorEntry("SETTINGS","lcdforecolor",DEFAULTFORE);
   FXColor dbg=getApp()->reg().readColorEntry("SETTINGS","lcdbackcolor",DEFAULTBACK);
   FXColor ic=getApp()->reg().readColorEntry("SETTINGS","iconcolor",DEFAULTBACK);
@@ -363,7 +359,7 @@ void CDWindow::create()
   checkDevices();
   handle(this,MKUINT(ID_BAND,SEL_COMMAND),(void*)bandTitle->getCurrentItem());
 
-  timer=getApp()->addTimeout(TIMED_UPDATE,this,ID_TIMEOUT);
+  timer=getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
 
   //Start action
   if((startMode==CDSTART_STOP)&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
@@ -398,14 +394,14 @@ FXbool CDWindow::checkDevices()
 	devname=new FXString(entstr);
         bandTitle->appendItem(*devname,NULL,(void*)devname);
       }
-    }    
+    }
   }
 
   if(!stored||total<=0)
   {
 #ifndef WIN32
-    //On Linux and *BSD we could use SDL code to check for devices.  
-    //Once I have configure for this app I'll try to add that.  
+    //On Linux and *BSD we could use SDL code to check for devices.
+    //Once I have configure for this app I'll try to add that.
     devname=new FXString("/dev/cdrom");
     bandTitle->appendItem(*devname,NULL,(void*)devname);
     total=1;
@@ -458,7 +454,7 @@ FXbool CDWindow::checkDevices()
       }
       cdplayer.finish();
     }
-  }  
+  }
 
   bandTitle->setCurrentItem(player);
   bandTitle->setNumVisible(total);
@@ -492,6 +488,7 @@ FXbool CDWindow::loadDiscData()
     FXString title;
     struct disc_data data;
 
+    cddb_init_disc_data(&data);
     getData(&data);
     title.format("%s - <%s>",data.data_artist,deviceStr->text());
     bandTitle->setItemText(band,title);
@@ -511,6 +508,8 @@ FXbool CDWindow::loadDiscData()
       }
     }
 
+    cddb_free_disc_data(&data);
+
     //Size our drop down list - no empty list spaces
     trackTitle->setNumVisible((cdplayer.getNumTracks()>8)?8:cdplayer.getNumTracks());
   }
@@ -520,11 +519,11 @@ FXbool CDWindow::loadDiscData()
 
 FXbool CDWindow::getData(struct disc_data* data)
 {
-  if(!remoteInfo) return cdinfo.getLocalCDDBInfo(cdplayer,data);
-  if(localFirst&&cdinfo.getLocalCDDBInfo(cdplayer,data)) return TRUE;
-  if(useCDDB&&cdinfo.getRemoteCDDBInfo(cdplayer,data,this)) return TRUE;
-  if(!localFirst&&cdinfo.getLocalCDDBInfo(cdplayer,data)) return TRUE;
-  cdinfo.defaultSettings(cdplayer,data);
+  if(!remoteInfo) return cdinfo.getLocalInfo(cdplayer,data);
+  if(localFirst&&cdinfo.getLocalInfo(cdplayer,data)) return TRUE;
+  if(useCDDB&&cdinfo.getRemoteInfo(cdplayer,data,this)) return TRUE;
+  if(!localFirst&&cdinfo.getLocalInfo(cdplayer,data)) return TRUE;
+  cdinfo.defaultInfo(cdplayer,data);
   return FALSE;
 }
 
@@ -632,7 +631,7 @@ void CDWindow::setDisplayForeground(FXColor color)
 {
   FXint i;
 
-  //Needed for dual color icons.  If they are equal, modify slightly.  
+  //Needed for dual color icons.  If they are equal, modify slightly.
   if(color==lcdbackcolor)
   {
     FXuchar r=FXREDVAL(color),g=FXGREENVAL(color),b=FXBLUEVAL(color);
@@ -663,7 +662,7 @@ void CDWindow::setDisplayBackground(FXColor color)
 {
   FXint i;
 
-  //Needed for dual color icons.  If they are equal, modify slightly.  
+  //Needed for dual color icons.  If they are equal, modify slightly.
   if(color==lcdforecolor)
   {
     FXuchar r=FXREDVAL(color),g=FXGREENVAL(color),b=FXBLUEVAL(color);
@@ -736,12 +735,9 @@ long CDWindow::onTimeout(FXObject*,FXSelector,void*)
       if(albumTitle->getText()!=NODISC_MSG)
         loadDiscData();
     }
-  }  
+  }
 
   doDraw(cdplayer.getCurrentTrack(),cdplayer.getDiscInfo());
-
-  //Reset timer
-  timer=getApp()->addTimeout(TIMED_UPDATE,this,ID_TIMEOUT);
 
   return 1;
 }
@@ -960,7 +956,7 @@ long CDWindow::onCmdGetInfo(FXObject*,FXSelector,void*)
 long CDWindow::onCmdColor(FXObject*,FXSelector sel,void* ptr)
 {
   FXColor clr=(FXColor)(long)ptr;
-  switch(SELID(sel))
+  switch(FXSELID(sel))
   {
     case ID_COLORFORE: setDisplayForeground(clr); getApp()->forceRefresh(); break;
     case ID_COLORBACK: setDisplayBackground(clr); getApp()->forceRefresh(); break;
@@ -972,7 +968,7 @@ long CDWindow::onCmdColor(FXObject*,FXSelector sel,void* ptr)
 long CDWindow::onUpdColor(FXObject* sender,FXSelector sel,void*)
 {
   FXColor clr;
-  switch(SELID(sel))
+  switch(FXSELID(sel))
   {
     case ID_COLORFORE: clr=getDisplayForeground(); break;
     case ID_COLORBACK: clr=getDisplayBackground(); break;
@@ -1038,7 +1034,7 @@ long CDWindow::onCmdCDROMRemove(FXObject*,FXSelector,void* data)
       //Bump each item up
       entnam.format("device%d",i+1);
       const FXchar* entstr=getApp()->reg().readStringEntry("DEVICES",entnam.text(),NULL);
-    
+
       entnam.format("device%d",i);
       getApp()->reg().writeStringEntry("DEVICES",entnam.text(),entstr);
     }
@@ -1093,7 +1089,7 @@ long CDWindow::onCmdToggleTips(FXObject*,FXSelector,void*)
   }
   else
   {
-    tooltip=new FXTooltip(getApp(),TOOLTIP_NORMAL);
+    tooltip=new FXToolTip(getApp(),TOOLTIP_NORMAL);
     tooltip->create();
   }
   return 1;
@@ -1129,7 +1125,7 @@ long CDWindow::onCmdDefaultAppearance(FXObject*,FXSelector,void*)
   statusbar->handle(this,MKUINT(ID_SHOW,SEL_COMMAND),NULL);
   if(tooltip==NULL)
   {
-    tooltip=new FXTooltip(getApp(),TOOLTIP_NORMAL);
+    tooltip=new FXToolTip(getApp(),TOOLTIP_NORMAL);
     tooltip->create();
   }
   resize(290,getDefaultHeight());
@@ -1229,7 +1225,7 @@ long CDWindow::onCmdVolume(FXObject*,FXSelector,void* data)
 ungrab();
   volLevel=(FXint)data;
   str.format("Volume: %d%%",volLevel);
-  statusbar->getStatusline()->setText(str);
+  statusbar->getStatusLine()->setText(str);
   cdplayer.setVolume(volLevel);
 
   return 1;
@@ -1306,7 +1302,7 @@ long CDWindow::onCmdSeekReverse(FXObject*,FXSelector,void*)
   //Check to see if we skipped over track boundary
   if(seekTime.minutes<0)
   {
-    //What should it do for first track?  Stay there I think.  
+    //What should it do for first track?  Stay there I think.
     FXbool random=cdplayer.getRandom();
     if((seekTrack==cdplayer.getStartTrack())&&!random)
     {

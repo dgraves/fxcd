@@ -1,5 +1,5 @@
 /* CDInfo.h
- * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,6 +18,51 @@
 
 #ifndef _CDINFO_H_
 #define _CDINFO_H_
+
+enum
+{
+  CDINFO_IDLE     = 0, //No operation has been performed
+  CDINFO_PENDING  = 1, //Operation in progress
+  CDINFO_INTERACT = 2, //Operation requires user input to complete
+  CDINFO_DONE     = 3, //Operation completed successfully
+  CDINFO_ERROR    = 4  //Error encountered while retreiving data
+}
+
+class CDInfo
+{
+public:
+  //Constructor
+  CDInfo() { }
+
+  //Add a preferences panel to the CD player's preferences dialog
+  void addPrefPanel(FXTabbook* tabbook) = 0;
+
+  //Add a info panel to the CD player's disc info dialog
+  void addInfoPanel(FXTabbook* tabbook) = 0;
+
+  //Add a submit panel to the CD player's disc info submission dialog
+  void addSubmitPanel(FXTabbook* tabbook) = 0;
+
+  //Get descriptive string to display in GUI
+  FXString getName() const = 0;
+
+  //Get status
+  FXuint getStatus() const = 0;
+
+  //Get error string
+  FXString getErrorString() const = 0;
+
+  //Request disc info
+  FXuint requestData(cddesc_t media, const struct cd_disc_info* info, CDPipe& pipe) = 0;
+
+  //Get disc info
+  FXuint getData(CDData& data) = 0;
+
+  //Destructor
+  ~CDInfo() { }
+};
+
+/*
 
 enum
 {
@@ -71,5 +116,7 @@ public:
 
   FXbool getCDDBServerList(struct cddb_serverlist* list) const;
 };
+
+*/
 
 #endif

@@ -1,5 +1,5 @@
 /* CDPlayer.h
- * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,28 +28,25 @@ enum
 
 class CDPlayer
 {
-  friend class CDWindow;      //For data targets
+  friend class CDWindow;            // For data targets
+  friend class CDPrefsBox;          // For data targets
 protected:
-  FXint media;                //cd-rom handle
-  FXbool open;                //drive door status (open/closed)
-  FXbool nodisc;              //Indicates known presence of disc in cdrom
-  FXbool audiodisc;           //Is disc audio or data
-  FXbool stopped;             //Was a stop requested (or did the disc finish)
-  FXbool mute;                //Is muted
-
-  FXint currentTrack;         //track currently playing (or to play)
-  FXint blinkMode;            //should blink if paused?
-  FXuint repeatMode;          //No repeat, repeat track, repeat disc
-  FXbool intro;               //Intro mode is active
-  FXbool random;              //Shuffle play is active
-  FXArray<FXint> randomArray;
-
-  FXint volLevel;
-  FXfloat volBalance;
-  struct disc_volume volCurrent;        //Use to test for volume change by other party
-  struct disc_info discInfo;            //info for current cd
-  struct disc_timeval introTime;        //Length of time for intro play
-
+  cddesc_t media;                   // CD-ROM handle
+  FXbool open;                      // Drive door status (open/closed)
+  FXbool nodisc;                    // Indicates known presence of disc in cdrom
+  FXbool audiodisc;                 // Is disc audio or data
+  FXbool stopped;                   // Was a stop requested (or did the disc finish)
+  FXbool mute;                      // Is muted
+  FXuint repeatMode;                // No repeat, repeat track, repeat disc
+  FXbool intro;                     // Intro mode is active
+  FXbool random;                    // Shuffle play is active
+  FXint currentTrack;               // Track currently playing (or to play)
+  FXint volLevel;                   // Volume level (0-100%)
+  FXfloat volBalance;               // Left-right volume balance
+  struct disc_timeval introTime;    // Length of time for intro play
+  struct disc_volume volCurrent;    // Use to test for volume change by other party
+  struct disc_info discInfo;        // Info for current disc
+  FXArray<FXint> randomArray;       // List of random tracks
 protected:
   void load();
   void polldisc();
@@ -57,71 +54,144 @@ protected:
   FXbool checkvol();
   void makeRandomList();
   FXint getRandomTrack();
-
 public:
+  /// Constructor
   CDPlayer();
-  ~CDPlayer();
 
+  /// Initialize CD audio device
   FXbool init(const FXString& device);
+
+  /// Close CD audio device
   FXbool finish();
+
+  /// Issue play command to CD audio device
   FXbool play();
+
+  /// Issue pause command to CD audio device
   FXbool pause();
+
+  /// Issue resume command to CD audio device
   FXbool resume();
+
+   /// Issue stop command to CD audio device
   FXbool stop();
+
+  /// Issue skip to next track command to CD audio device
   FXbool skipNext();
+
+  /// Issue skip to previous track command to CD audio device
   FXbool skipPrev();
+
+  /// Issue seek forward command to CD audio device
   FXbool seekForward(FXuint seconds);
-  FXbool seekReverse(FXuint seconds);  
+
+  /// Issue seek reverse command to CD audio device
+  FXbool seekReverse(FXuint seconds);
+
+   /// Issue play command, to start at specific time, to CD audio device
   FXbool playTrackPos(FXint track,const struct disc_timeval* time);
+
+  /// Issue tray open command to CD audio device
   FXbool openTray();
+
+  /// Issue tray close command to CD audio device
   FXbool closeTray();
 
+  /// Poll CD audio device for current state
   FXbool update();
 
-  //Current cd-rom status (play,pause,finished,etc)
+  // Get current cd-rom status (play,pause,finished,etc)
   FXint getStatus() const;
+
+  /// Get CD audio descriptor
   FXint getDescriptor() const;
+
+  /// Check for valid CD audio device
   FXbool isValid() const;
-  FXbool isDoorOpen() const;
+
+  /// Check for open CD audio device tray
+  FXbool isTrayOpen() const;
+
+  /// Check for disc in tray
   FXbool isDiscPresent() const;
+
+  /// Check if disc in CD audio device is audio CD or data CD
   FXbool isAudioDisc() const;
 
+  /// Get index for start track of disc
   FXint getStartTrack() const;
+
+  /// Get total number of tracks present on disc
   FXint getNumTracks() const;
 
-  const struct disc_timeval* getDiscLength() const;
-  const struct disc_timeval* getDiscTime() const;
-  const struct disc_timeval* getTrackTime() const;
-  const struct disc_info* getDiscInfo() const;
-  const struct track_info* getTrackInfo(FXint track) const;
+  /// Retrieve length of disc
+  void getDiscLength(struct disc_timeval& dtv) const;
 
+  /// Retrieve current time position for the currently playing disc
+  void getDiscTime(struct disc_timeval& dtv) const;
+
+  /// Retrieve current time position for the currently playing track
+  void getTrackTime(struct disc_timeval& dtv) const;
+
+  /// Retrieve info for current disc
+  void getDiscInfo(struct disc_info& info) const;
+
+  /// Retrieve info for specified track
+  void getTrackInfo(FXint track, struct track_info& info) const;
+
+  /// Get current track
   FXint getCurrentTrack() const;
+
+  /// Set current track
   void setCurrentTrack(FXint track);
 
+  /// Get repeat mode status
   FXuint getRepeatMode() const;
+
+  /// Set repeat mode status
   void setRepeatMode(FXuint mode);
 
+  /// Get intro mode status
   FXbool getIntro() const;
+
+  /// Set intro mode status
   void setIntro(FXbool mode);
 
+  /// Get intro time period
   FXuint getIntroLength() const;
+
+  /// Set intro mode time period
   void setIntroLength(FXuint seconds);
 
+   /// Get random track selection status
   FXbool getRandom() const;
+
+  /// Set random track selection status
   void setRandom(FXbool mode);
 
+  /// Check for muted audio
   FXbool getMute() const;
+
+  /// Mute audio
   FXbool setMute(FXbool mode);
-  
+
+  /// Get volume level
   FXint getVolume() const;
+
+  /// Set volume level
   FXbool setVolume(FXint volume);
 
+  /// Get left-right audio balance
   FXfloat getBalance() const;
+
+  /// Set left-right audio balance
   FXbool setBalance(FXfloat balance);
 
+  /// Get random track
   FXint randomTrack();
 
-  FXbool blink() const;
+  /// Destructor
+  ~CDPlayer();
 };
 
 #endif

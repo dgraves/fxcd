@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(CDPlayer.h)
-AM_INIT_AUTOMAKE(fxcd, 0.9.6)
+AM_INIT_AUTOMAKE(fxcd,0.9.6)
 
 dnl Checks for programs.
 AC_PROG_MAKE_SET
@@ -8,6 +8,11 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_INSTALL
+AC_PROG_RANLIB
+AC_CHECK_PROG(ccache_enabled,ccache,yes)
+if test "$ccache_enabled" = "yes"; then
+  CXX="ccache $CXX"
+fi
 
 dnl Checks for the FOX reswrap utility
 AC_CHECK_PROG(RESWRAP,reswrap,reswrap)
@@ -15,19 +20,16 @@ if test -z "$RESWRAP"; then
   AC_MSG_ERROR("FOX reswrap utility not found")
 fi
 
-dnl Checks for libraries.
-AC_CHECK_HEADERS(fox/fx.h,,AC_MSG_ERROR("fox/fx.h not found"))
-dnl Replace `main' with a function in -lFOX:
-dnl AC_CHECK_LIB(FOX, main)
-LIBS="${LIBS} -lFOX"
-
-dnl Replace `main' with a function in -lcdaudio:
-AC_CHECK_HEADERS(cdlyte.h,,AC_MSG_ERROR("cdlyte.h not found"))
-dnl AC_CHECK_LIB(cdlyte, main)
-LIBS="${LIBS} -lcdlyte"
-
 dnl Checks for header files.
 AC_HEADER_STDC
+
+dnl Checks for libraries (-lFOX)
+AC_CHECK_LIB(FOX-1.1,fxfindfox,,AC_MSG_ERROR(libFOX not found))
+AC_CHECK_HEADERS(fox/fx.h,,AC_MSG_ERROR(FOX headers not found))
+
+dnl Checks for libraries (-lcdlyte)
+AC_CHECK_LIB(cdlyte,cd_version,,AC_MSG_ERROR(libcdlyte not found))
+AC_CHECK_HEADERS(cdlyte.h,,AC_MSG_ERROR(cdlyte headers not found))
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

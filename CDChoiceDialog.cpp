@@ -29,7 +29,7 @@ FXIMPLEMENT(CDChoiceDialog,FXDialogBox,CDChoiceDialogMap,ARRAYNUMBER(CDChoiceDia
 CDChoiceDialog::CDChoiceDialog(FXWindow* owner,const struct cddb_query* entries)
 : FXDialogBox(owner,"CD Info Selection",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,360,250, 10,10,10,10, 4,4)
 {
-  FXint i;
+  FXint i,len;
   FXchar b[BUFSIZ];
   FXString s;
 
@@ -47,9 +47,10 @@ CDChoiceDialog::CDChoiceDialog(FXWindow* owner,const struct cddb_query* entries)
   list->appendHeader("Artist",NULL,100);
   list->appendHeader("Title",NULL,155);
 
+  len=sizeof(b);
   for(i=0;i<entries->query_matches;i++)
   {
-    cddb_category(entries->query_list[i].list_category,b,sizeof(b));
+    cddb_category(entries->query_list[i].list_category,b,&len);
     s.format("%s\t%s\t%s",b,entries->query_list[i].list_artist,entries->query_list[i].list_title);
     list->appendItem(s);
   }

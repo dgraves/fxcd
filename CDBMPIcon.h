@@ -28,8 +28,10 @@ private:
   CDBMPIcon(const CDBMPIcon&);
   CDBMPIcon &operator=(const CDBMPIcon&);
 public:
-  
+  //Constructor
   CDBMPIcon(FXApp* a,const void *pix=NULL,FXColor clr=FXRGB(192,192,192),FXuint opts=0,FXint w=1,FXint h=1);
+
+  //Replace a color in the icon
   void swapColor(FXColor before,FXColor after);
 };
 

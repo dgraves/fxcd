@@ -31,7 +31,7 @@ protected:
 private:
   CDSeekButton(const CDSeekButton&);
   CDSeekButton &operator=(const CDSeekButton&);
-public:  
+public:
   long onLeftBtnPress(FXObject*,FXSelector,void*);
   long onLeftBtnRelease(FXObject*,FXSelector,void*);
   long onRepeat(FXObject*,FXSelector,void*);
@@ -43,7 +43,7 @@ public:
     ID_LAST
   };
 public:
-
+  //Constructor
   CDSeekButton(FXComposite* p,const FXString& text,FXIcon* ic=NULL,FXObject* tgt=NULL,FXSelector sel=0,FXuint opts=BUTTON_NORMAL,FXint x=0,FXint y=0,FXint w=0,FXint h=0,FXint pl=DEFAULT_PAD,FXint pr=DEFAULT_PAD,FXint pt=DEFAULT_PAD,FXint pb=DEFAULT_PAD);
 
   //Get timer value in milliseconds.
@@ -52,7 +52,7 @@ public:
 
   //Set timer value in milliseconds.
   //A negative value inidcates use of app scroll speed.
-  void setSeekRate(FXint);
+  void setSeekRate(FXint seekrate);
 };
 
 #endif

@@ -25,9 +25,6 @@
 #include "CDChoiceDialog.h"
 #include "CDInfo.h"
 
-#define PACKAGE "fxcd"
-#define VERSION "0.8.2"
-
 CDInfo::CDInfo()
   : proxy(FALSE),
     cddbproto(PROTO_HTTP),
@@ -57,7 +54,7 @@ FXbool CDInfo::getLocalInfo(const CDPlayer& cddesc,disc_data* info)
   if(cddb_read_local("~/.cddb",cddesc.getDescriptor(),info)<0)
   {
     printf("no\n");
-    defaultSettings(cddesc,info);
+    defaultInfo(cddesc,info);
     return FALSE;
   }
   printf("yes\n");
@@ -97,7 +94,8 @@ FXbool CDInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* ow
 
   if(sock!=-1)
   {
-    FXint result=cddb_query(cddb_query_string(cddesc.getDescriptor(),query_string,sizeof(query_string)),sock,(cddbproto==PROTO_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
+    FXint len=BUFSIZ;
+    FXint result=cddb_query(cddb_query_string(cddesc.getDescriptor(),query_string,&len),sock,(cddbproto==PROTO_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
     if(result!=-1&&query.query_match!=QUERY_NOMATCH)
     {
       FXint choice=0;
@@ -133,7 +131,7 @@ FXbool CDInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* ow
   }
   printf("no\n");
 
-  defaultSettings(cddesc,info);
+  defaultInfo(cddesc,info);
   return FALSE;
 }
 
@@ -242,6 +240,6 @@ FXbool CDInfo::getCDDBServerList(struct cddb_serverlist* list) const
     if(result!=-1)
       return TRUE;
   }
-  
+
   return FALSE;
 }

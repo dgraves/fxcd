@@ -34,26 +34,26 @@ CDPlayer::CDPlayer()
   audiodisc(FALSE),
   stopped(TRUE),
   mute(FALSE),
-  currentTrack(0),
-  blinkMode(0),
   repeatMode(CDREPEAT_NONE),
   intro(FALSE),
   random(FALSE),
+  currentTrack(0),
   volLevel(0),
   volBalance(0.0)
 {
-  memset(&discInfo,0,sizeof(discInfo));
+  cd_init_disc_info(&discInfo);
   memset(&volCurrent,0,sizeof(volCurrent));
 
-  //Default intro time  
+  //Default intro time
   introTime.minutes=0;
   introTime.seconds=10;
 }
 
 CDPlayer::~CDPlayer()
 {
-  //Not stopping play.  Just closing handle.  
+  //Not stopping play.  Just closing handle.
   finish();
+  cd_free_disc_info(&discInfo);
 }
 
 //Check disc properties
@@ -160,8 +160,8 @@ FXbool CDPlayer::checkvol()
       return FALSE;
     }
 
-    //Someone has been modifying our audio settings.  
-    //Only update volume and balance if level changed by third party 
+    //Someone has been modifying our audio settings.
+    //Only update volume and balance if level changed by third party
     if(memcmp(&volume,&volCurrent,sizeof(volume))!=0)
     {
       memcpy(&volCurrent,&volume,sizeof(volume));
@@ -189,7 +189,7 @@ void CDPlayer::makeRandomList()
     randomArray.append(i);
 }
 
-//Returns track num between 1 and total.  
+//Returns track num between 1 and total.
 //If finished, returns 0 currentTrack=getRandomTrack();
 FXint CDPlayer::getRandomTrack()
 {
@@ -266,7 +266,6 @@ FXbool CDPlayer::pause()
   {
     if(cd_pause(media)<0)
       return FALSE;
-    blinkMode=0;
   }
 
   return TRUE;
@@ -299,7 +298,7 @@ FXbool CDPlayer::stop()
     stopped=TRUE;
     currentTrack=discInfo.disc_first_track;
   }
-  
+
   return TRUE;
 }
 
@@ -345,7 +344,7 @@ FXbool CDPlayer::skipNext()
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
-    cd_pause(media);  //We'll let this one slide by if it fails
+    cd_pause(media);  // Attempt to resume paused state
   }
 
   return TRUE;
@@ -391,7 +390,7 @@ FXbool CDPlayer::skipPrev()
     if(cd_play(media,currentTrack)<0)
       return FALSE;
     cd_pause(media);  //We'll let this one slide by if it fails
-  }  
+  }
 
   return TRUE;
 }
@@ -439,8 +438,8 @@ FXbool CDPlayer::openTray()
   if(media<0)
     return FALSE;
 
-  //Some cd players continue to act as if playing if ejected while playing, and ignore stop requests while tray is open.  
-  //So check for present disc to avoid infinite loop.  
+  //Some cd players continue to act as if playing if ejected while playing, and ignore stop requests while tray is open.
+  //So check for present disc to avoid infinite loop.
   if(nodisc==FALSE&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
   {
     if(!stop())
@@ -511,15 +510,9 @@ FXbool CDPlayer::update()
             currentTrack=discInfo.disc_current_track;
 	}
 	break;
-
-      case CDLYTE_PAUSED:
-        //Make time blink
-        if(++blinkMode>=10) blinkMode=0;
-	break;
-
       default:
       {
-	//The cd-rom isn't playing, but this flag indicates it should be.  
+	//The cd-rom is no longer playing, but if 'stopped' is false it should repeat.
 	if(stopped) break;
 
 	//Some of them (the ones that require this hack)
@@ -527,7 +520,6 @@ FXbool CDPlayer::update()
         struct timeval tv={0,10000};
         select(0,NULL,NULL,NULL,&tv);
       }
-
       case CDLYTE_COMPLETED:
         //Continuous play - some cheaper CD-ROMS constantly report this when
         //they are idle.  So we have the stopped flag.
@@ -579,7 +571,7 @@ FXbool CDPlayer::isValid() const
   return (media!=-1);
 }
 
-FXbool CDPlayer::isDoorOpen() const
+FXbool CDPlayer::isTrayOpen() const
 {
   return open;
 }
@@ -604,29 +596,32 @@ FXint CDPlayer::getNumTracks() const
   return discInfo.disc_total_tracks;
 }
 
-const struct disc_timeval* CDPlayer::getDiscLength() const
+void CDPlayer::getDiscLength(struct disc_timeval& dtv) const
 {
-  return &discInfo.disc_length;
+  memcpy(&dtv, &discInfo.disc_length, sizeof(struct disc_timeval));
 }
 
-const struct disc_timeval* CDPlayer::getDiscTime() const
+void CDPlayer::getDiscTime(struct disc_timeval& dtv) const
 {
-  return &discInfo.disc_time;  
+  memcpy(&dtv, &discInfo.disc_time, sizeof(struct disc_timeval));
 }
 
-const struct disc_timeval* CDPlayer::getTrackTime() const
+void CDPlayer::getTrackTime(struct disc_timeval& dtv) const
 {
-  return &discInfo.disc_track_time;
+  memcpy(&dtv, &discInfo.disc_track_time, sizeof(struct disc_timeval));
 }
 
-const struct disc_info* CDPlayer::getDiscInfo() const
+void CDPlayer::getDiscInfo(struct disc_info& info) const
 {
-  return &discInfo;
+  cd_free_disc_info(&info);
+  memcpy(&info, &discInfo, sizeof(struct disc_info)-sizeof(struct track_info *));
+  info.disc_track=(struct track_info*)malloc(info.disc_total_tracks*sizeof(struct track_info));
+  memcpy(info.disc_track, discInfo.disc_track, info.disc_total_tracks*sizeof(struct track_info));
 }
 
-const struct track_info* CDPlayer::getTrackInfo(FXint track) const
+void CDPlayer::getTrackInfo(FXint track, struct track_info& info) const
 {
-  return &discInfo.disc_track[track];
+  memcpy(&info, &discInfo.disc_track[track], sizeof(struct track_info));
 }
 
 FXint CDPlayer::getCurrentTrack() const
@@ -754,9 +749,4 @@ FXint CDPlayer::randomTrack()
     track=getRandomTrack();
   }
   return track;
-}
-
-FXbool CDPlayer::blink() const
-{
-  return (blinkMode<5);
 }

@@ -30,21 +30,13 @@ void CDBMPIcon::swapColor(FXColor before,FXColor after)
 {
   if(before!=after)
   {
-    FXuint i=0,size=width*height*channels;
-    for(i=0;i<size;i+=channels)
+    FXuint i=0,size=width*height;
+    for(i=0;i<size;i++)
     {
-      if(FXRGB(data[i],data[i+1],data[i+2])==before)
-      {
-        data[i]=FXREDVAL(after);
-        data[i+1]=FXGREENVAL(after);
-        data[i+2]=FXBLUEVAL(after);
-      }
+      if(data[i]==before)
+        data[i]=after;
       else if(after==transp)
-      {
-        data[i]=FXREDVAL(before);
-        data[i+1]=FXGREENVAL(before);
-        data[i+2]=FXBLUEVAL(before);
-      }
+        data[i]=before;
     }
     if(after==transp) transp=before;
     render();
