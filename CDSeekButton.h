@@ -19,8 +19,6 @@
 #ifndef _CDSEEKBUTTON_H_
 #define _CDSEEKBUTTON_H_
 
-#include "fox/fx.h"
-
 class CDSeekButton : public FXButton
 {
   FXDECLARE(CDSeekButton)

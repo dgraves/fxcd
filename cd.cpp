@@ -17,7 +17,14 @@
  */
 
 #include <signal.h>
+extern "C" {
+#include "cdaudio.h"
+}
 #include "fox/fx.h"
+#include "fox/FXArray.h"
+#include "fox/FXElement.h"
+#include "CDPlayer.h"
+#include "CDInfo.h"
 #include "CDWindow.h"
 
 int main(int argc, char** argv)

@@ -18,12 +18,12 @@
 
 #include <string.h>
 #include <unistd.h>
-
 extern "C" {
 #include "cdaudio.h"
 }
-
 #include "fox/fx.h"
+#include "fox/FXArray.h"
+#include "fox/FXElement.h"
 #include "CDPlayer.h"
 #include "CDInfo.h"
 

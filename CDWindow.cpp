@@ -16,6 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+extern "C" {
+#include "cdaudio.h"
+}
+#include "fox/fx.h"
+#include "fox/FXArray.h"
+#include "fox/FXElement.h"
+#include "CDPlayer.h"
+#include "CDInfo.h"
 #include "CDSeekButton.h"
 #include "CDPreferences.h"
 #include "CDWindow.h"

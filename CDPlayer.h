@@ -19,15 +19,6 @@
 #ifndef _CDPLAYER_H_
 #define _CDPLAYER_H_
 
-//libcdaudio needs some fixing
-extern "C" {
-#include "cdaudio.h"
-}
-
-#include "fox/fx.h"
-#include "fox/FXArray.h"
-#include "fox/FXElement.h"
-
 enum
 {
   CDREPEAT_NONE=0,

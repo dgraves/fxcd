@@ -19,9 +19,6 @@
 #ifndef _CDWINDOW_H_
 #define _CDWINDOW_H_
 
-#include "CDPlayer.h"
-#include "CDInfo.h"
-
 enum
 {
   CDTIME_DISC=0,
