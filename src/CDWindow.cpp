@@ -31,9 +31,14 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_CLOSE,0,CDWindow::onCmdQuit),
   FXMAPFUNC(SEL_SIGNAL,CDWindow::ID_QUIT,CDWindow::onCmdQuit),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_QUIT,CDWindow::onCmdQuit),
+  FXMAPFUNC(SEL_RIGHTBUTTONRELEASE,CDWindow::ID_CANVAS,CDWindow::onMouseUp),
   FXMAPFUNC(SEL_PAINT,CDWindow::ID_CANVAS,CDWindow::onPaint),
   FXMAPFUNC(SEL_TIMEOUT,CDWindow::ID_TIMEOUT,CDWindow::onTimeout),
 
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TOGGLEMENUBAR,CDWindow::onCmdToggleMenuBar),
+  FXMAPFUNC(SEL_UPDATE,CDWindow::ID_TOGGLEMENUBAR,CDWindow::onUpdToggleMenuBar),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TOGGLESTATUSBAR,CDWindow::onCmdToggleStatusBar),
+  FXMAPFUNC(SEL_UPDATE,CDWindow::ID_TOGGLESTATUSBAR,CDWindow::onUpdToggleStatusBar),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TOGGLETOOLTIPS,CDWindow::onCmdToggleTooltips),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_TOGGLETOOLTIPS,CDWindow::onUpdToggleTooltips),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_ABOUT,CDWindow::onCmdAbout),
@@ -140,8 +145,8 @@ CDWindow::CDWindow(FXApp* app)
 
   // LCD contents
   lcdframe=new FXHorizontalFrame(contents,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 2,2,2,2, 0,0);
-  FXVerticalFrame* canvasItems=new FXVerticalFrame(lcdframe,LAYOUT_FIX_WIDTH|LAYOUT_FILL_Y,0,0,114,0, 0,0,0,0, 0,0);
-  canvas=new CDCanvas(canvasItems,this,ID_CANVAS,LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* canvasItems=new FXVerticalFrame(lcdframe,LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0, 0,0);
+  canvas=new CDCanvas(canvasItems,this,ID_CANVAS,LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,114,32);
   FXHorizontalFrame* lcdbtns=new FXHorizontalFrame(canvasItems,LAYOUT_FILL_X);
   lcdwin.push_back(new FXToggleButton(lcdbtns,FXString::null,FXString::null,disbmp[0],lcdbmp[0],&introtgt,FXDataTarget::ID_VALUE,0, 0,0,0,0, 0,0,0,0));
   lcdwin.push_back(new FXToggleButton(lcdbtns,FXString::null,FXString::null,disbmp[1],lcdbmp[1],this,ID_RANDOM,0, 0,0,0,0, 0,0,0,0));
@@ -224,13 +229,21 @@ CDWindow::CDWindow(FXApp* app)
     new FXMenuCommand(optionsmenu,"&Preferences...\tCtrl+P",NULL,this,ID_PREFS);
   viewmenu=new FXMenuPane(this);
     new FXMenuTitle(menubar,"&View",NULL,viewmenu);
-    new FXMenuCheck(viewmenu,"&Menubar",menubar,FXMenuBar::ID_TOGGLESHOWN);
-    new FXMenuCheck(viewmenu,"&Statusbar",statusbar,FXStatusBar::ID_TOGGLESHOWN);
+    new FXMenuCheck(viewmenu,"&Menubar",this,ID_TOGGLEMENUBAR);
+    new FXMenuCheck(viewmenu,"&Statusbar",this,ID_TOGGLESTATUSBAR);
   helpmenu=new FXMenuPane(this);
     new FXMenuTitle(menubar,"&Help",NULL,helpmenu);
     new FXMenuCheck(helpmenu,"&Tool tips\tCtl-B",this,ID_TOGGLETOOLTIPS);
     new FXMenuSeparator(helpmenu);
     new FXMenuCommand(helpmenu,"&About "PROG_PACKAGE"...",NULL,this,ID_ABOUT);
+
+
+  // Create popup menu
+  popupmenu=new FXMenuPane(this);
+  new FXMenuCascade(popupmenu,"&File",NULL,filemenu);
+  new FXMenuCascade(popupmenu,"&Options",NULL,optionsmenu);
+  new FXMenuCascade(popupmenu,"&View",NULL,viewmenu);
+  new FXMenuCascade(popupmenu,"&Help",NULL,helpmenu);
 
   // Connect data targets
   stoponexittgt.connect(stoponexit);
@@ -606,6 +619,17 @@ FXColor CDWindow::getIconColor() const
   return iconclr;
 }
 
+long CDWindow::onMouseUp(FXObject*,FXSelector,void* ptr)
+{
+  FXEvent* event=(FXEvent*)ptr;
+  if(!event->moved)
+  {
+    popupmenu->popup(NULL,event->root_x,event->root_y);
+    getApp()->runModalWhileShown(popupmenu);
+  }
+  return 1;
+}
+
 long CDWindow::onPaint(FXObject*,FXSelector,void*)
 {
   struct disc_info di;
@@ -644,6 +668,42 @@ long CDWindow::onTimeout(FXObject*,FXSelector,void*)
   if(timer) timer=getApp()->removeTimeout(timer);
   timer=getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
 
+  return 1;
+}
+
+long CDWindow::onCmdToggleMenuBar(FXObject*,FXSelector,void*)
+{
+  if(menubar->shown())
+    menubar->hide();
+  else
+    menubar->show();
+  resize(getWidth(),getDefaultHeight());
+
+  return 1;
+}
+
+long CDWindow::onUpdToggleMenuBar(FXObject* sender,FXSelector,void*)
+{
+  FXuint msg=(menubar->shown())?ID_CHECK:ID_UNCHECK;
+  sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
+  return 1;
+}
+
+long CDWindow::onCmdToggleStatusBar(FXObject*,FXSelector,void*)
+{
+  if(statusbar->shown())
+    statusbar->hide();
+  else
+    statusbar->show();
+  resize(getWidth(),getDefaultHeight());
+
+  return 1;
+}
+
+long CDWindow::onUpdToggleStatusBar(FXObject* sender,FXSelector,void*)
+{
+  FXuint msg=(statusbar->shown())?ID_CHECK:ID_UNCHECK;
+  sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
 
@@ -1074,6 +1134,7 @@ CDWindow::~CDWindow()
   delete optionsmenu;
   delete viewmenu;
   delete filemenu;
+  delete popupmenu;
 
   for(iter=disbmp.begin();iter!=disbmp.end();++iter)
     delete (*iter);
