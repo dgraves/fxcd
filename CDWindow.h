@@ -72,15 +72,14 @@ protected:
   FXDataTarget* proxyPortTarget;
   FXDataTarget* cddbProtoTarget;
   FXDataTarget* cddbAddrTarget;
-  FXDataTarget* cdindexAddrTarget;
-  FXDataTarget* cdindexPortTarget;
 
   FXTimer* timer;
   FXColor lcdforecolor;
   FXColor lcdbackcolor;
   FXColor iconcolor;
-  FXbool remotedb;           //obtain disc info from freedb
-  FXbool localdb;            //check local db before freedb server
+  FXbool remoteInfo;
+  FXbool localFirst;
+  FXbool useCDDB;
   FXbool stopOnExit;
   FXuint startMode;
   FXuint timeMode;            //disc, track, disc remain, track remain
