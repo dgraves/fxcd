@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/cd.cpp)
-AM_INIT_AUTOMAKE(fxcd,0.9.6)
+AM_INIT_AUTOMAKE(fxcd,0.9.9)
 
 dnl Perform tests with c++ compiler
 AC_LANG_CPLUSPLUS
