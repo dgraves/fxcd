@@ -32,6 +32,8 @@ class FXAPI CDCanvas : public FXCanvas
   FXDECLARE(CDCanvas)
   friend class CDWindow;
 protected:
+  FXint       dw;               // Default width
+  FXint       dh;               // Default height
   FXuint      timemode;         // Time mode: disc, track, disc remain, track remain
   FXbool      blink;            // Is display currently in the blink state ("--:--")
   FXbool      blinkmode;        // Is blinkmode currently enabled
@@ -60,6 +62,12 @@ public:
 
   //Widget creation
   virtual void create();
+
+  //Return the default width of this window
+  virtual FXint getDefaultWidth();
+
+  //Return the default height of this window
+  virtual FXint getDefaultHeight();
 
   //Set time mode
   void setTimeMode(FXuint mode);
