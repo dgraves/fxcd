@@ -24,6 +24,7 @@
 #include "CDSeekButton.h"
 #include "CDBMPIcon.h"
 #include "CDCanvas.h"
+#include "CDPreferences.h"
 #include "CDWindow.h"
 #include "icons.h"
 
@@ -799,6 +800,8 @@ long CDWindow::onUpdStatusTrack(FXObject* sender,FXSelector,void*)
 
 long CDWindow::onCmdPrefs(FXObject*,FXSelector,void*)
 {
+  CDPreferences dialog(this);
+  dialog.execute();
   return 1;
 }
 

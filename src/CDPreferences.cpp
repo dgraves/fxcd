@@ -20,22 +20,231 @@
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
+#include "CDdefs.h"
 #include "CDPlayer.h"
-#include "CDInfo.h"
+#include "CDCanvas.h"
 #include "CDWindow.h"
 #include "CDServerDialog.h"
 #include "CDPreferences.h"
 
 FXDEFMAP(CDPreferences) CDPreferencesMap[]={
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_ACCEPT,CDPreferences::onCmdAccept),
+  FXMAPFUNC(SEL_SELECTED,CDPreferences::ID_LIST,CDPreferences::onCmdList),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEADD,CDPreferences::onCmdDeviceAdd),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICEREM,CDPreferences::onCmdDeviceRemove),
   FXMAPFUNC(SEL_UPDATE,CDPreferences::ID_DEVICEREM,CDPreferences::onUpdDeviceRemove),
-  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEFAULTDEVS,CDPreferences::onCmdDefaultDevs),
-  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_SERVERLIST,CDPreferences::onCmdServerList),
-  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_ADVANCEDCDDB,CDPreferences::onCmdAdvanced)
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEFAULTDEVS,CDPreferences::onCmdDefaultDevs)
 };
 
 FXIMPLEMENT(CDPreferences,FXDialogBox,CDPreferencesMap,ARRAYNUMBER(CDPreferencesMap))
+
+CDPreferences::CDPreferences(CDWindow* owner)
+: FXDialogBox(owner,"CD Player Preferences",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,0,0, 0,0,0,0),
+  showmenubar(owner->menubar->shown()),
+  showstatusbar(owner->statusbar->shown()),
+  showtooltips(owner->tooltip!=NULL),
+  lcdforeclr(owner->lcdforeclr),
+  lcdbackclr(owner->lcdbackclr),
+  iconclr(owner->iconclr),
+  startmode(owner->startmode),
+  stoponexit(owner->stoponexit),
+  intro(owner->cdplayer.getIntro()),
+  introtime(owner->cdplayer.getIntroLength()),
+  random(owner->cdplayer.getRandom()),
+  repeatmode(owner->cdplayer.getRepeatMode()),
+  timemode(owner->canvas->getTimeMode()),
+  cdwindow(owner)
+{
+  showmenubartgt.connect(showmenubar);
+  showstatusbartgt.connect(showstatusbar);
+  showtooltipstgt.connect(showtooltips);
+  lcdforeclrtgt.connect(lcdforeclr);
+  lcdbackclrtgt.connect(lcdbackclr);
+  iconclrtgt.connect(iconclr);
+  startmodetgt.connect(startmode);
+  stoponexittgt.connect(stoponexit);
+  introtgt.connect(intro);
+  introtimetgt.connect(introtime);
+  randomtgt.connect(random);
+  repeatmodetgt.connect(repeatmode);
+  timemodetgt.connect(timemode);
+
+  FXVerticalFrame* contents=new FXVerticalFrame(this,LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXHorizontalFrame* buttons=new FXHorizontalFrame(contents,PACK_UNIFORM_WIDTH|LAYOUT_BOTTOM|LAYOUT_FILL_X);
+  new FXButton(buttons,"&Accept",NULL,this,CDPreferences::ID_ACCEPT,BUTTON_INITIAL|BUTTON_DEFAULT|LAYOUT_RIGHT|FRAME_RAISED|FRAME_THICK,0,0,0,0, 20,20);
+  new FXButton(buttons,"&Cancel",NULL,this,FXDialogBox::ID_CANCEL,LAYOUT_RIGHT|FRAME_RAISED|FRAME_THICK,0,0,0,0, 20,20);
+  new FXHorizontalSeparator(contents,SEPARATOR_RIDGE|LAYOUT_BOTTOM|LAYOUT_FILL_X);
+
+  FXHorizontalFrame* primary=new FXHorizontalFrame(contents,LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* listframe=new FXVerticalFrame(primary,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FIX_WIDTH|LAYOUT_FILL_Y,0,0,120,0, 0,0,0,0, 0,0);
+  new FXLabel(listframe,"Category",NULL,JUSTIFY_LEFT|FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X);
+
+  tree=new FXTreeList(listframe,this,ID_LIST,TREELIST_BROWSESELECT|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|LAYOUT_FILL_X|LAYOUT_FILL_Y);
+
+  treeitem.push_back(tree->addItemLast(0,"Appearance",NULL,NULL));
+  treeitem.push_back(tree->addItemLast(treeitem[CDPREFS_APPEARANCE],"Colors",NULL,NULL));
+  treeitem.push_back(tree->addItemLast(0,"Options",NULL,NULL));
+  treeitem.push_back(tree->addItemLast(treeitem[CDPREFS_OPTIONS],"Display",NULL,NULL));
+  treeitem.push_back(tree->addItemLast(treeitem[CDPREFS_OPTIONS],"Player",NULL,NULL));
+  treeitem.push_back(tree->addItemLast(0,"Hardware",NULL,NULL));
+
+  tree->expandTree(treeitem[CDPREFS_APPEARANCE]);
+  tree->expandTree(treeitem[CDPREFS_OPTIONS]);
+
+  switcher=new FXSwitcher(primary,LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
+
+  // Appearance panel1
+  FXVerticalFrame* settingsframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(settingsframe,"Appearance");
+  new FXHorizontalSeparator(settingsframe,SEPARATOR_LINE|LAYOUT_FILL_X);
+
+  FXGroupBox* settingsbox=new FXGroupBox(settingsframe,"Player Appearance",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXVerticalFrame* appbtnsframe=new FXVerticalFrame(settingsbox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXCheckButton(appbtnsframe,"Show Menu Bar",&showmenubartgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXCheckButton(appbtnsframe,"Show Status Bar",&showstatusbartgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXCheckButton(appbtnsframe,"Show Tool Tips",&showtooltipstgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+
+  // Colors panel
+  FXVerticalFrame* colorsframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(colorsframe,"Colors");
+  new FXHorizontalSeparator(colorsframe,SEPARATOR_LINE|LAYOUT_FILL_X);
+
+  FXGroupBox* colorsbox=new FXGroupBox(colorsframe,"Display Colors",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXMatrix *colorsmatrix=new FXMatrix(colorsbox,3,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(colorsmatrix,"Display Foreground Color:",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXLabel(colorsmatrix,"Display Background Color:",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXLabel(colorsmatrix,"Button Icon Color:",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXColorWell(colorsmatrix,FXRGB(0,0,0),&lcdforeclrtgt,FXDataTarget::ID_VALUE,COLORWELL_OPAQUEONLY|FRAME_SUNKEN|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y|LAYOUT_FIX_WIDTH|LAYOUT_FIX_HEIGHT|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW,0,0,40,24);
+  new FXColorWell(colorsmatrix,FXRGB(0,0,0),&lcdbackclrtgt,FXDataTarget::ID_VALUE,COLORWELL_OPAQUEONLY|FRAME_SUNKEN|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y|LAYOUT_FIX_WIDTH|LAYOUT_FIX_HEIGHT|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW,0,0,40,24);
+  new FXColorWell(colorsmatrix,FXRGB(0,0,0),&iconclrtgt,FXDataTarget::ID_VALUE,COLORWELL_OPAQUEONLY|FRAME_SUNKEN|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y|LAYOUT_FIX_WIDTH|LAYOUT_FIX_HEIGHT|LAYOUT_FILL_COLUMN|LAYOUT_FILL_ROW,0,0,40,24);
+
+  // Options panel
+  FXVerticalFrame* optionsframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(optionsframe,"Options");
+  new FXHorizontalSeparator(optionsframe,SEPARATOR_LINE|LAYOUT_FILL_X);
+
+  FXGroupBox* startbox=new FXGroupBox(optionsframe,"Startup Action",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXVerticalFrame* startframe=new FXVerticalFrame(startbox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXRadioButton(startframe,"No Action",&startmodetgt,FXDataTarget::ID_OPTION+CDSTART_NONE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXRadioButton(startframe,"Start Play on Startup",&startmodetgt,FXDataTarget::ID_OPTION+CDSTART_START,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXRadioButton(startframe,"Stop Play on Startup",&startmodetgt,FXDataTarget::ID_OPTION+CDSTART_STOP,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+
+  FXGroupBox* stopbox=new FXGroupBox(optionsframe,"Exit Action",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXVerticalFrame* stopframe=new FXVerticalFrame(stopbox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXCheckButton(stopframe,"Stop Play on Exit",&stoponexittgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+
+  // Display panel
+  FXVerticalFrame* displayframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(displayframe,"Display");
+  new FXHorizontalSeparator(displayframe,SEPARATOR_LINE|LAYOUT_FILL_X);
+
+  FXGroupBox* timemodebox=new FXGroupBox(displayframe,"Display Time Modes",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXVerticalFrame* timemodeframe=new FXVerticalFrame(timemodebox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXRadioButton(timemodeframe,"Album",&timemodetgt,FXDataTarget::ID_OPTION+CDTIME_DISC,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXRadioButton(timemodeframe,"Track",&timemodetgt,FXDataTarget::ID_OPTION+CDTIME_TRACK,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXRadioButton(timemodeframe,"Album Remaining",&timemodetgt,FXDataTarget::ID_OPTION+CDTIME_DISCREM,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXRadioButton(timemodeframe,"Track Remaining",&timemodetgt,FXDataTarget::ID_OPTION+CDTIME_TRACKREM,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+
+  // Player panel
+  FXVerticalFrame* playerframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(playerframe,"Player");
+  new FXHorizontalSeparator(playerframe,SEPARATOR_LINE|LAYOUT_FILL_X);
+
+  FXGroupBox* playmodebox=new FXGroupBox(playerframe,"Play Modes",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXVerticalFrame* playmodeframe=new FXVerticalFrame(playmodebox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXCheckButton(playmodeframe,"Shuffle Play",&randomtgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXCheckButton(playmodeframe,"Intro Play",&introtgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  FXHorizontalFrame* introtimeframe=new FXHorizontalFrame(playmodeframe,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(introtimeframe,"Intro Length:",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXSpinner(introtimeframe,4,&introtimetgt,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
+
+  FXGroupBox* repeatbox=new FXGroupBox(playerframe,"Repeat Mode",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXVerticalFrame* repeatframe=new FXVerticalFrame(repeatbox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXRadioButton(repeatframe,"None",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_NONE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXRadioButton(repeatframe,"Track",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_TRACK,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+  new FXRadioButton(repeatframe,"Album",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_DISC,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+
+  // Hardware panel
+  FXVerticalFrame* hardframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(hardframe,"Hardware");
+  new FXHorizontalSeparator(hardframe,SEPARATOR_LINE|LAYOUT_FILL_X);
+
+  FXGroupBox* hardbox=new FXGroupBox(hardframe,"CD Audio Device",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXHorizontalFrame* devframe=new FXHorizontalFrame(hardbox,LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* devlistframe=new FXVerticalFrame(devframe,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0, 0,0);
+  devlist=new FXList(devlistframe,NULL,0,LIST_BROWSESELECT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* devbuttons=new FXVerticalFrame(devframe,PACK_UNIFORM_WIDTH|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
+  new FXButton(devbuttons,"&Add",NULL,this,ID_DEVICEADD,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
+  new FXButton(devbuttons,"&Remove",NULL,this,ID_DEVICEREM,FRAME_THICK|FRAME_RAISED,0,0,0,0, 20,20);
+
+}
+
+long CDPreferences::onCmdAccept(FXObject*,FXSelector,void*)
+{
+  return 1;
+}
+
+long CDPreferences::onCmdList(FXObject*,FXSelector,void* ptr)
+{
+  std::vector<FXTreeItem*>::const_iterator iter;
+
+  for(iter=treeitem.begin();iter!=treeitem.end();++iter)
+  {
+    if(*iter==(FXTreeItem*)ptr)
+    {
+      switcher->handle(this,MKUINT(FXSwitcher::ID_OPEN_FIRST+(iter-treeitem.begin()),SEL_COMMAND),NULL);
+      break;
+    }
+  }
+
+  return 1;
+}
+
+long CDPreferences::onCmdDeviceAdd(FXObject*,FXSelector,void*)
+{
+  FXInputDialog dialog(this,"Add CD-ROM Device","Device name:");
+  if(dialog.execute())
+  {
+    FXString devnam=dialog.getText();
+  }
+  return 1;
+}
+
+long CDPreferences::onCmdDeviceRemove(FXObject*,FXSelector,void*)
+{
+  return 1;
+}
+
+long CDPreferences::onUpdDeviceRemove(FXObject* sender,FXSelector,void*)
+{
+  return 1;
+}
+
+long CDPreferences::onCmdDefaultDevs(FXObject*,FXSelector,void*)
+{
+  return 1;
+}
+
+void CDPreferences::setPanel(FXuint panel)
+{
+  tree->setCurrentItem(treeitem[panel],TRUE);
+}
+
+FXuint CDPreferences::getPanel() const
+{
+  FXTreeItem* ti=tree->getCurrentItem();
+  std::vector<FXTreeItem*>::const_iterator iter;
+
+  for(iter=treeitem.begin();iter!=treeitem.end();++iter)
+  {
+    if(*iter==ti)
+      return iter-treeitem.begin();
+  }
+
+  return 0;  // Default to first item
+}
+
+/*
 
 CDPreferences::CDPreferences(CDWindow* owner)
 : FXDialogBox(owner,"CD Player Preferences",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,0,0, 10,10,10,10, 4,4),
@@ -265,3 +474,5 @@ long CDPreferences::onCmdAdvanced(FXObject*,FXSelector sel,void*)
   }
   return 1;
 }
+
+*/

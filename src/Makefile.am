@@ -42,6 +42,7 @@ fxcd_SOURCES = \
 		CDCanvas.cpp	        \
 		CDListBox.cpp	\
 		CDPlayer.cpp	        \
+		CDPreferences.cpp	\
 		CDSeekButton.cpp	\
 		CDWindow.cpp	        \
 		cd.cpp

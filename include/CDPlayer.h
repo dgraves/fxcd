@@ -31,7 +31,6 @@ enum
 class CDPlayer
 {
   friend class CDWindow;            // For data targets
-  friend class CDPrefsBox;          // For data targets
 protected:
   cddesc_t media;                   // CD-ROM handle
   FXbool open;                      // Drive door status (open/closed)
