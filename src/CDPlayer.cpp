@@ -1,5 +1,5 @@
 /* CDPlayer.cpp
- * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -50,6 +50,9 @@ CDPlayer::CDPlayer()
   cd_init_disc_info(&discInfo);
   memset(&volCurrent,0,sizeof(volCurrent));
 
+  playlen.minutes=0;
+  playlen.seconds=0;
+
   //Default intro time
   introTime.minutes=0;
   introTime.seconds=10;
@@ -65,7 +68,7 @@ CDPlayer::~CDPlayer()
 //Check disc properties
 void CDPlayer::load()
 {
-  FXint i;
+  FXint i,sec;
 
   cd_stat(media,&discInfo);
   if(!discInfo.disc_present)
@@ -101,12 +104,20 @@ void CDPlayer::load()
     }
 
     //Make the current track be the first track - or track being played
-    if(!audiodisc)
-      currentTrack=0;
-    else if(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED)
+    if(audiodisc&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
       currentTrack=discInfo.disc_current_track;
     else
       currentTrack=discInfo.disc_first_track;
+
+    //Calculate actual play time for disc in seconds
+    sec=0;
+    for(i=0;i<discInfo.disc_total_tracks;i++)
+    {
+      sec+=discInfo.disc_track[i].track_length.minutes*60+discInfo.disc_track[i].track_length.seconds;
+    }
+    playlen.minutes=sec/60;
+    playlen.seconds=sec%60;
+    playlen.frames=0;
   }
 
   //Helpful when starting while disc is already playing
@@ -254,7 +265,10 @@ FXbool CDPlayer::play()
       currentTrack=getRandomTrack();
     }
     if(cd_play(media,currentTrack)<0)
+    {
+      DWORD err=GetLastError();
       return FALSE;
+    }
     stopped=FALSE;
   }
 
@@ -603,6 +617,11 @@ FXint CDPlayer::getNumTracks() const
   return discInfo.disc_total_tracks;
 }
 
+void CDPlayer::getPlayLength(struct disc_timeval& dtv) const
+{
+  memcpy(&dtv, &playlen, sizeof(struct disc_timeval));
+}
+
 void CDPlayer::getDiscLength(struct disc_timeval& dtv) const
 {
   memcpy(&dtv, &discInfo.disc_length, sizeof(struct disc_timeval));
@@ -610,7 +629,7 @@ void CDPlayer::getDiscLength(struct disc_timeval& dtv) const
 
 void CDPlayer::getTrackLength(FXint track, struct disc_timeval& dtv) const
 {
-  memcpy(&dtv, &discInfo.disc_track[track].track_length, sizeof(struct disc_timeval));
+  memcpy(&dtv, &discInfo.disc_track[track-1].track_length, sizeof(struct disc_timeval));
 }
 
 void CDPlayer::getDiscTime(struct disc_timeval& dtv) const
