@@ -1,5 +1,5 @@
 /* CDWindow.cpp
- * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -202,10 +202,6 @@ CDWindow::CDWindow(FXApp* app)
   filemenu=new FXMenuPane(this);
     new FXMenuTitle(menubar,"&File",NULL,filemenu);
     new FXMenuCommand(filemenu,"&Quit\tCtrl-Q",NULL,this,ID_QUIT);
-  viewmenu=new FXMenuPane(this);
-    new FXMenuTitle(menubar,"&View",NULL,viewmenu);
-    new FXMenuCheck(viewmenu,"&Menubar",menubar,FXMenuBar::ID_TOGGLESHOWN);
-    new FXMenuCheck(viewmenu,"&Statusbar",statusbar,FXStatusBar::ID_TOGGLESHOWN);
   optionsmenu=new FXMenuPane(this);
     new FXMenuTitle(menubar,"&Options",NULL,optionsmenu);
     new FXMenuCheck(optionsmenu,"&Intro",&introtgt,FXDataTarget::ID_VALUE);
@@ -226,6 +222,10 @@ CDWindow::CDWindow(FXApp* app)
     new FXMenuCheck(optionsmenu,"Stop Play on &Exit",&stoponexittgt,FXDataTarget::ID_VALUE);
     new FXMenuSeparator(optionsmenu);
     new FXMenuCommand(optionsmenu,"&Preferences...\tCtrl+P",NULL,this,ID_PREFS);
+  viewmenu=new FXMenuPane(this);
+    new FXMenuTitle(menubar,"&View",NULL,viewmenu);
+    new FXMenuCheck(viewmenu,"&Menubar",menubar,FXMenuBar::ID_TOGGLESHOWN);
+    new FXMenuCheck(viewmenu,"&Statusbar",statusbar,FXStatusBar::ID_TOGGLESHOWN);
   helpmenu=new FXMenuPane(this);
     new FXMenuTitle(menubar,"&Help",NULL,helpmenu);
     new FXMenuCheck(helpmenu,"&Tool tips\tCtl-B",this,ID_TOGGLETOOLTIPS);
@@ -716,7 +716,7 @@ long CDWindow::onUpdStatusDisc(FXObject* sender,FXSelector,void*)
   if(cdplayer.isDiscPresent())
   {
     struct disc_timeval length;
-    cdplayer.getDiscLength(length);
+    cdplayer.getPlayLength(length);
     str.format("%02d:%02d",length.minutes,length.seconds);
   }
 
@@ -730,7 +730,7 @@ long CDWindow::onUpdStatusTrack(FXObject* sender,FXSelector,void*)
   if(cdplayer.isDiscPresent())
   {
     struct disc_timeval length;
-    cdplayer.getTrackLength(cdplayer.getCurrentTrack()-1,length);
+    cdplayer.getTrackLength(cdplayer.getCurrentTrack(),length);
     str.format("%02d:%02d",length.minutes,length.seconds);
   }
   sender->handle(this,MKUINT(ID_SETSTRINGVALUE,SEL_COMMAND),(void*)&str);
@@ -788,7 +788,7 @@ long CDWindow::onCmdTrack(FXObject*,FXSelector,void* ptr)
 
 long CDWindow::onUpdTrack(FXObject*,FXSelector,void*)
 {
-  FXint track=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())?cdplayer.getCurrentTrack()-1:0;
+  FXint track=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())?cdplayer.getCurrentTrack()-cdplayer.getStartTrack():0;
   if(track>-1&&track<tracktitle->getNumItems()&&track<cdplayer.getNumTracks())
   {
     tracktitle->setCurrentItem(track);
