@@ -36,11 +36,11 @@ CDInfo::CDInfo()
     cddbport(HTTP_DEFAULT_PORT),
     cdindexport(HTTP_DEFAULT_PORT),
     proxyport(0),
-    cddbaddr("www.freedb.org"),
+    cddbaddr("freedb.freedb.org"),
     cdindexaddr("www.cdindex.org"),
     proxyaddr("0.0.0.0"),
-    cddbexec("cgi-bin/cddb.cgi"),
-    cdindexexec("cgi-bin/cdi/get.pl")
+    cddbexec(CDDB_HTTP_QUERY_CGI),
+    cdindexexec(CDINDEX_QUERY_CGI)
 {
 }
 
