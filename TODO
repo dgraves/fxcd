@@ -1,0 +1,31 @@
+-Fixed? Seek needs improvements for crossing track boundaries:
+          * Seek past end of track ignores random mode and repeat track mode.  
+          * Seek past of end of last track generates an assertion failure.  
+
+-Fixed? Intro mode does not observe repeat disc mode.  
+
+-Fixed? When CD player plays entire disk, track should reset to 1.  
+
+-Fixed? Ejecting a CD while player is running causes player to crash.
+
+Possibly use FXThreadEx to get cd info in background.  
+
+Changing icon colors will usually require a restart of the app.  Each icon
+should each have a mask indicating which places to recolor.  This will fix the problem.  Currently the problem is due to colors being slightly different after being restored from a pixmap.  
+
+When drive door is closed manually with no disc in the tray the cd player still thinks drive door is open.  
+
+Mute does not work.  
+
+Increase seek speed with respect to seek length
+
+-Done (mostly) Implement settings button and menu option.  
+
+Toshiba DVD-ROM performs like expected but Generic CD-ROM has exhibited 2 problems:
+  1.  It does not report its state as being completed when a disc plays to end.  So,
+      because of this repeat album is not working here.  For some reason it reports this
+      state when it starts playing, before it reports the play state.  I guess you get what you pay for.  
+  2.  Ejecting when CD is playing stops the cd but does not eject.  Eject must be pressed again to make it happen.  
+      gtcd and kscd als exhibit this behavior (but neither of them can ever eject the cd).  
+This may not be worth worrying about.  Once, RealJukebox told me it could not record a CD because
+the drive was sub-par so maybe that's the answer to give to anyone who experiences these problems.  
