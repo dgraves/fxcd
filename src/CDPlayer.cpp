@@ -223,6 +223,7 @@ FXbool CDPlayer::init(const FXString& device)
     return FALSE;
 
   load();
+  checkvol();
   return TRUE;
 }
 
@@ -703,6 +704,7 @@ FXbool CDPlayer::setMute(FXbool mode)
 {
   if(mode!=mute)
   {
+    mute=mode;
     if(mode&&media!=-1)
     {
       //Volume level set to zero
@@ -716,8 +718,6 @@ FXbool CDPlayer::setMute(FXbool mode)
       if(setvol()==FALSE)      //Bring the volume back
         return FALSE;
     }
-
-    mute=mode;
   }
 
   return TRUE;

@@ -1,4 +1,4 @@
-/* CDSeekButton.h
+/* CDSeekButton.cpp
  * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
@@ -78,6 +78,8 @@ long CDSeekButton::onLeftBtnRelease(FXObject* sender,FXSelector sel,void* ptr)
 long CDSeekButton::onRepeat(FXObject*,FXSelector,void* ptr)
 {
   if(target) target->handle(this,FXSEL(SEL_COMMAND,message),ptr);
+  if(repeater) repeater=getApp()->removeTimeout(repeater);
+  repeater=getApp()->addTimeout(this,ID_REPEAT,(rate<0)?getApp()->getScrollSpeed():rate);
   return 1;
 }
 

@@ -18,9 +18,8 @@
 
 #include "cdlyte.h"
 #include "fox/fx.h"
-#include "fox/FXArray.h"
-#include "fox/FXElement.h"
 #include "CDPlayer.h"
+#include "CDListBox.h"
 #include "CDSeekButton.h"
 #include "CDBMPIcon.h"
 #include "CDWindow.h"
@@ -46,7 +45,8 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_CHANGED,CDWindow::ID_VOLUME,CDWindow::onCmdVolume),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_VOLUME,CDWindow::onCmdVolume),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_VOLUME,CDWindow::onUpdVolume),
-//  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_MUTE,CDWindow::onCmdMute),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_MUTE,CDWindow::onCmdMute),
+  FXMAPFUNC(SEL_UPDATE,CDWindow::ID_MUTE,CDWindow::onUpdMute),
   FXMAPFUNC(SEL_CHANGED,CDWindow::ID_BALANCE,CDWindow::onCmdBalance),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_BALANCE,CDWindow::onCmdBalance),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_BALANCE,CDWindow::onUpdBalance),
@@ -75,22 +75,20 @@ FXIMPLEMENT(CDWindow,FXMainWindow,CDWindowMap,ARRAYNUMBER(CDWindowMap))
 #define DEFAULTBACK       FXRGB(0,0,0)
 
 CDWindow::CDWindow(FXApp* app)
-: FXMainWindow(app,"fxcd",NULL,NULL,DECOR_TITLE|DECOR_MINIMIZE|DECOR_CLOSE|DECOR_BORDER|DECOR_MENU,0,0,0,0, 0,0),
+: FXMainWindow(app,"fxcd",NULL,NULL,DECOR_ALL,0,0,0,0, 0,0),
   stoponexit(TRUE),
   startmode(CDSTART_NONE),
   timemode(CDTIME_TRACK),
-  lcdforeclr(DEFAULTFORE),
-  lcdbackclr(DEFAULTBACK),
-  iconclr(DEFAULTBACK),
+  lcdforeclr(FXRGB(255,255,255)),
+  lcdbackclr(FXRGB(0,0,0)),
+  iconclr(FXRGB(0,0,0)),
   font(NULL),
-  vollevel(-1),
-  volbalance(0.0),
   timer(NULL),
   tooltip(NULL)
 {
   // Create icons for mute button
-  mutebmp.push_back(new CDBMPIcon(getApp(),mute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
   mutebmp.push_back(new CDBMPIcon(getApp(),nomute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
+  mutebmp.push_back(new CDBMPIcon(getApp(),mute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
 
   // Create icons for button controls
   btnbmp.push_back(new CDBMPIcon(getApp(),reverse_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
@@ -127,6 +125,7 @@ CDWindow::CDWindow(FXApp* app)
   startmodetgt.connect(startmode);
   timemodetgt.connect(timemode);
   repeatmodetgt.connect(cdplayer.repeatMode);
+  introtgt.connect(cdplayer.intro);
 
   // Create menubar and statusbar
   menubar=new FXMenuBar(this,LAYOUT_SIDE_TOP|LAYOUT_FILL_X);
@@ -152,9 +151,9 @@ CDWindow::CDWindow(FXApp* app)
   canvas=new FXCanvas(canvasItems,this,ID_CANVAS,LAYOUT_FILL_X|LAYOUT_FILL_Y);
 
   FXVerticalFrame* textfields=new FXVerticalFrame(display,LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0, 0,0);
-  bandtitle=new FXListBox(textfields,this,ID_BAND,LAYOUT_FILL_X);
+  bandtitle=new CDListBox(textfields,this,ID_BAND,LAYOUT_FILL_X);
   albumtitle=new FXLabel(textfields,NODISC_MSG,NULL,JUSTIFY_LEFT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
-  tracktitle=new FXListBox(textfields,this,ID_TRACK,LAYOUT_FILL_X);
+  tracktitle=new CDListBox(textfields,this,ID_TRACK,LAYOUT_FILL_X);
 
   // Volume controls
   new FXHorizontalSeparator(contents,SEPARATOR_GROOVE|LAYOUT_FILL_X);
@@ -166,9 +165,10 @@ CDWindow::CDWindow(FXApp* app)
   volumeSlider->setRange(0,100);
   volumeSlider->setIncrement(1);
 
-  new FXToggleButton(mixer,"\tAudio off","\tAudio on",mutebmp[0],mutebmp[1],this,ID_MUTE,TOGGLEBUTTON_TOOLBAR|FRAME_RAISED,0,0,0,0, 2,2,1,1);
+  FXHorizontalFrame* mutebalance=new FXHorizontalFrame(mixer,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,2,0, 0,0,0,0);
+  new FXToggleButton(mutebalance,"\tAudio off","\tAudio on",mutebmp[0],mutebmp[1],this,ID_MUTE,TOGGLEBUTTON_TOOLBAR|FRAME_RAISED,0,0,0,0, 2,2,1,1);
 
-  FXHorizontalFrame* balanceFrame=new FXHorizontalFrame(mixer,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
+  FXHorizontalFrame* balanceFrame=new FXHorizontalFrame(mutebalance,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   new FXLabel(balanceFrame,"Balance: ",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   FXSlider* balanceSlider=new FXSlider(balanceFrame,this,ID_BALANCE,SLIDER_HORIZONTAL|LAYOUT_FILL_X|LAYOUT_CENTER_Y);
   balanceSlider->setRange(0,200);
@@ -226,14 +226,17 @@ void CDWindow::create()
 
 void CDWindow::readRegistry()
 {
-  FXint x,y;
+  FXint x,y,w,h;
   FXColor dfg,dbg,ic;
   const FXchar* fontspec;
   FXFontDesc fontdesc;
 
   // Get position
-  x=getApp()->reg().readIntEntry("SETTINGS","x",10);
-  y=getApp()->reg().readIntEntry("SETTINGS","y",10);
+  x=getApp()->reg().readIntEntry("SETTINGS","x",50);
+  y=getApp()->reg().readIntEntry("SETTINGS","y",50);
+
+  w=getApp()->reg().readIntEntry("SETTINGS","width",300);
+  h=getApp()->reg().readIntEntry("SETTINGS","height",getDefaultHeight());
 
   timemode=getApp()->reg().readUnsignedEntry("SETTINGS","timemode",timemode);
   stoponexit=getApp()->reg().readIntEntry("SETTINGS","stoponexit",stoponexit);
@@ -257,7 +260,7 @@ void CDWindow::readRegistry()
   }
 
   move(x,y);
-  resize(290,getDefaultHeight());
+  resize(w,h);
 }
 
 void CDWindow::writeRegistry()
@@ -267,6 +270,9 @@ void CDWindow::writeRegistry()
 
   getApp()->reg().writeIntEntry("SETTINGS","x",getX());
   getApp()->reg().writeIntEntry("SETTINGS","y",getY());
+
+  getApp()->reg().writeIntEntry("SETTINGS","width",getWidth());
+  getApp()->reg().writeIntEntry("SETTINGS","height",getHeight());
 
   getApp()->reg().writeUnsignedEntry("SETTINGS","timemode",timemode);
   getApp()->reg().writeIntEntry("SETTINGS","stoponexit",stoponexit);
@@ -368,7 +374,7 @@ FXbool CDWindow::checkDevices()
     }
   }
 
-//  bandtitle->setCurrentItem(player);
+  bandtitle->setCurrentItem(player);
   bandtitle->setNumVisible(total);
 
   return true;
@@ -396,7 +402,7 @@ FXbool CDWindow::loadDiscData()
   }
   else
   {
-    FXint i;
+    FXint i,s,n;
     FXString title;
     struct disc_data data;
 
@@ -409,14 +415,16 @@ FXbool CDWindow::loadDiscData()
     albumtitle->setTipText(data.data_title);
 
     //Load all tracks
+    s=cdplayer.getStartTrack();
+    n=cdplayer.getNumTracks();
     tracktitle->clearItems();
-    for(i=cdplayer.getStartTrack();i<=cdplayer.getNumTracks();i++)
+    for(i=0;i<n;i++)
     {
       struct track_info track;
-      cdplayer.getTrackInfo(i-1,track);
+      cdplayer.getTrackInfo(i,track);
       if(track.track_type==CDLYTE_TRACK_AUDIO)
       {
-        title.format("%d. %s (%d:%02d)",i,data.data_track[i-1].track_title,track.track_length.minutes,track.track_length.seconds);
+        title.format("%d. %s (%d:%02d)",i+s,data.data_track[i].track_title,track.track_length.minutes,track.track_length.seconds);
         tracktitle->appendItem(title);
       }
     }
@@ -465,9 +473,9 @@ void CDWindow::setDisplayForeground(FXColor color)
   }
 
   //Fonts
-  bandtitle->setTextColor(color);
+  bandtitle->setForeColor(color);
   albumtitle->setTextColor(color);
-  tracktitle->setTextColor(color);
+  tracktitle->setForeColor(color);
 
   //Icons
   for(iter=mutebmp.begin();iter!=mutebmp.end();++iter)
@@ -533,6 +541,8 @@ FXColor CDWindow::getIconColor() const
 long CDWindow::onPaint(FXObject*,FXSelector,void*)
 {
   struct disc_info di;
+
+  cd_init_disc_info(&di);
   cdplayer.getDiscInfo(di);
   doDraw(cdplayer.getCurrentTrack(),&di);
   return 1;
@@ -567,8 +577,12 @@ long CDWindow::onTimeout(FXObject*,FXSelector,void*)
     }
   }
 
+  cd_init_disc_info(&di);
   cdplayer.getDiscInfo(di);
   doDraw(cdplayer.getCurrentTrack(),&di);
+
+  if(timer) timer=getApp()->removeTimeout(timer);
+  timer=getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
 
   return 1;
 }
@@ -579,9 +593,10 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
   {
     if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       cdplayer.stop();
-    if(timer) timer=getApp()->removeTimeout(timer);
     cdplayer.finish();
   }
+
+  writeRegistry();
 
   getApp()->stop();
 
@@ -645,13 +660,17 @@ long CDWindow::onCmdBand(FXObject*,FXSelector,void* ptr)
   {
     FXString* devname=(FXString*)bandtitle->getItemData(band);
 
+    // Stop any device that is currently in use
     if(cdplayer.isValid())
     {
       cdplayer.stop();
       cdplayer.finish();
     }
 
+    // Open CD-ROM device
     cdplayer.init(devname->text());
+
+    // Load data for disc
     loadDiscData();
   }
   return 1;
@@ -679,8 +698,8 @@ long CDWindow::onUpdTrack(FXObject*,FXSelector,void*)
 long CDWindow::onCmdVolume(FXObject*,FXSelector,void* ptr)
 {
   FXString str;
+  FXint vollevel=(FXint)(FXival)ptr;
 
-  vollevel=(FXint)(FXival)ptr;
   cdplayer.setVolume(vollevel);
 
   return 1;
@@ -688,26 +707,37 @@ long CDWindow::onCmdVolume(FXObject*,FXSelector,void* ptr)
 
 long CDWindow::onUpdVolume(FXObject* sender,FXSelector,void*)
 {
-  if(vollevel!=cdplayer.getVolume())
-  {
-    vollevel=cdplayer.getVolume();
-    sender->handle(this,MKUINT(ID_SETVALUE,SEL_COMMAND),(void*)(FXival)vollevel);
-  }
+  FXint vollevel=cdplayer.getVolume();
+  sender->handle(this,MKUINT(ID_SETVALUE,SEL_COMMAND),(void*)(FXival)vollevel);
 
+  return 1;
+}
+
+long CDWindow::onCmdMute(FXObject*,FXSelector,void*)
+{
+  cdplayer.setMute(!cdplayer.getMute());
+  return 1;
+}
+
+long CDWindow::onUpdMute(FXObject* sender,FXSelector,void*)
+{
+  FXuint msg=cdplayer.getMute()?ID_CHECK:ID_UNCHECK;
+  sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
 
 long CDWindow::onCmdBalance(FXObject*,FXSelector,void* ptr)
 {
-  FXfloat value=(FXfloat)(FXint)ptr;
+  FXint value=(FXint)(FXival)ptr;
+  FXfloat volbalance=0.0f;
 
   //determine percentege of balance to what side
   if(value>100)  //Balance goes right
-    volbalance=(value-100)/100.0;
+    volbalance=((FXfloat)value-100.0f)/100.0f;
   else if(value<100)          //Balance goes left
-    volbalance=(value/100.0)-1.0;
+    volbalance=((FXfloat)value/100.0f)-1.0f;
   else
-    volbalance=0.0;
+    volbalance=0.0f;
 
   cdplayer.setBalance(volbalance);
 
@@ -716,13 +746,11 @@ long CDWindow::onCmdBalance(FXObject*,FXSelector,void* ptr)
 
 long CDWindow::onUpdBalance(FXObject* sender,FXSelector,void*)
 {
-  if(volbalance!=cdplayer.getBalance())
-  {
-    volbalance=cdplayer.getBalance();
+  FXfloat volbalance=cdplayer.getBalance();
+  FXint value=100+(FXint)(100*volbalance);
 
-    FXint value=100+(FXint)(100*volbalance);
-    sender->handle(this,MKUINT(ID_SETVALUE,SEL_COMMAND),(void*)(FXival)value);
-  }
+  sender->handle(this,MKUINT(ID_SETVALUE,SEL_COMMAND),(void*)(FXival)value);
+
   return 1;
 }
 
@@ -730,7 +758,7 @@ long CDWindow::onActivateSeeker(FXObject*,FXSelector,void*)
 {
   seektrack=cdplayer.getCurrentTrack();
   cdplayer.getTrackTime(seektime);
-  return 1;
+  return 0;
 }
 
 long CDWindow::onCmdSeekReverse(FXObject*,FXSelector,void*)
@@ -927,6 +955,8 @@ CDWindow::~CDWindow()
   cdbmp_array::iterator iter;
   FXint i,n=bandtitle->getNumItems();
   FXString* devnam=NULL;
+
+  if(timer) timer=getApp()->removeTimeout(timer);
 
   for(i=0;i<n;i++)
   {
