@@ -23,6 +23,9 @@ class CDPipe
 {
 protected:
 #ifdef WIN32
+  FXint input;
+  DWORD inputlen;
+  OVERLAPPED overlap;
   HANDLE pipes[2];
 #else
   FXint pipes[2];
