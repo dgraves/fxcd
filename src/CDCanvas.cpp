@@ -179,8 +179,8 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
       }
       else if(timemode==CDTIME_DISCREM)
       {
-        FXlong pos=(di->disc_time.minutes*60)+di->disc_time.seconds;
-        FXlong len=(di->disc_length.minutes*60)+di->disc_length.seconds;
+        FXint pos=(di->disc_time.minutes*60)+di->disc_time.seconds;
+        FXint len=(di->disc_length.minutes*60)+di->disc_length.seconds;
         pos=len-pos;
         drawTime.minutes=pos/60;
         drawTime.seconds=pos%60;
@@ -188,8 +188,8 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
       }
       else if(timemode==CDTIME_TRACKREM)
       {
-        FXlong pos=(di->disc_track_time.minutes*60)+di->disc_track_time.seconds;
-        FXlong len=(di->disc_track[track-1].track_length.minutes*60)+di->disc_track[track-1].track_length.seconds;
+        FXint pos=(di->disc_track_time.minutes*60)+di->disc_track_time.seconds;
+        FXint len=(di->disc_track[track-1].track_length.minutes*60)+di->disc_track[track-1].track_length.seconds;
         pos=len-pos;
         drawTime.minutes=pos/60;
         drawTime.seconds=pos%60;
