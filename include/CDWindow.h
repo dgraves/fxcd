@@ -69,6 +69,7 @@ protected:
   FXMenuPane*         timemenu;
   FXMenuPane*         repeatmenu;
   FXMenuPane*         helpmenu;
+  FXMenuPane*         popupmenu;
   FXStatusBar*        statusbar;
   FXToolTip*          tooltip;
   FXHorizontalFrame*  lcdframe;
@@ -81,8 +82,12 @@ protected:
   FXbool getData(struct disc_data* data);
 public:
   long onPaint(FXObject*,FXSelector,void*);
-  long onMouseDown(FXObject*,FXSelector,void*);
+  long onMouseUp(FXObject*,FXSelector,void*);
   long onTimeout(FXObject*,FXSelector,void*);
+  long onCmdToggleMenuBar(FXObject*,FXSelector,void*);
+  long onUpdToggleMenuBar(FXObject*,FXSelector,void*);
+  long onCmdToggleStatusBar(FXObject*,FXSelector,void*);
+  long onUpdToggleStatusBar(FXObject*,FXSelector,void*);
   long onCmdToggleTooltips(FXObject*,FXSelector,void*);
   long onUpdToggleTooltips(FXObject*,FXSelector,void*);
   long onCmdAbout(FXObject*,FXSelector,void*);
@@ -121,6 +126,8 @@ public:
     ID_CANVAS,
     ID_TIMEOUT,
 
+    ID_TOGGLEMENUBAR,
+    ID_TOGGLESTATUSBAR,
     ID_TOGGLETOOLTIPS,
     ID_ABOUT,
 
