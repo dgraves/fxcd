@@ -93,7 +93,7 @@ void CDPlayer::load()
     //Is audio disc?
     for(i=discInfo.disc_first_track;i<=discInfo.disc_total_tracks;i++)
     {
-      if(discInfo.disc_track[i-1].track_type==CDLYTE_TRACK_AUDIO)
+      if(discInfo.disc_track[i-discInfo.disc_first_track].track_type==CDLYTE_TRACK_AUDIO)
       {
         audiodisc=TRUE;
         break;
