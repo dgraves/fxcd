@@ -48,7 +48,7 @@ protected:
   struct disc_timeval introTime;    // Length of time for intro play
   struct disc_volume volCurrent;    // Use to test for volume change by other party
   struct disc_info discInfo;        // Info for current disc
-  std::vector<int> randomArray;       // List of random tracks
+  std::vector<FXint> randomArray;   // List of random tracks
 protected:
   void load();
   void polldisc();
