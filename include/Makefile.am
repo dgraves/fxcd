@@ -1,6 +1,7 @@
 EXTRA_DIST = \
 		CDBMPIcon.h	        \
 		CDChoiceDialog.h	\
+		CDListBox.h	\
 		CDData.h                \
 		CDInfo.h	        \
 		CDPipe.h                \

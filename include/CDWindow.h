@@ -37,6 +37,7 @@ enum
 };
 
 class CDBMPIcon;
+class CDListBox;
 class CDPreferences;
 
 typedef std::vector<CDBMPIcon*> cdbmp_array;
@@ -53,8 +54,6 @@ protected:
   FXColor             lcdbackclr;        // Color of LCD background
   FXColor             iconclr;           // Color of icons on CD player control buttons
   FXFont*             font;              // Font for LCD
-  FXint               vollevel;	         // Stored volume to check against cdplayer for external changes
-  FXfloat             volbalance;        // Stored balance to check against cdplayer for external changes
   FXint               seektrack;         // Currently seeking in this track
   struct disc_timeval seektime;          // Current seek time in track
   CDPlayer            cdplayer;          // The cd player
@@ -63,14 +62,15 @@ protected:
   FXDataTarget        startmodetgt;
   FXDataTarget        timemodetgt;
   FXDataTarget        repeatmodetgt;
+  FXDataTarget        introtgt;
 protected:
   cdbmp_array         mutebmp;           // Mute icons
   cdbmp_array         btnbmp;            // Icons for cd player controls
   cdbmp_array         lcdbmp;            // Icons for the display
   FXTimer*            timer;             // Player update timer
   FXCanvas*           canvas;            // Time display
-  FXListBox*          bandtitle;         // List for LCD artist name display
-  FXListBox*          tracktitle;        // List for LCD track name display
+  CDListBox*          bandtitle;         // List for LCD artist name display
+  CDListBox*          tracktitle;        // List for LCD track name display
   FXLabel*            albumtitle;        // Label for LCD album display
   FXMenuBar*          menubar;
   FXMenuPane*         filemenu;
@@ -99,6 +99,7 @@ public:
   long onCmdVolume(FXObject*,FXSelector,void*);
   long onUpdVolume(FXObject*,FXSelector,void*);
   long onCmdMute(FXObject*,FXSelector,void*);
+  long onUpdMute(FXObject*,FXSelector,void*);
   long onCmdBalance(FXObject*,FXSelector,void*);
   long onUpdBalance(FXObject*,FXSelector,void*);
   long onActivateSeeker(FXObject*,FXSelector,void*);
