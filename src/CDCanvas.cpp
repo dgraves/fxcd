@@ -32,6 +32,8 @@ FXIMPLEMENT(CDCanvas,FXCanvas,CDCanvasMap,ARRAYNUMBER(CDCanvasMap))
 
 CDCanvas::CDCanvas(FXComposite* p,FXObject* tgt,FXSelector sel,FXuint opts,FXint x,FXint y,FXint w,FXint h)
 : FXCanvas(p,tgt,sel,opts,x,y,w,h),
+  dw(w),
+  dh(h),
   timemode(CDTIME_TRACK),
   blink(FALSE),
   blinkmode(FALSE),
@@ -63,6 +65,16 @@ void CDCanvas::create()
   // Create icons
   for(iter=lcdbmp.begin();iter!=lcdbmp.end();++iter)
     (*iter)->create();
+}
+
+FXint CDCanvas::getDefaultWidth()
+{
+  return (dw==0)?FXCanvas::getDefaultWidth():dw;
+}
+
+FXint CDCanvas::getDefaultHeight()
+{
+  return (dh==0)?FXCanvas::getDefaultHeight():dh;
 }
 
 void CDCanvas::setTimeMode(FXuint mode)
