@@ -30,7 +30,8 @@ extern "C" {
 CDInfo::CDInfo()
   : proxy(FALSE),
     cddbproto(PROTO_HTTP),
-    cddbpport(CDDBP_DEFAULT_PORT),
+    //cddbpport(CDDBP_DEFAULT_PORT),
+    cddbpport(8880),
     cddbport(HTTP_DEFAULT_PORT),
     cdindexport(HTTP_DEFAULT_PORT),
     proxyport(0),

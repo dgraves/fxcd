@@ -34,17 +34,19 @@ enum
   CDSTART_STOP=2
 };
 
+class CDBMPIcon;
+
 class CDWindow : public FXMainWindow
 {
   FXDECLARE(CDWindow)
   friend class CDPreferences;
 protected:
-  FXIcon* muteIcon;
-  FXIcon* nomuteIcon;
+  CDBMPIcon* muteIcon;
+  CDBMPIcon* nomuteIcon;
   FXIcon* introd;
   FXIcon* randd;
-  FXIcon* bicolor[8];
-  FXIcon* dcifore[18];
+  CDBMPIcon* bicolor[8];
+  CDBMPIcon* dcifore[18];
 
   FXWindow* dcwback[7];
 
@@ -91,7 +93,6 @@ protected:
   CDInfo cdinfo;
 
   CDWindow(){}
-  void swapIconColor(FXIcon*,FXColor,FXColor);
   void doDraw(FXint,const struct disc_info*);
   FXbool checkDevices();  //Check for available cdrom devices
   FXbool loadDiscData();  //Load data for currently open device
@@ -153,6 +154,9 @@ public:
   long onUpdToggleStatus(FXObject*,FXSelector,void*);
   long onCmdToggleTips(FXObject*,FXSelector,void*);
   long onUpdToggleTips(FXObject*,FXSelector,void*);
+  long onCmdDefaultOptions(FXObject*,FXSelector,void*);
+  long onCmdDefaultAppearance(FXObject*,FXSelector,void*);
+  long onCmdDefaultInfo(FXObject*,FXSelector,void*);
   long onCmdBand(FXObject*,FXSelector,void*);
   long onCmdTrack(FXObject*,FXSelector,void*);
   long onUpdTrack(FXObject*,FXSelector,void*);
@@ -215,6 +219,10 @@ public:
     ID_TOGGLEMENU,
     ID_TOGGLESTATUS,
     ID_TOGGLETIPS,
+
+    ID_DEFAULTOPTIONS,
+    ID_DEFAULTAPPEARANCE,
+    ID_DEFAULTINFO,
 
     ID_BAND,
     ID_TRACK,

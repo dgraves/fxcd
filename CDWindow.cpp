@@ -26,6 +26,7 @@ extern "C" {
 #include "CDInfo.h"
 #include "CDSeekButton.h"
 #include "CDPreferences.h"
+#include "CDBMPIcon.h"
 #include "CDWindow.h"
 #include "icons.h"
 
@@ -74,6 +75,10 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_TOGGLESTATUS,CDWindow::onUpdToggleStatus),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TOGGLETIPS,CDWindow::onCmdToggleTips),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_TOGGLETIPS,CDWindow::onUpdToggleTips),
+
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTOPTIONS,CDWindow::onCmdDefaultOptions),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTAPPEARANCE,CDWindow::onCmdDefaultAppearance),
+  FXMAPFUNC(SEL_COMMAND,CDWindow::ID_DEFAULTINFO,CDWindow::onCmdDefaultInfo),
 
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_BAND,CDWindow::onCmdBand),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TRACK,CDWindow::onCmdTrack),
@@ -130,38 +135,38 @@ CDWindow::CDWindow(FXApp* app)
   volLevel(-1),
   volBalance(-1.0)
 {
-  muteIcon=new FXBMPIcon(getApp(),mute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  nomuteIcon=new FXBMPIcon(getApp(),nomute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  introd=new FXBMPIcon(getApp(),introd_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  randd=new FXBMPIcon(getApp(),randd_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
+  muteIcon=new CDBMPIcon(getApp(),mute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  nomuteIcon=new CDBMPIcon(getApp(),nomute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  introd=new FXBMPIcon(getApp(),introd_bmp,0,IMAGE_ALPHAGUESS);
+  randd=new FXBMPIcon(getApp(),randd_bmp,0,IMAGE_ALPHAGUESS);
 
-  bicolor[0]=new FXBMPIcon(getApp(),reverse_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  bicolor[1]=new FXBMPIcon(getApp(),forward_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  bicolor[2]=new FXBMPIcon(getApp(),stop_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  bicolor[3]=new FXBMPIcon(getApp(),play_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  bicolor[4]=new FXBMPIcon(getApp(),pause_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  bicolor[5]=new FXBMPIcon(getApp(),prev_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  bicolor[6]=new FXBMPIcon(getApp(),next_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  bicolor[7]=new FXBMPIcon(getApp(),eject_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
+  bicolor[0]=new CDBMPIcon(getApp(),reverse_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  bicolor[1]=new CDBMPIcon(getApp(),forward_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  bicolor[2]=new CDBMPIcon(getApp(),stop_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  bicolor[3]=new CDBMPIcon(getApp(),play_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  bicolor[4]=new CDBMPIcon(getApp(),pause_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  bicolor[5]=new CDBMPIcon(getApp(),prev_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  bicolor[6]=new CDBMPIcon(getApp(),next_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  bicolor[7]=new CDBMPIcon(getApp(),eject_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
 
-  dcifore[0]=new FXBMPIcon(getApp(),zero_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[1]=new FXBMPIcon(getApp(),one_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[2]=new FXBMPIcon(getApp(),two_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[3]=new FXBMPIcon(getApp(),three_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[4]=new FXBMPIcon(getApp(),four_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[5]=new FXBMPIcon(getApp(),five_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[6]=new FXBMPIcon(getApp(),six_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[7]=new FXBMPIcon(getApp(),seven_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[8]=new FXBMPIcon(getApp(),eight_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[9]=new FXBMPIcon(getApp(),nine_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[10]=new FXBMPIcon(getApp(),dash_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[11]=new FXBMPIcon(getApp(),colon_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[12]=new FXBMPIcon(getApp(),intro_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[13]=new FXBMPIcon(getApp(),rand_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[14]=new FXBMPIcon(getApp(),repeatn_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[15]=new FXBMPIcon(getApp(),repeatt_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[16]=new FXBMPIcon(getApp(),repeatd_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
-  dcifore[17]=new FXBMPIcon(getApp(),prefs_bmp,0,IMAGE_ALPHAGUESS|IMAGE_NEAREST);
+  dcifore[0]=new CDBMPIcon(getApp(),zero_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[1]=new CDBMPIcon(getApp(),one_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[2]=new CDBMPIcon(getApp(),two_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[3]=new CDBMPIcon(getApp(),three_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[4]=new CDBMPIcon(getApp(),four_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[5]=new CDBMPIcon(getApp(),five_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[6]=new CDBMPIcon(getApp(),six_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[7]=new CDBMPIcon(getApp(),seven_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[8]=new CDBMPIcon(getApp(),eight_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[9]=new CDBMPIcon(getApp(),nine_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[10]=new CDBMPIcon(getApp(),dash_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[11]=new CDBMPIcon(getApp(),colon_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[12]=new CDBMPIcon(getApp(),intro_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[13]=new CDBMPIcon(getApp(),rand_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[14]=new CDBMPIcon(getApp(),repeatn_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[15]=new CDBMPIcon(getApp(),repeatt_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[16]=new CDBMPIcon(getApp(),repeatd_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
+  dcifore[17]=new CDBMPIcon(getApp(),prefs_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP);
 
   timeTarget=new FXDataTarget(timeMode);
   repeatTarget=new FXDataTarget(cdplayer.repeatMode);
@@ -334,9 +339,9 @@ void CDWindow::create()
   if(!getApp()->reg().readIntEntry("SETTINGS","showMenu",TRUE)) menubar->hide();
   if(!getApp()->reg().readIntEntry("SETTINGS","showStatus",TRUE)) statusbar->hide();
   if(getApp()->reg().readIntEntry("SETTINGS","showTips",TRUE)) tooltip=new FXTooltip(getApp(),TOOLTIP_NORMAL);
-  setDisplayForeground(getApp()->reg().readColorEntry("SETTINGS","lcdforecolor",DEFAULTFORE));
-  setDisplayBackground(getApp()->reg().readColorEntry("SETTINGS","lcdbackcolor",DEFAULTBACK));
-  setIconColor(getApp()->reg().readColorEntry("SETTINGS","iconcolor",DEFAULTBACK));
+  FXColor dfg=getApp()->reg().readColorEntry("SETTINGS","lcdforecolor",DEFAULTFORE);
+  FXColor dbg=getApp()->reg().readColorEntry("SETTINGS","lcdbackcolor",DEFAULTBACK);
+  FXColor ic=getApp()->reg().readColorEntry("SETTINGS","iconcolor",DEFAULTBACK);
   fontspec=getApp()->reg().readStringEntry("SETTINGS","font",NULL);
   if(fontspec&&fxparsefontdesc(fontdesc,fontspec))
   {
@@ -347,6 +352,10 @@ void CDWindow::create()
   FXMainWindow::create();
   for(i=0;i<12;i++)
     dcifore[i]->create();
+
+  setDisplayForeground(dfg);
+  setDisplayBackground(dbg);
+  setIconColor(ic);
 
   move(x,y);
   resize(290,getDefaultHeight());
@@ -363,40 +372,6 @@ void CDWindow::create()
     cdplayer.resume();
   else if((startMode==CDSTART_START)&&(cdplayer.getStatus()!=CDAUDIO_PLAYING))
     cdplayer.play();
-}
-
-void CDWindow::swapIconColor(FXIcon* icon,FXColor before,FXColor after)
-{
-  if(icon&&(before!=after))
-  {
-    FXuchar* data=NULL;
-    FXuint channels=(icon->getOptions()&IMAGE_ALPHA)?4:3;
-    FXuint i=0,size=icon->getWidth()*icon->getHeight()*channels;
-    FXbool render=FALSE;
-
-    if(icon->getData()==NULL)
-    {
-      icon->restore();
-      render=TRUE;  //May not be the most accurate way to determine if icon has been created.  Set flag in create.  
-    }
-
-    data=icon->getData();
-
-    if(data!=NULL)
-    {
-      if(render) icon->destroy();
-      for(i=0;i<size;i+=channels)
-      {
-        if(FXRGB(data[i],data[i+1],data[i+2])==before)
-        {
-          data[i]=FXREDVAL(after);
-          data[i+1]=FXGREENVAL(after);
-          data[i+2]=FXBLUEVAL(after);
-        }
-      }
-      if(render) icon->create();
-    }
-  }
 }
 
 FXbool CDWindow::checkDevices()
@@ -591,10 +566,10 @@ void CDWindow::setDisplayForeground(FXColor color)
 
   //Icons
   for(i=0;i<18;i++)
-    swapIconColor(dcifore[i],lcdforecolor,color);
+    dcifore[i]->swapColor(lcdforecolor,color);
 
-  swapIconColor(muteIcon,lcdforecolor,color);
-  swapIconColor(nomuteIcon,lcdforecolor,color);
+  muteIcon->swapColor(lcdforecolor,color);
+  nomuteIcon->swapColor(lcdforecolor,color);
 
   lcdforecolor=color;
 }
@@ -617,8 +592,8 @@ void CDWindow::setDisplayBackground(FXColor color)
   for(i=0;i<7;i++)
     dcwback[i]->setBackColor(color);
 
-  swapIconColor(muteIcon,lcdbackcolor,color);
-  swapIconColor(nomuteIcon,lcdbackcolor,color);
+  muteIcon->swapColor(lcdbackcolor,color);
+  nomuteIcon->swapColor(lcdbackcolor,color);
 
   lcdbackcolor=color;
 }
@@ -632,7 +607,7 @@ void CDWindow::setIconColor(FXColor color)
 {
   FXint i;
   for(i=0;i<8;i++)
-    swapIconColor(bicolor[i],iconcolor,color);
+    bicolor[i]->swapColor(iconcolor,color);
 
   iconcolor=color;
 }
@@ -1020,6 +995,60 @@ long CDWindow::onUpdToggleTips(FXObject* sender,FXSelector,void*)
   return 1;
 }
 
+long CDWindow::onCmdDefaultOptions(FXObject*,FXSelector,void*)
+{
+  cdplayer.setIntro(FALSE);
+  cdplayer.setIntroLength(10);
+  cdplayer.setRandom(FALSE);
+  cdplayer.setRepeatMode(CDREPEAT_NONE);
+  timeMode=CDTIME_TRACK;
+  startMode=CDSTART_NONE;
+  stopOnExit=TRUE;
+
+  return 1;
+}
+
+long CDWindow::onCmdDefaultAppearance(FXObject*,FXSelector,void*)
+{
+  setDisplayForeground(DEFAULTFORE);
+  setDisplayBackground(DEFAULTBACK);
+  setIconColor(DEFAULTBACK);
+  setDisplayFont(getApp()->getNormalFont());
+  menubar->handle(this,MKUINT(ID_SHOW,SEL_COMMAND),NULL);
+  statusbar->handle(this,MKUINT(ID_SHOW,SEL_COMMAND),NULL);
+  if(tooltip==NULL)
+  {
+    tooltip=new FXTooltip(getApp(),TOOLTIP_NORMAL);
+    tooltip->create();
+  }
+  resize(290,getDefaultHeight());
+
+  return 1;
+}
+
+long CDWindow::onCmdDefaultInfo(FXObject*,FXSelector,void*)
+{
+  remoteInfo=FALSE;
+  localFirst=TRUE;
+  useCDDB=TRUE;
+  useCDIndex=TRUE;
+  cdinfo.setProxy(FALSE);
+  cdinfo.setProxyAddress("0.0.0.0");
+  cdinfo.setProxyPort(0);
+  cdinfo.setCDDBAddress("www.freedb.org");
+  cdinfo.setCDDBProtocol(PROTO_CDDBP);
+  //cdinfo.setCDDBPort(CDDBP_DEFAULT_PORT);
+  cdinfo.setCDDBPort(8880);
+  cdinfo.setCDDBProtocol(PROTO_HTTP);
+  cdinfo.setCDDBPort(HTTP_DEFAULT_PORT);
+  cdinfo.setCDIndexAddress("www.cdindex.org");
+  cdinfo.setCDIndexPort(HTTP_DEFAULT_PORT);
+  cdinfo.setCDDBScript("cgi-bin/cddb.cgi");
+  cdinfo.setCDIndexScript("cgi-bin/cdi/get.pl");
+
+  return 1;
+}
+
 long CDWindow::onCmdBand(FXObject*,FXSelector,void* data)
 {
   FXint band=(FXint)data;
@@ -1109,14 +1138,11 @@ long CDWindow::onActivateSeeker(FXObject*,FXSelector,void*)
   seekTrack=cdplayer.getCurrentTrack();
   seekTime.minutes=cdplayer.getTrackTime()->minutes;
   seekTime.seconds=cdplayer.getTrackTime()->seconds;
-  printf("Seek start at %d:%d\n",seekTime.minutes,seekTime.seconds);
   return 1;
 }
 
 long CDWindow::onDeactivateSeeker(FXObject*,FXSelector,void*)
 {
-    
-  printf("Seek stop at %d:%d\n",seekTime.minutes,seekTime.seconds);
   return 1;
 }
 
@@ -1168,12 +1194,7 @@ long CDWindow::onCmdSeekReverse(FXObject*,FXSelector,void*)
     }
   }
 
-  //FXbool pause=(cdplayer.getStatus()==CDAUDIO_PAUSED)?TRUE:FALSE;
   cdplayer.playTrackPos(seekTrack,&seekTime);
-  //if(pause)
-  //  cdplayer.pause();
-
-  printf("Seeking on track %d at %d:%d\n",seekTrack,seekTime.minutes,seekTime.seconds);
 
   return 1;
 }
@@ -1237,12 +1258,7 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
     seekTime.seconds=0;
   }
 
-  //FXbool pause=(cdplayer.getStatus()==CDAUDIO_PAUSED)?TRUE:FALSE;
   cdplayer.playTrackPos(seekTrack,&seekTime);
-  //if(pause)
-  //  cdplayer.pause();
-
-  printf("Seeking on track %d at %d:%d\n",seekTrack,seekTime.minutes,seekTime.seconds);
 
   return 1;
 }
