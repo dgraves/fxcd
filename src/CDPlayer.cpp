@@ -125,17 +125,17 @@ void CDPlayer::polldisc()
 //Set the volume
 FXbool CDPlayer::setvol()
 {
-  if(volBalance>0.0)
+  if(volBalance>0.0f)
   {
-    volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel)*(1.0-volBalance);
-    volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel)*(1.0-volBalance);
+    volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel)*(1.0f-volBalance);
+    volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel)*(1.0f-volBalance);
     volCurrent.vol_front.right=VOLUME_TO_FLOAT(volLevel);
     volCurrent.vol_back.right=VOLUME_TO_FLOAT(volLevel);
   }
-  else if(volBalance<0.0)
+  else if(volBalance<0.0f)
   {
-    volCurrent.vol_front.right=VOLUME_TO_FLOAT(volLevel)*(1.0+volBalance);
-    volCurrent.vol_back.right=VOLUME_TO_FLOAT(volLevel)*(1.0+volBalance);
+    volCurrent.vol_front.right=VOLUME_TO_FLOAT(volLevel)*(1.0f+volBalance);
+    volCurrent.vol_back.right=VOLUME_TO_FLOAT(volLevel)*(1.0f+volBalance);
     volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel);
     volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel);
   }
@@ -174,11 +174,11 @@ FXbool CDPlayer::checkvol()
       volLevel=VOLUME_TO_INT((volume.vol_front.left>volume.vol_front.right)?volume.vol_front.left:volume.vol_front.right);
 
       if(volume.vol_front.left<volume.vol_front.right)
-        volBalance=1.0-(((FXfloat)volume.vol_front.left)/((FXfloat)volume.vol_front.right));
+        volBalance=1.0f-(((FXfloat)volume.vol_front.left)/((FXfloat)volume.vol_front.right));
       else if(volume.vol_front.right<volume.vol_front.left)
-        volBalance=(((FXfloat)volume.vol_front.right)/((FXfloat)volume.vol_front.left))-1.0;
+        volBalance=(((FXfloat)volume.vol_front.right)/((FXfloat)volume.vol_front.left))-1.0f;
       else
-        volBalance=0.0;
+        volBalance=0.0f;
     }
   }
 
@@ -190,6 +190,7 @@ FXbool CDPlayer::checkvol()
 void CDPlayer::makeRandomList()
 {
   FXint i;
+  randomArray.clear();
   for(i=discInfo.disc_first_track;i<=discInfo.disc_total_tracks;i++)
     randomArray.push_back(i);
   std::random_shuffle(randomArray.begin(),randomArray.end(),rand_func);
