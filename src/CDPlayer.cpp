@@ -91,9 +91,9 @@ void CDPlayer::load()
       stopped=FALSE;
 
     //Is audio disc?
-    for(i=discInfo.disc_first_track;i<=discInfo.disc_total_tracks;i++)
+    for(i=0;i<discInfo.disc_total_tracks;i++)
     {
-      if(discInfo.disc_track[i-discInfo.disc_first_track].track_type==CDLYTE_TRACK_AUDIO)
+      if(discInfo.disc_track[i].track_type==CDLYTE_TRACK_AUDIO)
       {
         audiodisc=TRUE;
         break;
@@ -191,8 +191,8 @@ void CDPlayer::makeRandomList()
 {
   FXint i;
   randomArray.clear();
-  for(i=discInfo.disc_first_track;i<=discInfo.disc_total_tracks;i++)
-    randomArray.push_back(i);
+  for(i=0;i<discInfo.disc_total_tracks;i++)
+    randomArray.push_back(i+discInfo.disc_first_track);
   std::random_shuffle(randomArray.begin(),randomArray.end(),rand_func);
 }
 

@@ -120,7 +120,7 @@ CDWindow::CDWindow(FXApp* app)
   disbmp.push_back(new CDBMPIcon(getApp(),randd_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
 
   // Create menubar and statusbar
-  menubar=new FXMenuBar(this,FRAME_GROOVE|LAYOUT_SIDE_TOP|LAYOUT_FILL_X);
+  menubar=new FXMenuBar(this,FRAME_RAISED|LAYOUT_SIDE_TOP|LAYOUT_FILL_X);
 
   statusbar=new FXStatusBar(this,LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X);
 
@@ -136,7 +136,7 @@ CDWindow::CDWindow(FXApp* app)
   label->setSelector(ID_STATUSTRACK);
 
   // Main frame
-  FXVerticalFrame* contents=new FXVerticalFrame(this,FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y);
+  FXVerticalFrame* contents=new FXVerticalFrame(this,LAYOUT_FILL_X|LAYOUT_FILL_Y);
 
   // LCD contents
   lcdframe=new FXHorizontalFrame(contents,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 2,2,2,2, 0,0);
