@@ -1,0 +1,25 @@
+fxcd version 0.9.6, Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
+fxcd comes with ABSOLUTELY NO WARRANTY.  This is free software, and you are 
+welcome to redistribute it under certain conditions; see COPYING for details.
+
+
+fxcd is a CD player written with the FOX Platform Independent GUI Toolkit 
+and with libcdaudio.  It is planned to support both Windows and UNIX, 
+but currently only supports UNIX.  
+
+A port of libcdaudio to Windows is currently underway.  
+ 
+
+This software uses the FOX Platform Independent GUI Toolkit Library.  
+The FOX Library is Copyright (C) 1997,2000,2001 Jeroen van der Zijp 
+and is available freely under the GNU Lesser General Public License at 
+the following site:
+http://www.cfdrc.com/FOX/fox.html
+
+This software uses libcdaudio.  
+libcdaudio is Copyright (C) 1998-1999 Tony Arcieri and is available 
+freely under the GNU Lesser General Public License at the following site:
+http://cdcd.undergrid.net/libcdaudio 
+
+See INSTALL for installation instructions
+
