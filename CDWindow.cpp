@@ -1226,8 +1226,9 @@ long CDWindow::onUpdTrack(FXObject*,FXSelector,void* data)
 long CDWindow::onCmdVolume(FXObject*,FXSelector,void* data)
 {
   FXString str;
+ungrab();
   volLevel=(FXint)data;
-  str.format("Volume: %d%",volLevel);
+  str.format("Volume: %d%%",volLevel);
   statusbar->getStatusline()->setText(str);
   cdplayer.setVolume(volLevel);
 
