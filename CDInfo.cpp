@@ -17,7 +17,6 @@
  */
 
 #include <string.h>
-#include <unistd.h>
 #include "cdlyte.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
@@ -25,6 +24,9 @@
 #include "CDPlayer.h"
 #include "CDChoiceDialog.h"
 #include "CDInfo.h"
+
+#define PACKAGE "fxcd"
+#define VERSION "0.8.2"
 
 CDInfo::CDInfo()
   : proxy(FALSE),
@@ -38,7 +40,7 @@ CDInfo::CDInfo()
 {
 }
 
-void CDInfo::defaultSettings(const CDPlayer& cddesc,disc_data* info)
+void CDInfo::defaultInfo(const CDPlayer& cddesc,disc_data* info)
 {
   cddb_gen_unknown_entry(cddesc.getDescriptor(),info);
 
@@ -49,7 +51,7 @@ void CDInfo::defaultSettings(const CDPlayer& cddesc,disc_data* info)
     sprintf(info->data_track[i].track_title,"Track %d",first++);
 }
 
-FXbool CDInfo::getLocalCDDBInfo(const CDPlayer& cddesc,disc_data* info)
+FXbool CDInfo::getLocalInfo(const CDPlayer& cddesc,disc_data* info)
 {
   printf("Checking ~/.cddb for disc info: ");
   if(cddb_read_local("~/.cddb",cddesc.getDescriptor(),info)<0)
@@ -62,7 +64,7 @@ FXbool CDInfo::getLocalCDDBInfo(const CDPlayer& cddesc,disc_data* info)
   return TRUE;
 }
 
-FXbool CDInfo::getRemoteCDDBInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner)
+FXbool CDInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner)
 {
   cdsock_t sock;
   char http_string[512];

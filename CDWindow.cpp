@@ -936,19 +936,6 @@ long CDWindow::onUpdProxyServer(FXObject* sender,FXSelector,void*)
   return 1;
 }
 
-long CDWindow::onCmdCDDB(FXObject*,FXSelector,void*)
-{
-  useCDDB=!useCDDB;
-  return 1;
-}
-
-long CDWindow::onUpdCDDB(FXObject* sender,FXSelector,void*)
-{
-  FXuint msg=(useCDDB)?ID_CHECK:ID_UNCHECK;
-  sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
-  return 1;
-}
-
 long CDWindow::onCmdCDDBPort(FXObject* sender,FXSelector,void*)
 {
   FXint value;

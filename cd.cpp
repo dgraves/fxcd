@@ -17,9 +17,7 @@
  */
 
 #include <signal.h>
-extern "C" {
-#include "cdaudio.h"
-}
+#include "cdlyte.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"

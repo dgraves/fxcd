@@ -18,7 +18,6 @@
 
 #include <errno.h>
 #include <time.h>
-#include <unistd.h>
 #include "cdlyte.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"

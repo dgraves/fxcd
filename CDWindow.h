@@ -79,10 +79,8 @@ protected:
   FXColor lcdforecolor;
   FXColor lcdbackcolor;
   FXColor iconcolor;
-  FXbool remoteInfo;
-  FXbool localFirst;
-  FXbool useCDDB;
-  FXbool useCDIndex;
+  FXbool remotedb;           //obtain disc info from freedb
+  FXbool localdb;            //check local db before freedb server
   FXbool stopOnExit;
   FXuint startMode;
   FXuint timeMode;            //disc, track, disc remain, track remain
@@ -144,8 +142,6 @@ public:
   long onUpdCDDB(FXObject*,FXSelector,void*);
   long onCmdCDDBPort(FXObject*,FXSelector,void*);
   long onUpdCDDBPort(FXObject*,FXSelector,void*);
-  long onCmdCDIndex(FXObject*,FXSelector,void*);
-  long onUpdCDIndex(FXObject*,FXSelector,void*);
   long onCmdGetInfo(FXObject*,FXSelector,void*);
   long onCmdColor(FXObject*,FXSelector,void*);
   long onUpdColor(FXObject*,FXSelector,void*);

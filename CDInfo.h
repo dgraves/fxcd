@@ -41,9 +41,9 @@ protected:
 public:
   CDInfo();
 
-  void defaultSettings(const CDPlayer& cddesc,disc_data* info);
-  FXbool getLocalCDDBInfo(const CDPlayer& cddesc,disc_data* info);
-  FXbool getRemoteCDDBInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner=NULL);
+  void defaultInfo(const CDPlayer& cddesc,disc_data* info);
+  FXbool getLocalInfo(const CDPlayer& cddesc,disc_data* info);
+  FXbool getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner=NULL);
 
   FXbool getProxy() const;
   void setProxy(FXbool use);
