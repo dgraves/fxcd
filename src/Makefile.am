@@ -5,49 +5,57 @@ SUFFIXES = .bmp
 bin_PROGRAMS = fxcd
 
 ICONS = \
-	colon_bmp.bmp	\
-	dash_bmp.bmp	\
-	eight_bmp.bmp	\
-	eject_bmp.bmp	\
-	five_bmp.bmp	\
-	forward_bmp.bmp	\
-	four_bmp.bmp	\
-	intro_bmp.bmp	\
-	introd_bmp.bmp	\
-	mute_bmp.bmp	\
-	next_bmp.bmp	\
-	nine_bmp.bmp	\
-	nomute_bmp.bmp	\
-	one_bmp.bmp	\
-	pause_bmp.bmp	\
-	play_bmp.bmp	\
-	prefs_bmp.bmp	\
-	prev_bmp.bmp	\
-	rand_bmp.bmp	\
-	randd_bmp.bmp	\
-	repeatd_bmp.bmp	\
-	repeatn_bmp.bmp	\
-	repeatt_bmp.bmp	\
-	reverse_bmp.bmp	\
-	seven_bmp.bmp	\
-	six_bmp.bmp	\
-	stop_bmp.bmp	\
-	three_bmp.bmp	\
-	two_bmp.bmp	\
-	zero_bmp.bmp
+	$(top_srcdir)/icons/colon_bmp.bmp	\
+	$(top_srcdir)/icons/dash_bmp.bmp	\
+	$(top_srcdir)/icons/eight_bmp.bmp	\
+	$(top_srcdir)/icons/eject_bmp.bmp	\
+	$(top_srcdir)/icons/five_bmp.bmp	\
+	$(top_srcdir)/icons/forward_bmp.bmp	\
+	$(top_srcdir)/icons/four_bmp.bmp	\
+	$(top_srcdir)/icons/intro_bmp.bmp	\
+	$(top_srcdir)/icons/introd_bmp.bmp	\
+	$(top_srcdir)/icons/mute_bmp.bmp	\
+	$(top_srcdir)/icons/next_bmp.bmp	\
+	$(top_srcdir)/icons/nine_bmp.bmp	\
+	$(top_srcdir)/icons/nomute_bmp.bmp	\
+	$(top_srcdir)/icons/one_bmp.bmp	\
+	$(top_srcdir)/icons/pause_bmp.bmp	\
+	$(top_srcdir)/icons/play_bmp.bmp	\
+	$(top_srcdir)/icons/prefs_bmp.bmp	\
+	$(top_srcdir)/icons/$(top_srcdir)/icons/prev_bmp.bmp	\
+	$(top_srcdir)/icons/rand_bmp.bmp	\
+	$(top_srcdir)/icons/randd_bmp.bmp	\
+	$(top_srcdir)/icons/repeatd_bmp.bmp	\
+	$(top_srcdir)/icons/repeatn_bmp.bmp	\
+	$(top_srcdir)/icons/repeatt_bmp.bmp	\
+	$(top_srcdir)/icons/reverse_bmp.bmp	\
+	$(top_srcdir)/icons/seven_bmp.bmp	\
+	$(top_srcdir)/icons/six_bmp.bmp	\
+	$(top_srcdir)/icons/stop_bmp.bmp	\
+	$(top_srcdir)/icons/three_bmp.bmp	\
+	$(top_srcdir)/icons/two_bmp.bmp	\
+	$(top_srcdir)/icons/zero_bmp.bmp
 
 fxcd_SOURCES = \
 		icons.cpp	        \
 		CDBMPIcon.cpp	        \
-		CDChoiceDialog.cpp	\
-		CDInfo.cpp	        \
-		CDPipe.cpp              \
 		CDPlayer.cpp	        \
-		CDPreferences.cpp	\
 		CDSeekButton.cpp	\
-		CDServerDialog.cpp	\
 		CDWindow.cpp	        \
 		cd.cpp
+
+#fxcd_SOURCES = \
+#		icons.cpp	        \
+#		CDBMPIcon.cpp	        \
+#		CDChoiceDialog.cpp	\
+#		CDInfo.cpp	        \
+#		CDPipe.cpp              \
+#		CDPlayer.cpp	        \
+#		CDPreferences.cpp	\
+#		CDSeekButton.cpp	\
+#		CDServerDialog.cpp	\
+#		CDWindow.cpp	        \
+#		cd.cpp
 
 CDBMPIcon.cpp: $(top_srcdir)/include/icons.h icons.cpp
 

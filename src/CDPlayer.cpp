@@ -207,8 +207,6 @@ FXint CDPlayer::getRandomTrack()
 //Open the device
 FXbool CDPlayer::init(const FXString& device)
 {
-  FXint i;
-
   //Load selected cdrom
   if(media>=0)
   {

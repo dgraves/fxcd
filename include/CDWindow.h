@@ -21,6 +21,176 @@
 
 enum
 {
+  CDTIME_DISC    =0,      // Show elapsed disc time in time display
+  CDTIME_TRACK   =1,      // Show elapsed track time in time display
+  CDTIME_DISCREM =2,      // Show remaining disc time in time display
+  CDTIME_TRACKREM=3       // Show remaining track time in time display
+};
+
+enum
+{
+  CDSTART_NONE =0,         // Take no action when program starts
+  CDSTART_START=1,         // Start playing a disc when program starts
+  CDSTART_STOP =2          // Stop playing a disc (if a disc is playing) when program starts
+};
+
+class CDBMPIcon;
+class CDPreferences;
+
+class CDWindow : public FXMainWindow
+{
+  FXDECLARE(CDWindow)
+  friend class CDPreferences;
+protected:
+  FXbool              stoponexit;        // Stop playing when program exits
+  FXuint              startmode;         // Action to take when program starts: nont, start play, stop play
+  FXuint              timemode;          // Time mode: disc, track, disc remain, track remain
+  FXColor             lcdforeclr;        // Color of LCD foreground
+  FXColor             lcdbackclr;        // Color of LCD background
+  FXColor             iconclr;           // Color of icons on CD player control buttons
+  FXFont*             font;              // Font for LCD
+  FXint               vollevel;	         // Stored volume to check against cdplayer for external changes
+  FXfloat             volbalance;        // Stored balance to check against cdplayer for external changes
+  FXint               seektrack;         // Currently seeking in this track
+  struct disc_timeval seekTime;          // Current seek time in track
+  CDPlayer            cdplayer;          // The cd player
+protected:
+  FXTimer*            timer;             // Player update timer
+  FXCanvas*           canvas;            // Time display
+  FXListBox*          bandtitle;         // List for LCD artist name display
+  FXListBox*          tracktitle;        // List for LCD track name display
+  FXLabel*            albumtitle;        // Label for LCD album display
+  FXMenuBar*          menubar;
+  FXMenuPane*         filemenu;
+  FXStatusBar*        statusbar;
+  FXToolTip*          tooltip;
+protected:
+  CDWindow() { }
+  void doDraw(FXint,const struct disc_info*);
+  FXbool checkDevices();                      // Check for available cdrom devices
+  FXbool loadDiscData();                      // Load data for currently open device
+  FXbool getData(struct disc_data* data);
+public:
+  long onPaint(FXObject*,FXSelector,void*);
+  long onMouseDown(FXObject*,FXSelector,void*);
+  long onTimeout(FXObject*,FXSelector,void*);
+  long onCmdQuit(FXObject*,FXSelector,void*);
+  long onUpdStatusDisc(FXObject*,FXSelector,void*);
+  long onUpdStatusTrack(FXObject*,FXSelector,void*);
+  long onCmdPrefs(FXObject*,FXSelector,void*);
+  long onCmdColor(FXObject*,FXSelector,void*);
+  long onUpdColor(FXObject*,FXSelector,void*);
+  long onCmdFont(FXObject*,FXSelector,void*);
+  long onCmdBand(FXObject*,FXSelector,void*);
+  long onCmdTrack(FXObject*,FXSelector,void*);
+  long onUpdTrack(FXObject*,FXSelector,void*);
+  long onCmdVolume(FXObject*,FXSelector,void*);
+  long onUpdVolume(FXObject*,FXSelector,void*);
+  long onCmdMute(FXObject*,FXSelector,void*);
+  long onCmdBalance(FXObject*,FXSelector,void*);
+  long onUpdBalance(FXObject*,FXSelector,void*);
+  long onActivateSeeker(FXObject*,FXSelector,void*);
+  long onCmdSeekReverse(FXObject*,FXSelector,void*);
+  long onCmdSeekForward(FXObject*,FXSelector,void*);
+  long onUpdSeekBtns(FXObject*,FXSelector,void*);
+  long onCmdStop(FXObject*,FXSelector,void*);
+  long onUpdStop(FXObject*,FXSelector,void*);
+  long onCmdPrev(FXObject*,FXSelector,void*);
+  long onCmdNext(FXObject*,FXSelector,void*);
+  long onUpdSkipBtns(FXObject*,FXSelector,void*);
+  long onCmdPlay(FXObject*,FXSelector,void*);
+  long onUpdPlay(FXObject*,FXSelector,void*);
+  long onCmdEject(FXObject*,FXSelector,void*);
+  long onUpdEject(FXObject*,FXSelector,void*);
+public:
+  enum
+  {
+    ID_QUIT=FXMainWindow::ID_LAST,
+
+    ID_CANVAS,
+    ID_TIMEOUT,
+
+    ID_STATUSDISC,
+    ID_STATUSTRACK,
+
+    ID_PREFS,
+
+    ID_COLORFORE,
+    ID_COLORBACK,
+    ID_COLORICONS,
+    ID_FONT,
+
+    ID_CDROMADD,
+    ID_CDROMREM,
+
+    ID_TOGGLEMENU,
+    ID_TOGGLESTATUS,
+    ID_TOGGLETIPS,
+
+    ID_DEFAULTOPTIONS,
+    ID_DEFAULTAPPEARANCE,
+    ID_DEFAULTHARDWARE,
+    ID_DEFAULTINTERNET,
+
+    ID_BAND,
+    ID_TRACK,
+    ID_VOLUME,
+    ID_MUTE,
+    ID_BALANCE,
+    ID_SEEKREVERSE,
+    ID_SEEKFORWARD,
+    ID_STOP,
+    ID_PREV,
+    ID_NEXT,
+    ID_PLAY,
+    ID_EJECT,
+
+    ID_LAST
+  };
+public:
+  // Constructor
+  CDWindow(FXApp* app);
+
+  // Widget creation
+  virtual void create();
+
+  // Set font for LCD
+  void setDisplayFont(FXFont* font);
+
+  // Get font for LCD
+  FXFont* getDisplayFont() const;
+
+  // Set LCD foreground color
+  void setDisplayForeground(FXColor color);
+
+  // Get LCD foreground color
+  FXColor getDisplayForeground() const;
+
+  // Set LCD background color
+  void setDisplayBackground(FXColor color);
+
+  // Get LCD background color
+  FXColor getDisplayBackground() const;
+
+  // Set button icon color
+  void setIconColor(FXColor color);
+
+  // Get button icon color
+  FXColor getIconColor() const;
+
+  //Destructor
+  ~CDWindow();
+};
+
+#endif
+
+/*
+
+#ifndef _CDWINDOW_H_
+#define _CDWINDOW_H_
+
+enum
+{
   CDTIME_DISC=0,
   CDTIME_TRACK=1,
   CDTIME_DISCREM=2,
@@ -243,3 +413,4 @@ public:
 };
 
 #endif
+*/
