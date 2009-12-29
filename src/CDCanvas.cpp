@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "cdlyte.h"
+#include "cdplayer/cdplayer.h"
 #include "fox/fx.h"
 #include "CDdefs.h"
 #include "CDBMPIcon.h"
@@ -126,8 +126,8 @@ void CDCanvas::setBlinkMode(FXbool mode)
   {
     blink=TRUE;
     blinkmode=mode;
-    if(blinktimer) blinktimer=getApp()->removeTimeout(blinktimer);
-    if(blinkmode) blinktimer=getApp()->addTimeout(this,ID_BLINK,blinkrate);
+    if(blinkmode) 
+	  getApp()->addTimeout(this,ID_BLINK,blinkrate);
   }
 }
 
@@ -141,8 +141,7 @@ void CDCanvas::setBlinkRate(FXbool rate)
   blinkrate=rate;
   if(blinktimer)
   {
-    blinktimer=getApp()->removeTimeout(blinktimer);
-    blinktimer=getApp()->addTimeout(this,ID_BLINK,blinkrate);
+    getApp()->addTimeout(this,ID_BLINK,blinkrate);
   }
 }
 
@@ -158,7 +157,7 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
   FXString text;
 
   //Create string to draw
-  if(di->disc_mode==CDLYTE_PLAYING||di->disc_mode==CDLYTE_PAUSED)
+  if(di->disc_mode==CDPLAYER_PLAYING||di->disc_mode==CDPLAYER_PAUSED)
   {
     if(blinkmode&&blink)
     {
@@ -254,8 +253,7 @@ long CDCanvas::onMouseDown(FXObject*,FXSelector,void*)
 long CDCanvas::onBlink(FXObject*,FXSelector,void*)
 {
   blink=!blink;
-  if(blinktimer) blinktimer=getApp()->removeTimeout(blinktimer);
-  blinktimer=getApp()->addTimeout(this,ID_BLINK,blinkrate);
+  getApp()->addTimeout(this,ID_BLINK,blinkrate);
   return 1;
 }
 
@@ -263,7 +261,7 @@ CDCanvas::~CDCanvas()
 {
   cdbmp_array::iterator iter;
 
-  if(blinktimer) blinktimer=getApp()->removeTimeout(blinktimer);
+  getApp()->removeTimeout(this,ID_BLINK);
 
   for(iter=lcdbmp.begin();iter!=lcdbmp.end();++iter)
     delete (*iter);

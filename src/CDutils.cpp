@@ -28,7 +28,7 @@
 
 #include <algorithm>
 #include "fox/fx.h"
-#include "cdlyte.h"
+#include "cdplayer/cdplayer.h"
 #include "CDutils.h"
 
 FXbool checkDevice(const FXString& device)
@@ -37,11 +37,11 @@ FXbool checkDevice(const FXString& device)
     return FALSE;
 
 #ifdef WIN32
-  if(device.len()<2)||!ischar(device[0])||device[1]!=':')
+  if(device.length()<2||!isalpha(device[0])||device[1]!=':')
     return FALSE;
 
-  FXString drive=FXStringFormat("%c:\\",devnam[0]);
-  if(GetDriveType(drive)!=DRIVE_CDROM)
+  FXString drive=FXStringFormat("%c:\\",device[0]);
+  if(GetDriveType(drive.text())!=DRIVE_CDROM)
     return FALSE;
 #else
   cddesc_t cd;
@@ -74,7 +74,7 @@ void scanDevices(std::vector<FXString>& devices)
   for(i='A';i<='Z';i++)
   {
     device=FXStringFormat("%c:\\",i);
-    if(GetDriveType(device)==DRIVE_CDROM)
+    if(GetDriveType(device.text())==DRIVE_CDROM)
     {
       devices.push_back(device);
     }

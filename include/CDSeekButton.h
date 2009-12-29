@@ -23,8 +23,6 @@ class CDSeekButton : public FXButton
 {
   FXDECLARE(CDSeekButton)
 protected:
-  FXTimer* repeater;
-  FXbool   fired;
   FXint    rate;
 protected:
   CDSeekButton();

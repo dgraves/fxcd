@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "cdlyte.h"
+#include "cdplayer/cdplayer.h"
 #include "fox/fx.h"
 #include "CDServerDialog.h"
 

@@ -73,6 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="cdplayer.lib FOX-1.6.lib winmm.lib wsock32.lib ws2_32.lib"
 				OutputFile=".\Release/fxcd.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -140,7 +141,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -166,7 +167,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="foxd.lib opengl32.lib comctl32.lib wsock32.lib ws2_32.lib"
+				AdditionalDependencies="cdplayerd.lib FOXD-1.6.lib winmm.lib wsock32.lib ws2_32.lib"
 				OutputFile=".\Debug/fxcd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -233,6 +234,42 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\CDBMPIcon.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDCanvas.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDChoiceDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDListBox.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDPlayer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDPreferences.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDSeekButton.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDServerDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDutils.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\CDWindow.cpp"
 				>
 				<FileConfiguration
@@ -253,11 +290,63 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\src\icons.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\include\CDBMPIcon.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDCanvas.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDChoiceDialog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDdefs.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDListBox.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDPlayer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDPreferences.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDSeekButton.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDServerDialog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDutils.h"
+				>
+			</File>
 			<File
 				RelativePath="..\include\CDWindow.h"
 				>

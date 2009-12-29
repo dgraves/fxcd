@@ -57,7 +57,6 @@ protected:
   cdbmp_array         lcdbmp;            // Icons for the display
   cdbmp_array         disbmp;            // "Greyed-out" icons for the display
   fxwin_array         lcdwin;            // Buttons for the display
-  FXTimer*            timer;             // Player update timer
   CDCanvas*           canvas;            // Time display
   CDListBox*          bandtitle;         // List for LCD artist name display
   CDListBox*          tracktitle;        // List for LCD track name display

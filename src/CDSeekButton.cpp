@@ -28,16 +28,14 @@ FXDEFMAP(CDSeekButton) CDSeekButtonMap[]={
 FXIMPLEMENT(CDSeekButton,FXButton,CDSeekButtonMap,ARRAYNUMBER(CDSeekButtonMap))
 
 CDSeekButton::CDSeekButton()
+: rate(-1)
 {
-  repeater=NULL;
-  rate=-1;
 }
 
 CDSeekButton::CDSeekButton(FXComposite* p,const FXString& text,FXIcon* ic,FXObject* tgt,FXSelector sel,FXuint opts,FXint x,FXint y,FXint w,FXint h,FXint pl,FXint pr,FXint pt,FXint pb)
-: FXButton(p,text,ic,tgt,sel,opts,x,y,w,h,pl,pr,pt,pb)
+: FXButton(p,text,ic,tgt,sel,opts,x,y,w,h,pl,pr,pt,pb),
+  rate(-1)
 {
-  repeater=NULL;
-  rate=-1;
 }
 
 FXint CDSeekButton::getSeekRate() const
@@ -48,10 +46,9 @@ FXint CDSeekButton::getSeekRate() const
 void CDSeekButton::setSeekRate(FXint seekrate)
 {
   rate=seekrate;
-  if(repeater)
+  if(getApp()->hasTimeout(this, ID_REPEAT))
   {
-    repeater=getApp()->removeTimeout(repeater);
-    repeater=getApp()->addTimeout(this,ID_REPEAT,(rate<0)?getApp()->getScrollSpeed():rate);
+    getApp()->addTimeout(this,ID_REPEAT,(rate<0)?getApp()->getScrollSpeed():rate);
   }
 }
 
@@ -59,7 +56,7 @@ long CDSeekButton::onLeftBtnPress(FXObject* sender,FXSelector sel,void* ptr)
 {
   if(FXButton::onLeftBtnPress(sender,sel,ptr))
   {
-    repeater=getApp()->addTimeout(this,ID_REPEAT,(rate<0)?getApp()->getScrollSpeed():rate);
+    getApp()->addTimeout(this,ID_REPEAT,(rate<0)?getApp()->getScrollSpeed():rate);
     return 1;
   }
   return 0;
@@ -69,7 +66,7 @@ long CDSeekButton::onLeftBtnRelease(FXObject* sender,FXSelector sel,void* ptr)
 {
   if(FXButton::onLeftBtnRelease(sender,sel,ptr))
   {
-    if(repeater) repeater=getApp()->removeTimeout(repeater);
+    getApp()->removeTimeout(this,ID_REPEAT);
     return 1;
   }
   return 0;
@@ -78,12 +75,11 @@ long CDSeekButton::onLeftBtnRelease(FXObject* sender,FXSelector sel,void* ptr)
 long CDSeekButton::onRepeat(FXObject*,FXSelector,void* ptr)
 {
   if(target) target->handle(this,FXSEL(SEL_COMMAND,message),ptr);
-  if(repeater) repeater=getApp()->removeTimeout(repeater);
-  repeater=getApp()->addTimeout(this,ID_REPEAT,(rate<0)?getApp()->getScrollSpeed():rate);
+  getApp()->addTimeout(this,ID_REPEAT,(rate<0)?getApp()->getScrollSpeed():rate);
   return 1;
 }
 
 CDSeekButton::~CDSeekButton()
 {
-  if(repeater) repeater=getApp()->removeTimeout(repeater);
+  getApp()->removeTimeout(this,ID_REPEAT);
 }

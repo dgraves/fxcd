@@ -19,6 +19,13 @@
 #ifndef _CDINFO_H_
 #define _CDINFO_H_
 
+#include "CDData.h"
+#include "CDPipe.h"
+
+namespace FX {
+  class FXTabbook;
+}
+
 enum
 {
   CDINFO_IDLE     = 0, //No operation has been performed
@@ -26,7 +33,7 @@ enum
   CDINFO_INTERACT = 2, //Operation requires user input to complete
   CDINFO_DONE     = 3, //Operation completed successfully
   CDINFO_ERROR    = 4  //Error encountered while retreiving data
-}
+};
 
 class CDInfo
 {
@@ -35,28 +42,28 @@ public:
   CDInfo() { }
 
   //Add a preferences panel to the CD player's preferences dialog
-  void addPrefPanel(FXTabbook* tabbook) = 0;
+  virtual void addPrefPanel(FXTabbook* tabbook) = 0;
 
   //Add a info panel to the CD player's disc info dialog
-  void addInfoPanel(FXTabbook* tabbook) = 0;
+  virtual void addInfoPanel(FXTabbook* tabbook) = 0;
 
   //Add a submit panel to the CD player's disc info submission dialog
-  void addSubmitPanel(FXTabbook* tabbook) = 0;
+  virtual void addSubmitPanel(FXTabbook* tabbook) = 0;
 
   //Get descriptive string to display in GUI
-  FXString getName() const = 0;
+  virtual FXString getName() const = 0;
 
   //Get status
-  FXuint getStatus() const = 0;
+  virtual FXuint getStatus() const = 0;
 
   //Get error string
-  FXString getErrorString() const = 0;
+  virtual FXString getErrorString() const = 0;
 
   //Request disc info
-  FXuint requestData(cddesc_t media, const struct cd_disc_info* info, CDPipe& pipe) = 0;
+  virtual FXuint requestData(cddesc_t media, const struct cd_disc_info* info, CDPipe& pipe) = 0;
 
   //Get disc info
-  FXuint getData(CDData& data) = 0;
+  virtual FXuint getData(CDData& data) = 0;
 
   //Destructor
   ~CDInfo() { }

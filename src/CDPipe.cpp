@@ -25,6 +25,9 @@
 #include <unistd.h>
 #endif
 
+#include <fox/fx.h>
+#include "CDPipe.h"
+
 //Construct an anonymous pipe
 CDPipe::CDPipe()
 {
@@ -42,7 +45,7 @@ FXbool CDPipe::write(FXint data)
 #ifdef WIN32
   DWORD total;
   BOOL result=WriteFile(pipes[1],&data,sizeof(FXint),&total,NULL);
-  return (result&&(total==sizeof(FXint)))
+  return (result&&(total==sizeof(FXint)));
 #else
   return write(pipes[1],&data,sizeof(FXint))!=sizeof(FXint);
 #endif
@@ -53,8 +56,7 @@ FXbool CDPipe::read(FXint* data)
 {
 #ifdef WIN32
   DWORD total;
-  BOOL result=ReadFile(pipes[0],data,sizeof(FXint),&len,NULL);
-  return TRUE;
+  return ReadFile(pipes[0],data,sizeof(FXint),NULL,NULL);
 #else
   return read(pipes[0],data,sizeof(FXint))!=sizeof(FXint);
 #endif

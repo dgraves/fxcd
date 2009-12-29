@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <time.h>
 #include <algorithm>
-#include "cdlyte.h"
+#include "cdplayer/cdplayer.h"
 #include "fox/fx.h"
 #include "CDPlayer.h"
 
@@ -90,13 +90,13 @@ void CDPlayer::load()
   else
   {
     //If it's playing it can't be stopped
-    if(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED)
+    if(discInfo.disc_mode==CDPLAYER_PLAYING||discInfo.disc_mode==CDPLAYER_PAUSED)
       stopped=FALSE;
 
     //Is audio disc?
     for(i=0;i<discInfo.disc_total_tracks;i++)
     {
-      if(discInfo.disc_track[i].track_type==CDLYTE_TRACK_AUDIO)
+      if(discInfo.disc_track[i].track_type==CDPLAYER_TRACK_AUDIO)
       {
         audiodisc=TRUE;
         break;
@@ -104,7 +104,7 @@ void CDPlayer::load()
     }
 
     //Make the current track be the first track - or track being played
-    if(audiodisc&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
+    if(audiodisc&&(discInfo.disc_mode==CDPLAYER_PLAYING||discInfo.disc_mode==CDPLAYER_PAUSED))
       currentTrack=discInfo.disc_current_track;
     else
       currentTrack=discInfo.disc_first_track;
@@ -160,7 +160,10 @@ FXbool CDPlayer::setvol()
   if(!mute)
   {
     if(cd_set_volume(media,&volCurrent)<0)
+	{
+		DWORD err = GetLastError();
       return FALSE;
+	}
   }
 
   return TRUE;
@@ -256,8 +259,8 @@ FXbool CDPlayer::play()
   if(media<0)
     return FALSE;
 
-  if((discInfo.disc_mode!=CDLYTE_PLAYING)||
-     (discInfo.disc_mode!=CDLYTE_PAUSED))
+  if((discInfo.disc_mode!=CDPLAYER_PLAYING)||
+     (discInfo.disc_mode!=CDPLAYER_PAUSED))
   {
     if(random)
     {
@@ -279,7 +282,7 @@ FXbool CDPlayer::pause()
   if(media<0)
     return FALSE;
 
-  if(discInfo.disc_mode==CDLYTE_PLAYING)
+  if(discInfo.disc_mode==CDPLAYER_PLAYING)
   {
     if(cd_pause(media)<0)
       return FALSE;
@@ -293,7 +296,7 @@ FXbool CDPlayer::resume()
   if(media<0)
     return FALSE;
 
-  if(discInfo.disc_mode==CDLYTE_PAUSED)
+  if(discInfo.disc_mode==CDPLAYER_PAUSED)
   {
     if(cd_resume(media)<0)
       return FALSE;
@@ -307,8 +310,8 @@ FXbool CDPlayer::stop()
   if(media<0)
     return FALSE;
 
-  if((discInfo.disc_mode==CDLYTE_PLAYING)||
-     (discInfo.disc_mode==CDLYTE_PAUSED))
+  if((discInfo.disc_mode==CDPLAYER_PLAYING)||
+     (discInfo.disc_mode==CDPLAYER_PAUSED))
   {
     if(cd_stop(media)<0)
       return FALSE;
@@ -352,12 +355,12 @@ FXbool CDPlayer::skipNext()
     }
   }
 
-  if(discInfo.disc_mode==CDLYTE_PLAYING)
+  if(discInfo.disc_mode==CDPLAYER_PLAYING)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
   }
-  else if(discInfo.disc_mode==CDLYTE_PAUSED)
+  else if(discInfo.disc_mode==CDPLAYER_PAUSED)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
@@ -397,12 +400,12 @@ FXbool CDPlayer::skipPrev()
       currentTrack--;
   }
 
-  if(discInfo.disc_mode==CDLYTE_PLAYING)
+  if(discInfo.disc_mode==CDPLAYER_PLAYING)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
   }
-  else if(discInfo.disc_mode==CDLYTE_PAUSED)
+  else if(discInfo.disc_mode==CDPLAYER_PAUSED)
   {
     if(cd_play(media,currentTrack)<0)
       return FALSE;
@@ -457,7 +460,7 @@ FXbool CDPlayer::openTray()
 
   //Some cd players continue to act as if playing if ejected while playing, and ignore stop requests while tray is open.
   //So check for present disc to avoid infinite loop.
-  if(nodisc==FALSE&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
+  if(nodisc==FALSE&&(discInfo.disc_mode==CDPLAYER_PLAYING||discInfo.disc_mode==CDPLAYER_PAUSED))
   {
     if(!stop())
       return FALSE;
@@ -466,7 +469,7 @@ FXbool CDPlayer::openTray()
     do
     {
       polldisc();
-    }while(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED);
+    }while(discInfo.disc_mode==CDPLAYER_PLAYING||discInfo.disc_mode==CDPLAYER_PAUSED);
 
     //Give it a few milliseconds to settle
     struct timeval tv={0,10000};
@@ -512,7 +515,7 @@ FXbool CDPlayer::update()
       //What's happening
       switch(discInfo.disc_mode)
       {
-      case CDLYTE_PLAYING:
+      case CDPLAYER_PLAYING:
         //Check for track change
         if((currentTrack!=discInfo.disc_current_track)||
            (intro&&((discInfo.disc_track_time.minutes>=introTime.minutes)&&
@@ -527,7 +530,7 @@ FXbool CDPlayer::update()
             currentTrack=discInfo.disc_current_track;
 	}
 	break;
-      case CDLYTE_PAUSED:
+      case CDPLAYER_PAUSED:
         //No action
         break;
       default:
@@ -540,7 +543,7 @@ FXbool CDPlayer::update()
         struct timeval tv={0,10000};
         select(0,NULL,NULL,NULL,&tv);
       }
-      case CDLYTE_COMPLETED:
+      case CDPLAYER_COMPLETED:
         //Continuous play - some cheaper CD-ROMS constantly report this when
         //they are idle.  So we have the stopped flag.
 	if(!stopped&&(repeatMode==CDREPEAT_TRACK))
@@ -662,9 +665,9 @@ FXint CDPlayer::getCurrentTrack() const
 void CDPlayer::setCurrentTrack(FXint track)
 {
   currentTrack=track;
-  if(discInfo.disc_mode==CDLYTE_PLAYING)
+  if(discInfo.disc_mode==CDPLAYER_PLAYING)
     cd_play(media,currentTrack);
-  else if(discInfo.disc_mode==CDLYTE_PAUSED)
+  else if(discInfo.disc_mode==CDPLAYER_PAUSED)
   {
     cd_play(media,currentTrack);
     cd_pause(media);

@@ -17,7 +17,7 @@
  */
 
 #include <string.h>
-#include "cdlyte.h"
+#include "cdplayer/cdplayer.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"

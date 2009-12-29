@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #endif
 
-#include "cdlyte.h"
+#include "cdplayer/cdplayer.h"
 #include "fox/fx.h"
 #include "fox/FXArray.h"
 #include "fox/FXElement.h"
@@ -91,12 +91,12 @@ CDPreferences::CDPreferences(CDWindow* owner)
 
   tree=new FXTreeList(listframe,this,ID_LIST,TREELIST_BROWSESELECT|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|LAYOUT_FILL_X|LAYOUT_FILL_Y);
 
-  treeitem.push_back(tree->addItemLast(0,"Appearance",NULL,NULL));
-  treeitem.push_back(tree->addItemLast(treeitem[CDPREFS_APPEARANCE],"Colors",NULL,NULL));
-  treeitem.push_back(tree->addItemLast(0,"Options",NULL,NULL));
-  treeitem.push_back(tree->addItemLast(treeitem[CDPREFS_OPTIONS],"Display",NULL,NULL));
-  treeitem.push_back(tree->addItemLast(treeitem[CDPREFS_OPTIONS],"Player",NULL,NULL));
-  treeitem.push_back(tree->addItemLast(0,"Hardware",NULL,NULL));
+  treeitem.push_back(tree->appendItem(0,"Appearance",NULL,NULL));
+  treeitem.push_back(tree->appendItem(treeitem[CDPREFS_APPEARANCE],"Colors",NULL,NULL));
+  treeitem.push_back(tree->appendItem(0,"Options",NULL,NULL));
+  treeitem.push_back(tree->appendItem(treeitem[CDPREFS_OPTIONS],"Display",NULL,NULL));
+  treeitem.push_back(tree->appendItem(treeitem[CDPREFS_OPTIONS],"Player",NULL,NULL));
+  treeitem.push_back(tree->appendItem(0,"Hardware",NULL,NULL));
 
   tree->expandTree(treeitem[CDPREFS_APPEARANCE]);
   tree->expandTree(treeitem[CDPREFS_OPTIONS]);
