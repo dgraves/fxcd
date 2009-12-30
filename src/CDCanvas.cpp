@@ -17,7 +17,7 @@
  */
 
 #include <cdlyte.h>
-#include "fox-1.6/fx.h"
+#include <fox-1.6/fx.h>
 #include "CDdefs.h"
 #include "CDBMPIcon.h"
 #include "CDCanvas.h"

@@ -27,7 +27,7 @@
 #endif
 
 #include <algorithm>
-#include "fox-1.6/fx.h"
+#include <fox-1.6/fx.h>
 #include <cdlyte.h>
 #include "CDutils.h"
 
@@ -84,10 +84,10 @@ void scanDevices(std::vector<FXString>& devices)
   FXint j;
   FXbool exists;
   FXString link;
-  FXchar *special[]={"/dev/cdrom","/dev/dvd","/dev/cdrw",NULL};
-  FXchar *letters[]={"/dev/hd%d",NULL};
-  FXchar *numbers[]={"/dev/scd%d","/dev/sr%d","/dev/cd%d","dev/cdrom%d","/dev/cdroms/cdrom%d",
-                     "/dev/cd%dc","/dev/acd%dc","/dev/matcd%dc","/dev/mcd%dc","/dev/scd%dc","/dev/rsr%dc",NULL};
+  const FXchar *special[]={"/dev/cdrom","/dev/dvd","/dev/cdrw",NULL};
+  const FXchar *letters[]={"/dev/hd%d",NULL};
+  const FXchar *numbers[]={"/dev/scd%d","/dev/sr%d","/dev/cd%d","dev/cdrom%d","/dev/cdroms/cdrom%d",
+                           "/dev/cd%dc","/dev/acd%dc","/dev/matcd%dc","/dev/mcd%dc","/dev/scd%dc","/dev/rsr%dc",NULL};
 
   for(i=0;special[i]!=NULL;i++)
   {

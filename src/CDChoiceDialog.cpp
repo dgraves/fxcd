@@ -17,7 +17,7 @@
  */
 
 #include <cdlyte.h>
-#include "fox-1.6/fx.h"
+#include <fox-1.6/fx.h>
 #include "CDChoiceDialog.h"
 
 FXDEFMAP(CDChoiceDialog) CDChoiceDialogMap[]={

@@ -18,9 +18,9 @@
 
 #include <signal.h>
 #include <cdlyte.h>
-#include "fox-1.6/fx.h"
-#include "fox-1.6/FXArray.h"
-#include "fox-1.6/FXElement.h"
+#include <fox-1.6/fx.h>
+#include <fox-1.6/FXArray.h>
+#include <fox-1.6/FXElement.h>
 #include "CDdefs.h"
 #include "CDPlayer.h"
 #include "CDWindow.h"

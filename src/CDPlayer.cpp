@@ -20,7 +20,7 @@
 #include <time.h>
 #include <algorithm>
 #include <cdlyte.h>
-#include "fox-1.6/fx.h"
+#include <fox-1.6/fx.h>
 #include "CDPlayer.h"
 
 #define VOLUME_TO_FLOAT(v) (((FXfloat)(v))/100.0f)
