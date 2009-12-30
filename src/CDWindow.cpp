@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "cdplayer/cdplayer.h"
-#include "fox/fx.h"
+#include <cdlyte.h>
+#include <fox-1.6/fx.h>
 #include "CDdefs.h"
 #include "CDutils.h"
 #include "CDPlayer.h"
@@ -281,11 +281,11 @@ void CDWindow::create()
   getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
 
   //Start action
-  if((startmode==CDSTART_STOP)&&(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED))
+  if((startmode==CDSTART_STOP)&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
     cdplayer.stop();
-  else if((startmode==CDSTART_START)&&(cdplayer.getStatus()==CDPLAYER_PAUSED))
+  else if((startmode==CDSTART_START)&&(cdplayer.getStatus()==CDLYTE_PAUSED))
     cdplayer.resume();
-  else if((startmode==CDSTART_START)&&(cdplayer.getStatus()!=CDPLAYER_PLAYING))
+  else if((startmode==CDSTART_START)&&(cdplayer.getStatus()!=CDLYTE_PLAYING))
     cdplayer.play();
 }
 
@@ -414,7 +414,7 @@ FXbool CDWindow::checkDevices()
     devname=(FXString*)bandtitle->getItemData(i);
     if(cdplayer.init(*devname))
     {
-      if(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED)
+      if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       {
 	player=i;
 	cdplayer.finish();
@@ -472,7 +472,7 @@ FXbool CDWindow::loadDiscData()
     {
       struct track_info track;
       cdplayer.getTrackInfo(i,track);
-      if(track.track_type==CDPLAYER_TRACK_AUDIO)
+      if(track.track_type==CDLYTE_TRACK_AUDIO)
       {
         title.format("%d. %s (%d:%02d)",i+s,data.data_track[i].track_title,track.track_length.minutes,track.track_length.seconds);
         tracktitle->appendItem(title);
@@ -712,7 +712,7 @@ long CDWindow::onTimeout(FXObject*,FXSelector,void*)
     }
   }
 
-  canvas->setBlinkMode((cdplayer.getStatus()==CDPLAYER_PAUSED)?TRUE:FALSE);
+  canvas->setBlinkMode((cdplayer.getStatus()==CDLYTE_PAUSED)?TRUE:FALSE);
   canvas->update();
 
   getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
@@ -807,7 +807,7 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
 {
   if(stoponexit==TRUE)
   {
-    if(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED)
+    if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       cdplayer.stop();
     cdplayer.finish();
   }
@@ -901,7 +901,7 @@ long CDWindow::onCmdBand(FXObject*,FXSelector,void* ptr)
 long CDWindow::onCmdTrack(FXObject*,FXSelector,void* ptr)
 {
   cdplayer.setCurrentTrack(((FXint)(FXival)ptr)+1);
-  if(cdplayer.getStatus()!=CDPLAYER_PLAYING&&cdplayer.getStatus()!=CDPLAYER_PAUSED)
+  if(cdplayer.getStatus()!=CDLYTE_PLAYING&&cdplayer.getStatus()!=CDLYTE_PAUSED)
     cdplayer.play();
   return 1;
 }
@@ -1097,7 +1097,7 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdSeekBtns(FXObject* sender,FXSelector,void*)
 {
-  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED))?ID_ENABLE:ID_DISABLE;
+  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))?ID_ENABLE:ID_DISABLE;
   sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
@@ -1110,16 +1110,16 @@ long CDWindow::onCmdStop(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdStop(FXObject* sender,FXSelector,void*)
 {
-  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED))?ID_ENABLE:ID_DISABLE;
+  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))?ID_ENABLE:ID_DISABLE;
   sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
 
 long CDWindow::onCmdPlay(FXObject*,FXSelector,void*)
 {
-  if(cdplayer.getStatus()==CDPLAYER_PLAYING)
+  if(cdplayer.getStatus()==CDLYTE_PLAYING)
     cdplayer.pause();
-  else if(cdplayer.getStatus()==CDPLAYER_PAUSED)
+  else if(cdplayer.getStatus()==CDLYTE_PAUSED)
     cdplayer.resume();
   else
     cdplayer.play();
@@ -1134,7 +1134,7 @@ long CDWindow::onUpdPlay(FXObject* sender,FXSelector,void*)
 
   if(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
   {
-    state=(cdplayer.getStatus()==CDPLAYER_PLAYING)?TRUE:FALSE;
+    state=(cdplayer.getStatus()==CDLYTE_PLAYING)?TRUE:FALSE;
     msg=ID_ENABLE;
   }
 
@@ -1211,10 +1211,10 @@ CDWindow::~CDWindow()
 
 /*
 
-#include "cdplayer/cdplayer.h"
-#include "fox/fx.h"
-#include "fox/FXArray.h"
-#include "fox/FXElement.h"
+#include <cdlyte.h>
+#include <fox-1.6/fx.h>
+#include <fox-1.6/FXArray.h>
+#include <fox-1.6/FXElement.h>
 #include "CDPlayer.h"
 #include "CDSeekButton.h"
 #include "CDBMPIcon.h"
@@ -1555,11 +1555,11 @@ void CDWindow::create()
   timer=getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
 
   //Start action
-  if((startMode==CDSTART_STOP)&&(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED))
+  if((startMode==CDSTART_STOP)&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
     cdplayer.stop();
-  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()==CDPLAYER_PAUSED))
+  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()==CDLYTE_PAUSED))
     cdplayer.resume();
-  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()!=CDPLAYER_PLAYING))
+  else if((startMode==CDSTART_START)&&(cdplayer.getStatus()!=CDLYTE_PLAYING))
     cdplayer.play();
 }
 
@@ -1639,7 +1639,7 @@ FXbool CDWindow::checkDevices()
     devname=(FXString*)bandTitle->getItemData(i);
     if(cdplayer.init(devname->text()))
     {
-      if(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED)
+      if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       {
 	player=i;
 	cdplayer.finish();
@@ -1694,7 +1694,7 @@ FXbool CDWindow::loadDiscData()
     for(i=cdplayer.getStartTrack();i<=cdplayer.getNumTracks();i++)
     {
       const struct track_info* track=cdplayer.getTrackInfo(i-1);
-      if(track->track_type==CDPLAYER_TRACK_AUDIO)
+      if(track->track_type==CDLYTE_TRACK_AUDIO)
       {
         title.format("%d. %s (%d:%02d)",i,data.data_track[i-1].track_title,track->track_length.minutes,track->track_length.seconds);
         trackTitle->appendItem(title);
@@ -1733,9 +1733,9 @@ void CDWindow::doDraw(FXint track,const struct disc_info* di)
 
   struct disc_timeval drawTime;
 
-  if(di->disc_mode==CDPLAYER_PLAYING||di->disc_mode==CDPLAYER_PAUSED)
+  if(di->disc_mode==CDLYTE_PLAYING||di->disc_mode==CDLYTE_PAUSED)
   {
-    if((di->disc_mode==CDPLAYER_PAUSED)&&cdplayer.blink())
+    if((di->disc_mode==CDLYTE_PAUSED)&&cdplayer.blink())
     {
       text.format("%02d--:--",track);
     }
@@ -1942,7 +1942,7 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
 
   if(stopOnExit==TRUE)
   {
-    if(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED)
+    if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
       cdplayer.stop();
     if(timer) timer=getApp()->removeTimeout(timer);
     cdplayer.finish();
@@ -2002,7 +2002,7 @@ long CDWindow::onUpdStatusDisc(FXObject* sender,FXSelector,void*)
 long CDWindow::onUpdStatusTrack(FXObject* sender,FXSelector,void*)
 {
   FXString str("00:00");
-  //if(cdplayer.isDiscPresent()&&(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED))
+  //if(cdplayer.isDiscPresent()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
   if(cdplayer.isDiscPresent())
   {
     const struct track_info* track=cdplayer.getTrackInfo(cdplayer.getCurrentTrack()-1);
@@ -2396,7 +2396,7 @@ long CDWindow::onCmdBand(FXObject*,FXSelector,void* data)
 long CDWindow::onCmdTrack(FXObject*,FXSelector,void* ptr)
 {
   cdplayer.setCurrentTrack(((FXint)ptr)+1);
-  if(cdplayer.getStatus()!=CDPLAYER_PLAYING&&cdplayer.getStatus()!=CDPLAYER_PAUSED)
+  if(cdplayer.getStatus()!=CDLYTE_PLAYING&&cdplayer.getStatus()!=CDLYTE_PAUSED)
     cdplayer.play();
   return 1;
 }
@@ -2602,7 +2602,7 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdSeekBtns(FXObject* sender,FXSelector,void*)
 {
-  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED))?ID_ENABLE:ID_DISABLE;
+  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))?ID_ENABLE:ID_DISABLE;
   sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
@@ -2615,16 +2615,16 @@ long CDWindow::onCmdStop(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdStop(FXObject* sender,FXSelector,void*)
 {
-  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED))?ID_ENABLE:ID_DISABLE;
+  FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))?ID_ENABLE:ID_DISABLE;
   sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }
 
 long CDWindow::onCmdPlay(FXObject*,FXSelector,void*)
 {
-  if(cdplayer.getStatus()==CDPLAYER_PLAYING)
+  if(cdplayer.getStatus()==CDLYTE_PLAYING)
     cdplayer.pause();
-  else if(cdplayer.getStatus()==CDPLAYER_PAUSED)
+  else if(cdplayer.getStatus()==CDLYTE_PAUSED)
     cdplayer.resume();
   else
     cdplayer.play();
@@ -2639,7 +2639,7 @@ long CDWindow::onUpdPlay(FXObject* sender,FXSelector,void*)
 
   if(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
   {
-    state=(cdplayer.getStatus()==CDPLAYER_PLAYING)?TRUE:FALSE;
+    state=(cdplayer.getStatus()==CDLYTE_PLAYING)?TRUE:FALSE;
     msg=ID_ENABLE;
   }
 
@@ -2679,7 +2679,7 @@ long CDWindow::onCmdEject(FXObject*,FXSelector,void*)
 
 long CDWindow::onUpdEject(FXObject* sender,FXSelector,void*)
 {
-  //FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.getStatus()==CDPLAYER_PLAYING||cdplayer.getStatus()==CDPLAYER_PAUSED)?ID_DISABLE:ID_ENABLE;
+  //FXuint msg=(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)?ID_DISABLE:ID_ENABLE;
   //sender->handle(this,MKUINT(msg,SEL_COMMAND),NULL);
   return 1;
 }

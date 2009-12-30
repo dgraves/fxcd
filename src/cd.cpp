@@ -17,10 +17,10 @@
  */
 
 #include <signal.h>
-#include "cdplayer/cdplayer.h"
-#include "fox/fx.h"
-#include "fox/FXArray.h"
-#include "fox/FXElement.h"
+#include <cdlyte.h>
+#include "fox-1.6/fx.h"
+#include "fox-1.6/FXArray.h"
+#include "fox-1.6/FXElement.h"
 #include "CDdefs.h"
 #include "CDPlayer.h"
 #include "CDWindow.h"

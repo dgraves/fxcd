@@ -1,4 +1,4 @@
-/* CDTypes.h
+/* CDdefs.h
  * Copyright (C) 2004 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _CDTYPES_H_
-#define _CDTYPES_H_
+#ifndef _CDDEFS_H_
+#define _CDDEFS_H_
 
 #include <vector>
 
 //Version number - for windows
-#define PROG_VERSION "0.9.6"
+#define PROG_VERSION "0.9.9"
 #define PROG_PACKAGE "fxcd"
 
 class CDBMPIcon;

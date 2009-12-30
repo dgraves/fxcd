@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "cdplayer/cdplayer.h"
-#include "fox/fx.h"
+#include <cdlyte.h>
+#include "fox-1.6/fx.h"
 #include "CDdefs.h"
 #include "CDBMPIcon.h"
 #include "CDCanvas.h"
@@ -157,7 +157,7 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
   FXString text;
 
   //Create string to draw
-  if(di->disc_mode==CDPLAYER_PLAYING||di->disc_mode==CDPLAYER_PAUSED)
+  if(di->disc_mode==CDLYTE_PLAYING||di->disc_mode==CDLYTE_PAUSED)
   {
     if(blinkmode&&blink)
     {

@@ -25,7 +25,7 @@
 #include <unistd.h>
 #endif
 
-#include <fox/fx.h>
+#include <fox-1.6/fx.h>
 #include "CDPipe.h"
 
 //Construct an anonymous pipe

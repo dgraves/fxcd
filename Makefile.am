@@ -1,4 +1,4 @@
-SUBDIRS = src windows
+SUBDIRS = src
 
 EXTRA_DIST = \
                 windows/fxcd.sln    \

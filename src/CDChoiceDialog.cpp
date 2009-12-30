@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "cdplayer/cdplayer.h"
-#include "fox/fx.h"
+#include <cdlyte.h>
+#include "fox-1.6/fx.h"
 #include "CDChoiceDialog.h"
 
 FXDEFMAP(CDChoiceDialog) CDChoiceDialogMap[]={

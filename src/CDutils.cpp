@@ -27,8 +27,8 @@
 #endif
 
 #include <algorithm>
-#include "fox/fx.h"
-#include "cdplayer/cdplayer.h"
+#include "fox-1.6/fx.h"
+#include <cdlyte.h>
 #include "CDutils.h"
 
 FXbool checkDevice(const FXString& device)
