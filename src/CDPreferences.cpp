@@ -28,6 +28,7 @@
 #include <fox-1.6/FXElement.h>
 #include "CDdefs.h"
 #include "CDutils.h"
+#include "CDData.h"
 #include "CDPlayer.h"
 #include "CDListBox.h"
 #include "CDCanvas.h"

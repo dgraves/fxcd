@@ -27,7 +27,7 @@
 
 class CDBMPIcon;
 
-typedef std::vector<CDBMPIcon*> cdbmp_array;
-typedef std::vector<FXWindow*>  fxwin_array;
+typedef std::vector<CDBMPIcon*> CDBMPArray;
+typedef std::vector<FXWindow*>  FXWinArray;
 
 #endif

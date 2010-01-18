@@ -58,7 +58,7 @@ CDCanvas::CDCanvas(FXComposite* p,FXObject* tgt,FXSelector sel,FXuint opts,FXint
 
 void CDCanvas::create()
 {
-  cdbmp_array::iterator iter;
+  CDBMPArray::iterator iter;
 
   FXCanvas::create();
 
@@ -89,7 +89,7 @@ FXuint CDCanvas::getTimeMode() const
 
 void CDCanvas::setDisplayForeground(FXColor color)
 {
-  cdbmp_array::iterator iter;
+  CDBMPArray::iterator iter;
 
   //Needed for dual color icons.  If they are equal, modify slightly.
   if(color==lcdbackclr)
@@ -259,7 +259,7 @@ long CDCanvas::onBlink(FXObject*,FXSelector,void*)
 
 CDCanvas::~CDCanvas()
 {
-  cdbmp_array::iterator iter;
+  CDBMPArray::iterator iter;
 
   getApp()->removeTimeout(this,ID_BLINK);
 

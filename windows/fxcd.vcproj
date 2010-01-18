@@ -49,7 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="cdplayer.lib FOX-1.6.lib winmm.lib wsock32.lib ws2_32.lib"
+				AdditionalDependencies="cdlyte.lib FOX-1.6.lib winmm.lib wsock32.lib ws2_32.lib"
 				OutputFile=".\Release/fxcd.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -142,7 +142,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -167,7 +167,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="cdplayerd.lib FOXD-1.6.lib winmm.lib wsock32.lib ws2_32.lib"
+				AdditionalDependencies="cdlyted.lib FOXD-1.6.lib winmm.lib wsock32.lib ws2_32.lib"
 				OutputFile=".\Debug/fxcd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -246,6 +246,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\CDDBInfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\CDListBox.cpp"
 				>
 			</File>
@@ -313,6 +317,10 @@
 			</File>
 			<File
 				RelativePath="..\include\CDData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDDBInfo.h"
 				>
 			</File>
 			<File

@@ -27,6 +27,7 @@ struct CDData
   FXString          genre;
   FXArray<FXString> trackArtist;
   FXArray<FXString> trackTitle;
+  CDData() : artist("Unknown Artist"), title("Unknown Album"), year("0"), genre("Unknown") { }
 };
 
 #endif

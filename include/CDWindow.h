@@ -30,6 +30,7 @@ class CDBMPIcon;
 class CDCanvas;
 class CDListBox;
 class CDPreferences;
+class CDInfo;
 
 class CDWindow : public FXMainWindow
 {
@@ -52,11 +53,11 @@ protected:
   FXDataTarget        repeatmodetgt;
   FXDataTarget        introtgt;
 protected:
-  cdbmp_array         mutebmp;           // Mute icons
-  cdbmp_array         btnbmp;            // Icons for cd player controls
-  cdbmp_array         lcdbmp;            // Icons for the display
-  cdbmp_array         disbmp;            // "Greyed-out" icons for the display
-  fxwin_array         lcdwin;            // Buttons for the display
+  CDBMPArray         mutebmp;           // Mute icons
+  CDBMPArray         btnbmp;            // Icons for cd player controls
+  CDBMPArray         lcdbmp;            // Icons for the display
+  CDBMPArray         disbmp;            // "Greyed-out" icons for the display
+  FXWinArray         lcdwin;            // Buttons for the display
   CDCanvas*           canvas;            // Time display
   CDListBox*          bandtitle;         // List for LCD artist name display
   CDListBox*          tracktitle;        // List for LCD track name display
@@ -79,7 +80,8 @@ protected:
   void writeRegistry();
   FXbool checkDevices();                      // Check for available cdrom devices
   FXbool loadDiscData();                      // Load data for currently open device
-  FXbool getData(struct disc_data* data);
+  void genDefaultInfo(CDData* data);          // Fill CDData object with default disc description
+  void displayDiscData(const CDData& data);   // Populate the GUI with the data loaded for currently open device
 public:
   long onPaint(FXObject*,FXSelector,void*);
   long onMouseUp(FXObject*,FXSelector,void*);

@@ -41,7 +41,7 @@ protected:
   FXTimer*    blinktimer;       // Timer to toggle blink state
   FXColor     lcdforeclr;       // Foreground color for canvas
   FXColor     lcdbackclr;       // Background color for canvas
-  cdbmp_array lcdbmp;           // Icons for the display
+  CDBMPArray lcdbmp;           // Icons for the display
 protected:
   CDCanvas(){}
 private:

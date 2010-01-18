@@ -18,9 +18,14 @@
 
 #include <cdlyte.h>
 #include <fox-1.6/fx.h>
+#include <fox-1.6/FXArray.h>
+#include <fox-1.6/FXElement.h>
 #include "CDdefs.h"
 #include "CDutils.h"
+#include "CDData.h"
 #include "CDPlayer.h"
+#include "CDInfo.h"
+#include "CDDBInfo.h"
 #include "CDListBox.h"
 #include "CDSeekButton.h"
 #include "CDBMPIcon.h"
@@ -257,7 +262,7 @@ CDWindow::CDWindow(FXApp* app)
 
 void CDWindow::create()
 {
-  cdbmp_array::iterator iter;
+  CDBMPArray::iterator iter;
 
   FXMainWindow::create();
 
@@ -432,66 +437,91 @@ FXbool CDWindow::checkDevices()
 
 FXbool CDWindow::loadDiscData()
 {
-  FXint band=bandtitle->getCurrentItem();
-  FXString* deviceStr=(FXString*)bandtitle->getItemData(band);
-  FXString title;
-
   if(!cdplayer.isValid()||!cdplayer.isDiscPresent()||!cdplayer.isAudioDisc())
   {
-      //Relabel for empty media
-      title.format("%s - <%s>",NODISC_MSG,deviceStr->text());
-      bandtitle->setItemText(band,title);
-      bandtitle->setTipText(title);
-      albumtitle->setText(NODISC_MSG);
-      albumtitle->setTipText(NODISC_MSG);
-      tracktitle->clearItems();
-      tracktitle->appendItem(NODISC_MSG);
-      tracktitle->setTipText(NODISC_MSG);
-      tracktitle->setCurrentItem(0);
-      tracktitle->setNumVisible(1);
+    FXint band=bandtitle->getCurrentItem();
+    FXString* deviceStr=(FXString*)bandtitle->getItemData(band);
+    FXString title;
+
+    //Relabel for empty media
+    title.format("%s - <%s>",NODISC_MSG,deviceStr->text());
+    bandtitle->setItemText(band,title);
+    bandtitle->setTipText(title);
+    albumtitle->setText(NODISC_MSG);
+    albumtitle->setTipText(NODISC_MSG);
+    tracktitle->clearItems();
+    tracktitle->appendItem(NODISC_MSG);
+    tracktitle->setTipText(NODISC_MSG);
+    tracktitle->setCurrentItem(0);
+    tracktitle->setNumVisible(1);
   }
   else
   {
-    FXint i,s,n;
-    FXString title;
-    struct disc_data data;
+    // Display default disc info
+    CDData data;
+    genDefaultInfo(&data);
 
-    cddb_init_disc_data(&data);
-    getData(&data);
-    title.format("%s - <%s>",data.data_artist,deviceStr->text());
-    bandtitle->setItemText(band,title);
-    bandtitle->setTipText(title);
-    albumtitle->setText(data.data_title);
-    albumtitle->setTipText(data.data_title);
-
-    //Load all tracks
-    s=cdplayer.getStartTrack();
-    n=cdplayer.getNumTracks();
-    tracktitle->clearItems();
-    for(i=0;i<n;i++)
+    // Request data from external source
+    CDDBInfo info;
+    if(info.requestData(cdplayer))
     {
-      struct track_info track;
-      cdplayer.getTrackInfo(i,track);
-      if(track.track_type==CDLYTE_TRACK_AUDIO)
-      {
-        title.format("%d. %s (%d:%02d)",i+s,data.data_track[i].track_title,track.track_length.minutes,track.track_length.seconds);
-        tracktitle->appendItem(title);
-      }
+      info.getData(&data);
     }
 
-    cddb_free_disc_data(&data);
-
-    //Size our drop down list - no empty list spaces
-    tracktitle->setNumVisible((cdplayer.getNumTracks()>8)?8:cdplayer.getNumTracks());
+    displayDiscData(data);
   }
 
   return TRUE;
 }
 
-FXbool CDWindow::getData(struct disc_data* data)
+void CDWindow::genDefaultInfo(CDData* data)
 {
-  cddb_gen_unknown_entry(cdplayer.getDescriptor(),data);
-  return FALSE;
+  FXint i,s,n;
+
+  data->artist="Unknown Artist";
+  data->title="Unknown Album";
+  data->year="0";
+  data->genre="Unknown";
+
+  s=cdplayer.getStartTrack();
+  n=cdplayer.getNumTracks();
+  for(i=0;i<n;i++)
+  {
+    data->trackTitle.append(FXStringFormat("Track %d",i+s));
+    data->trackArtist.append("Unknown Artist");
+  }
+}
+
+void CDWindow::displayDiscData(const CDData& data)
+{
+  FXint band=bandtitle->getCurrentItem();
+  FXString* deviceStr=(FXString*)bandtitle->getItemData(band);
+  FXint i,s,n;
+  FXString title;
+
+  title.format("%s - <%s>",data.artist,deviceStr->text());
+  bandtitle->setItemText(band,title);
+  bandtitle->setTipText(title);
+  albumtitle->setText(data.title);
+  albumtitle->setTipText(data.title);
+
+  //Load all tracks
+  s=cdplayer.getStartTrack();
+  n=cdplayer.getNumTracks();
+  tracktitle->clearItems();
+  for(i=0;i<n;i++)
+  {
+    struct track_info track;
+    cdplayer.getTrackInfo(i,track);
+    if(track.track_type==CDLYTE_TRACK_AUDIO)
+    {
+      title.format("%d. %s (%d:%02d)",i+s,data.trackTitle[i],track.track_length.minutes,track.track_length.seconds);
+      tracktitle->appendItem(title);
+    }
+  }
+
+  //Size our drop down list - no empty list spaces
+  tracktitle->setNumVisible((cdplayer.getNumTracks()>8)?8:cdplayer.getNumTracks());
 }
 
 void CDWindow::setDisplayFont(FXFont* font)
@@ -509,7 +539,7 @@ FXFont* CDWindow::getDisplayFont() const
 
 void CDWindow::setDisplayForeground(FXColor color)
 {
-  cdbmp_array::iterator iter;
+  CDBMPArray::iterator iter;
 
   //Needed for dual color icons.  If they are equal, modify slightly.
   if(color==lcdbackclr)
@@ -543,8 +573,8 @@ FXColor CDWindow::getDisplayForeground() const
 
 void CDWindow::setDisplayBackground(FXColor color)
 {
-  cdbmp_array::iterator biter;
-  fxwin_array::iterator witer;
+  CDBMPArray::iterator biter;
+  FXWinArray::iterator witer;
 
   //Needed for dual color icons.  If they are equal, modify slightly.
   if(color==lcdforeclr)
@@ -579,7 +609,7 @@ FXColor CDWindow::getDisplayBackground() const
 
 void CDWindow::setIconColor(FXColor color)
 {
-  cdbmp_array::iterator iter;
+  CDBMPArray::iterator iter;
 
   for(iter=btnbmp.begin();iter!=btnbmp.end();++iter)
     (*iter)->swapColor(iconclr,color);
@@ -1174,7 +1204,7 @@ long CDWindow::onCmdEject(FXObject*,FXSelector,void*)
 
 CDWindow::~CDWindow()
 {
-  cdbmp_array::iterator iter;
+  CDBMPArray::iterator iter;
   FXint i,n=bandtitle->getNumItems();
   FXString* devnam=NULL;
 
