@@ -27,18 +27,29 @@ enum
 
 class CDDBInfo : public CDInfo
 {
+public:
+  class CDDBSettings
+  {
+  public:
+    FXbool proxy;
+    FXuint cddbproto;
+    FXushort cddbpport;
+    FXushort cddbport;
+    FXushort proxyport;
+    FXString cddbaddr;
+    FXString proxyaddr;
+    FXString cddbexec;
+    FXbool localcopy;
+
+  public:
+    CDDBSettings();
+    CDDBSettings(const CDDBSettings& settings);
+  };
+
 protected:
   FXuint status;
   FXString errorstring;
-  FXbool proxy;
-  FXuint cddbproto;
-  FXushort cddbpport;
-  FXushort cddbport;
-  FXushort proxyport;
-  FXString cddbaddr;
-  FXString proxyaddr;
-  FXString cddbexec;
-  FXbool localcopy;
+  CDDBSettings settings;
   CDData currentdata;
 
 protected:
@@ -50,10 +61,10 @@ protected:
 
   FXbool getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner=NULL);
 
-  FXbool getCDDBServerList(struct cddb_serverlist* list) const;
-
 public:
   CDDBInfo();
+
+  CDDBInfo(const CDDBInfo::CDDBSettings& s);
 
   FXbool getUseProxy() const;
 
@@ -86,6 +97,8 @@ public:
   FXbool getSaveLocalCopy() const;
 
   void setSaveLocalCopy(FXbool copy);
+
+  FXbool getCDDBServerList(struct cddb_serverlist* list) const;
 
   // Get status
   virtual FXuint getStatus() const;

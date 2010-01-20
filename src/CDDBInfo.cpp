@@ -28,10 +28,8 @@
 #include "CDInfo.h"
 #include "CDDBInfo.h"
 
-CDDBInfo::CDDBInfo()
-  : status(CDINFO_IDLE),
-    errorstring("No error"),
-    proxy(FALSE),
+CDDBInfo::CDDBSettings::CDDBSettings()
+  : proxy(FALSE),
     cddbproto(CDDB_PROTOCOL_HTTP),
     cddbpport(CDDBP_DEFAULT_PORT),
     cddbport(HTTP_DEFAULT_PORT),
@@ -40,6 +38,32 @@ CDDBInfo::CDDBInfo()
     proxyaddr("0.0.0.0"),
     cddbexec(CDDB_HTTP_QUERY_CGI),
     localcopy(FALSE)
+{
+}
+
+CDDBInfo::CDDBSettings::CDDBSettings(const CDDBSettings& settings)
+  : proxy(settings.proxy),
+    cddbproto(settings.cddbproto),
+    cddbpport(settings.cddbpport),
+    cddbport(settings.cddbport),
+    proxyport(settings.proxyport),
+    cddbaddr(settings.cddbaddr),
+    proxyaddr(settings.proxyaddr),
+    cddbexec(settings.cddbexec),
+    localcopy(settings.localcopy)
+{
+}
+
+CDDBInfo::CDDBInfo()
+  : status(CDINFO_IDLE),
+    errorstring("No error")
+{
+}
+
+CDDBInfo::CDDBInfo(const CDDBInfo::CDDBSettings& s)
+  : status(CDINFO_IDLE),
+    errorstring("No error"),
+    settings(s)
 {
 }
 
@@ -163,16 +187,16 @@ FXbool CDDBInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* 
   hello.hello_hostname=cddb_strdup("anonymous");
 
   cddb_init_cddb_host(&host);
-  host.host_server.server_name=cddb_strdup(cddbaddr.text());
-  host.host_server.server_port=(cddbproto==CDDB_PROTOCOL_CDDBP)?cddbpport:cddbport;
-  host.host_protocol=(cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP;
-  if(cddbproto==CDDB_PROTOCOL_HTTP) host.host_addressing=cddb_strdup(cddbexec.text());
+  host.host_server.server_name=cddb_strdup(settings.cddbaddr.text());
+  host.host_server.server_port=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?settings.cddbpport:settings.cddbport;
+  host.host_protocol=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP;
+  if(settings.cddbproto==CDDB_PROTOCOL_HTTP) host.host_addressing=cddb_strdup(settings.cddbexec.text());
 
-  if(proxy)
+  if(settings.proxy)
   {
     cddb_init_cddb_server(&server);
-    server.server_name=cddb_strdup(proxyaddr.text());
-    server.server_port=proxyport;
+    server.server_name=cddb_strdup(settings.proxyaddr.text());
+    server.server_port=settings.proxyport;
     pserver=&server;
   }
 
@@ -184,7 +208,7 @@ FXbool CDDBInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* 
     char query_string[BUFSIZ];
     struct cddb_query query;
     cddb_init_cddb_query(&query);
-    result=cddb_query(cddb_query_string(cddesc.getDescriptor(),query_string,&len),sock,(cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
+    result=cddb_query(cddb_query_string(cddesc.getDescriptor(),query_string,&len),sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
     if(result!=-1&&query.query_match!=QUERY_NOMATCH)
     {
       FXint choice=0;
@@ -195,22 +219,22 @@ FXbool CDDBInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* 
 	  choice=dialog.getSelection();
       }
 
-      if(cddbproto==CDDB_PROTOCOL_HTTP)
+      if(settings.cddbproto==CDDB_PROTOCOL_HTTP)
       {
         cddb_quit(sock,CDDB_MODE_HTTP);
         sock=cddb_connect(&host,pserver,&hello,http_string,&http_string_len);
       }
 
-      if(sock!=-1) result=cddb_read(query.query_list[choice].list_category,query.query_list[choice].list_id,sock,(cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,info,http_string);
+      if(sock!=-1) result=cddb_read(query.query_list[choice].list_category,query.query_list[choice].list_id,sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,info,http_string);
       else result=-1;
 
-      cddb_quit(sock,(cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP);
+      cddb_quit(sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP);
 
       if(result!=-1)
       {
         success = TRUE;
 
-        if(localcopy)
+        if(settings.localcopy)
         {
           struct disc_info di;
 
@@ -238,83 +262,83 @@ FXbool CDDBInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* 
 
 FXbool CDDBInfo::getUseProxy() const
 {
-  return proxy;
+  return settings.proxy;
 }
 
 void CDDBInfo::setUseProxy(FXbool use)
 {
-  proxy=use;
+  settings.proxy=use;
 }
 
 FXuint CDDBInfo::getCDDBProtocol() const
 {
-  return cddbproto;
+  return settings.cddbproto;
 }
 
 void CDDBInfo::setCDDBProtocol(FXuint proto)
 {
-  cddbproto=proto;
+  settings.cddbproto=proto;
 }
 
 FXushort CDDBInfo::getCDDBPort() const
 {
-  return (cddbproto==CDDB_PROTOCOL_CDDBP)?cddbpport:cddbport;
+  return (settings.cddbproto==CDDB_PROTOCOL_CDDBP)?settings.cddbpport:settings.cddbport;
 }
 
 void CDDBInfo::setCDDBPort(FXushort port)
 {
-  if(cddbproto==CDDB_PROTOCOL_CDDBP) cddbpport=port;
-  else cddbport=port;
+  if(settings.cddbproto==CDDB_PROTOCOL_CDDBP) settings.cddbpport=port;
+  else settings.cddbport=port;
 }
 
 FXushort CDDBInfo::getProxyPort() const
 {
-  return proxyport;
+  return settings.proxyport;
 }
 
 void CDDBInfo::setProxyPort(FXushort port)
 {
-  proxyport=port;
+  settings.proxyport=port;
 }
 
 FXString CDDBInfo::getCDDBAddress() const
 {
-  return cddbaddr;
+  return settings.cddbaddr;
 }
 
 void CDDBInfo::setCDDBAddress(const FXString& addr)
 {
-  cddbaddr=addr;
+  settings.cddbaddr=addr;
 }
 
 FXString CDDBInfo::getProxyAddress() const
 {
-  return proxyaddr;
+  return settings.proxyaddr;
 }
 
 void CDDBInfo::setProxyAddress(const FXString& addr)
 {
-  proxyaddr=addr;
+  settings.proxyaddr=addr;
 }
 
 FXString CDDBInfo::getCDDBScript() const
 {
-  return cddbexec;
+  return settings.cddbexec;
 }
 
 void CDDBInfo::setCDDBScript(const FXString& script)
 {
-  cddbexec=script;
+  settings.cddbexec=script;
 }
 
 FXbool CDDBInfo::getSaveLocalCopy() const
 {
-  return localcopy;
+  return settings.localcopy;
 }
 
 void CDDBInfo::setSaveLocalCopy(FXbool copy)
 {
-  localcopy = copy;
+  settings.localcopy = copy;
 }
 
 FXbool CDDBInfo::getCDDBServerList(struct cddb_serverlist* list) const
@@ -327,23 +351,25 @@ FXbool CDDBInfo::getCDDBServerList(struct cddb_serverlist* list) const
   struct cddb_server server;
   struct cddb_server *pserver=NULL;
 
-  printf("Checking %s for disc info: ",cddbaddr.text());
+  printf("Checking %s for disc info: ",settings.cddbaddr.text());
 
   cddb_init_cddb_hello(&hello);
   hello.hello_program=cddb_strdup(PROG_PACKAGE);
   hello.hello_version=cddb_strdup(PROG_VERSION);
+  hello.hello_user=cddb_strdup("anonymous");
+  hello.hello_hostname=cddb_strdup("anonymous");
 
   cddb_init_cddb_host(&host);
-  host.host_server.server_name=cddb_strdup(cddbaddr.text());
-  host.host_server.server_port=(cddbproto==CDDB_PROTOCOL_CDDBP)?cddbpport:cddbport;
-  host.host_protocol=(cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP;
-  if(cddbproto==CDDB_PROTOCOL_HTTP) host.host_addressing=cddb_strdup(cddbexec.text());
+  host.host_server.server_name=cddb_strdup(settings.cddbaddr.text());
+  host.host_server.server_port=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?settings.cddbpport:settings.cddbport;
+  host.host_protocol=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP;
+  if(settings.cddbproto==CDDB_PROTOCOL_HTTP) host.host_addressing=cddb_strdup(settings.cddbexec.text());
 
-  if(proxy)
+  if(settings.proxy)
   {
     cddb_init_cddb_server(&server);
-    server.server_name=cddb_strdup(proxyaddr.text());
-    server.server_port=proxyport;
+    server.server_name=cddb_strdup(settings.proxyaddr.text());
+    server.server_port=settings.proxyport;
     pserver=&server;
   }
 
@@ -355,7 +381,7 @@ FXbool CDDBInfo::getCDDBServerList(struct cddb_serverlist* list) const
 
   if(sock!=-1)
   {
-    FXint result=cddb_sites(sock,(cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,list,http_string);
+    FXint result=cddb_sites(sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,list,http_string);
     if(result!=-1)
       return TRUE;
   }

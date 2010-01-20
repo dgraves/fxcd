@@ -1,5 +1,5 @@
 /* CDWindow.cpp
- * Copyright (C) 2001,2004 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004,2009 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -102,6 +102,7 @@ CDWindow::CDWindow(FXApp* app)
   lcdbackclr(FXRGB(0,0,0)),
   iconclr(FXRGB(0,0,0)),
   font(NULL),
+  usecddb(TRUE),
   tooltip(NULL),
   prefsbox(NULL)
 {
@@ -328,6 +329,19 @@ void CDWindow::readRegistry()
   ic=getApp()->reg().readColorEntry("SETTINGS","iconcolor",DEFAULTBACK);
   fontspec=getApp()->reg().readStringEntry("SETTINGS","font",getDisplayFont()->getFont().text());
 
+  // CD Info settings
+  usecddb=getApp()->reg().readIntEntry("SETTINGS","usecddb",usecddb);
+  cddbsettings.proxy=getApp()->reg().readIntEntry("SETTINGS","proxy",cddbsettings.proxy);
+  cddbsettings.proxyaddr=getApp()->reg().readStringEntry("SETTINGS","proxyaddr",cddbsettings.proxyaddr.text());
+  cddbsettings.proxyport=getApp()->reg().readUnsignedEntry("SETTINGS","proxyport",cddbsettings.proxyport);
+  cddbsettings.cddbproto=getApp()->reg().readUnsignedEntry("SETTINGS","cddbproto",cddbsettings.cddbproto);
+  cddbsettings.cddbaddr=getApp()->reg().readStringEntry("SETTINGS","cddbaddr",cddbsettings.cddbaddr.text());
+  cddbsettings.cddbpport=getApp()->reg().readUnsignedEntry("SETTINGS","cddbpport",cddbsettings.cddbpport);
+  cddbsettings.cddbport=getApp()->reg().readUnsignedEntry("SETTINGS","cddbport",cddbsettings.cddbport);
+  cddbsettings.cddbexec=getApp()->reg().readStringEntry("SETTINGS","cddbscript",cddbsettings.cddbexec.text());
+  cddbsettings.localcopy=getApp()->reg().readIntEntry("SETTINGS","cddblocalcopy",cddbsettings.localcopy);
+
+  // Apply settings
   setDisplayForeground(dfg);
   setDisplayBackground(dbg);
   setIconColor(ic);
@@ -361,6 +375,17 @@ void CDWindow::writeRegistry()
   getApp()->reg().writeColorEntry("SETTINGS","iconcolor",iconclr);
 
   getApp()->reg().writeStringEntry("SETTINGS","font",getDisplayFont()->getFont().text());
+
+  getApp()->reg().writeIntEntry("SETTINGS","usecddb",usecddb);
+  getApp()->reg().writeIntEntry("SETTINGS","proxy",cddbsettings.proxy);
+  getApp()->reg().writeStringEntry("SETTINGS","proxyaddr",cddbsettings.proxyaddr.text());
+  getApp()->reg().writeUnsignedEntry("SETTINGS","proxyport",cddbsettings.proxyport);
+  getApp()->reg().writeUnsignedEntry("SETTINGS","cddbproto",cddbsettings.cddbproto);
+  getApp()->reg().writeStringEntry("SETTINGS","cddbaddr",cddbsettings.cddbaddr.text());
+  getApp()->reg().writeUnsignedEntry("SETTINGS","cddbpport",cddbsettings.cddbpport);
+  getApp()->reg().writeUnsignedEntry("SETTINGS","cddbport",cddbsettings.cddbport);
+  getApp()->reg().writeStringEntry("SETTINGS","cddbscript",cddbsettings.cddbexec.text());
+  getApp()->reg().writeIntEntry("SETTINGS","cddblocalcopy",cddbsettings.localcopy);
 
   getApp()->reg().write();
 }
@@ -461,11 +486,14 @@ FXbool CDWindow::loadDiscData()
     CDData data;
     genDefaultInfo(&data);
 
-    // Request data from external source
-    CDDBInfo info;
-    if(info.requestData(cdplayer))
+    if(usecddb)
     {
-      info.getData(&data);
+      // Request data from external source
+      CDDBInfo info(cddbsettings);
+      if(info.requestData(cdplayer))
+      {
+        info.getData(&data);
+      }
     }
 
     displayDiscData(data);

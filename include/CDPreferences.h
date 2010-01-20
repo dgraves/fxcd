@@ -29,7 +29,8 @@ enum
   CDPREFS_OPTIONS=2,
   CDPREFS_DISPLAY=3,
   CDPREFS_PLAYER=4,
-  CDPREFS_HARDWARE=5
+  CDPREFS_HARDWARE=5,
+  CDPREFS_INTERNET=6
 };
 
 class CDWindow;
@@ -53,6 +54,8 @@ protected:
   FXuint  timemode;
   std::list<FXString> adddev;
   std::list<FXString> remdev;
+  FXbool usecddb;
+  CDDBInfo::CDDBSettings cddbsettings;
 protected:
   FXDataTarget showmenubartgt;
   FXDataTarget showstatusbartgt;
@@ -67,6 +70,15 @@ protected:
   FXDataTarget randomtgt;
   FXDataTarget repeatmodetgt;
   FXDataTarget timemodetgt;
+  FXDataTarget usecddbtgt;
+  FXDataTarget proxytgt;
+  FXDataTarget proxyporttgt;
+  FXDataTarget proxyaddrtgt;
+  FXDataTarget cddbprototgt;
+  FXDataTarget cddbpporttgt;
+  FXDataTarget cddbporttgt;
+  FXDataTarget cddbaddrtgt;
+  FXDataTarget cbbdlocalcopytgt;
 protected:
   CDWindow*                cdwindow;
   FXTreeList*              tree;
@@ -83,6 +95,11 @@ public:
   long onCmdDeviceRemove(FXObject*,FXSelector,void*);
   long onUpdDeviceRemove(FXObject*,FXSelector,void*);
   long onCmdDeviceScan(FXObject*,FXSelector,void*);
+  long onCmdAdvancedCDDB(FXObject*,FXSelector,void*);
+  long onCmdCDDBPort(FXObject*,FXSelector,void*);
+  long onUpdCDDBPort(FXObject*,FXSelector,void*);
+  long onCmdCDDBServerList(FXObject*,FXSelector,void*);
+  long onCmdDefaultInternet(FXObject*,FXSelector,void*);
 public:
   enum
   {
@@ -92,6 +109,10 @@ public:
     ID_DEVICEADD,
     ID_DEVICEREM,
     ID_DEVICESCAN,
+    ID_ADVANCEDCDDB,
+    ID_CDDBPORT,
+    ID_CDDBSERVERLIST,
+    ID_DEFAULTINTERNET,
     ID_LAST
   };
 public:

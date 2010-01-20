@@ -1,5 +1,5 @@
 /* CDWindow.h
- * Copyright (C) 2001,2004 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004,2009 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,28 +30,29 @@ class CDBMPIcon;
 class CDCanvas;
 class CDListBox;
 class CDPreferences;
-class CDInfo;
 
 class CDWindow : public FXMainWindow
 {
   FXDECLARE(CDWindow)
   friend class CDPreferences;
 protected:
-  FXbool              stoponexit;        // Stop playing when program exits
-  FXuint              startmode;         // Action to take when program starts: nont, start play, stop play
-  FXColor             lcdforeclr;        // Color of LCD foreground
-  FXColor             lcdbackclr;        // Color of LCD background
-  FXColor             iconclr;           // Color of icons on CD player control buttons
-  FXFont*             font;              // Font for LCD
-  FXint               seektrack;         // Currently seeking in this track
-  struct disc_timeval seektime;          // Current seek time in track
-  CDPlayer            cdplayer;          // The cd player
+  FXbool                 stoponexit;        // Stop playing when program exits
+  FXuint                 startmode;         // Action to take when program starts: nont, start play, stop play
+  FXColor                lcdforeclr;        // Color of LCD foreground
+  FXColor                lcdbackclr;        // Color of LCD background
+  FXColor                iconclr;           // Color of icons on CD player control buttons
+  FXFont*                font;              // Font for LCD
+  FXint                  seektrack;         // Currently seeking in this track
+  struct disc_timeval    seektime;          // Current seek time in track
+  CDPlayer               cdplayer;          // The cd player
+  FXbool                 usecddb;
+  CDDBInfo::CDDBSettings cddbsettings;
 protected:
-  FXDataTarget        stoponexittgt;
-  FXDataTarget        startmodetgt;
-  FXDataTarget        timemodetgt;
-  FXDataTarget        repeatmodetgt;
-  FXDataTarget        introtgt;
+  FXDataTarget           stoponexittgt;
+  FXDataTarget           startmodetgt;
+  FXDataTarget           timemodetgt;
+  FXDataTarget           repeatmodetgt;
+  FXDataTarget           introtgt;
 protected:
   CDBMPArray         mutebmp;           // Mute icons
   CDBMPArray         btnbmp;            // Icons for cd player controls
