@@ -1,5 +1,5 @@
 /* CDWindow.cpp
- * Copyright (C) 2001,2004,2009 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004,2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@
 #include "CDPlayer.h"
 #include "CDInfo.h"
 #include "CDDBInfo.h"
+#include "CDInfoTask.h"
 #include "CDListBox.h"
 #include "CDSeekButton.h"
 #include "CDBMPIcon.h"
@@ -41,6 +42,7 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_RIGHTBUTTONRELEASE,CDWindow::ID_CANVAS,CDWindow::onMouseUp),
   FXMAPFUNC(SEL_PAINT,CDWindow::ID_CANVAS,CDWindow::onPaint),
   FXMAPFUNC(SEL_TIMEOUT,CDWindow::ID_TIMEOUT,CDWindow::onTimeout),
+  FXMAPFUNC(SEL_IO_READ,CDWindow::ID_GUISIGNAL,CDWindow::onGUISignal),
 
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_TOGGLEMENUBAR,CDWindow::onCmdToggleMenuBar),
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_TOGGLEMENUBAR,CDWindow::onUpdToggleMenuBar),
@@ -485,18 +487,20 @@ FXbool CDWindow::loadDiscData()
     // Display default disc info
     CDData data;
     genDefaultInfo(&data);
+    displayDiscData(data);
 
     if(usecddb)
     {
       // Request data from external source
-      CDDBInfo info(cddbsettings);
-      if(info.requestData(cdplayer))
-      {
-        info.getData(&data);
-      }
-    }
+      FXGUISignal* signal=new FXGUISignal(getApp(), this, ID_GUISIGNAL);
+      CDDBInfo* info=new CDDBInfo(cddbsettings, signal);
+      info->init(cdplayer);
+      signal->setData(info);
 
-    displayDiscData(data);
+      CDInfoTask* task=new CDInfoTask(info);
+      tasklist.push_back(task);
+      task->start();
+    }
   }
 
   return TRUE;
@@ -774,6 +778,62 @@ long CDWindow::onTimeout(FXObject*,FXSelector,void*)
   canvas->update();
 
   getApp()->addTimeout(this,ID_TIMEOUT,TIMED_UPDATE);
+
+  return 1;
+}
+
+long CDWindow::onGUISignal(FXObject* sender,FXSelector,void* ptr)
+{
+  CDInfo* info=(CDInfo*)ptr;
+
+  // Check state
+  if(info->getStatus()==CDINFO_INTERACT)
+  {
+    info->getUserInput(this);
+  }
+  else
+  {
+    // Find the associated info task object
+    CDInfoTaskList::iterator iter;
+    CDInfoTask* task=NULL;
+    for(iter=tasklist.begin(); iter!=tasklist.end(); ++iter)
+    {
+      if((*iter)->getInfo()==info)
+      {
+        task=*iter;
+        break;
+      }
+    }
+
+    // Only process info if it was in the task list, and was the latest task
+    if(task!=NULL)
+    {
+      if(tasklist.back()==task)
+      {
+        // The task is done or has encountered an error
+        if(info->getStatus()==CDINFO_DONE)
+        {
+          // Load the data
+          CDData data;
+          if(info->getData(&data))
+          {
+            displayDiscData(data);
+          }
+        }
+      }
+
+      // Delete the info task
+      tasklist.erase(iter);
+      task->join();
+      delete task;
+    }
+
+    // Delete the CDInfo object
+    delete info;
+
+    // Delete the GUISignal
+    delete sender;
+  }
 
   return 1;
 }

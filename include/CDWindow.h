@@ -1,5 +1,5 @@
 /* CDWindow.h
- * Copyright (C) 2001,2004,2009 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004,2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -47,6 +47,7 @@ protected:
   CDPlayer               cdplayer;          // The cd player
   FXbool                 usecddb;
   CDDBInfo::CDDBSettings cddbsettings;
+  CDInfoTaskList         tasklist;          // List to hold info tasks that retrieve CD info
 protected:
   FXDataTarget           stoponexittgt;
   FXDataTarget           startmodetgt;
@@ -87,6 +88,7 @@ public:
   long onPaint(FXObject*,FXSelector,void*);
   long onMouseUp(FXObject*,FXSelector,void*);
   long onTimeout(FXObject*,FXSelector,void*);
+  long onGUISignal(FXObject*,FXSelector,void*);
   long onCmdToggleMenuBar(FXObject*,FXSelector,void*);
   long onUpdToggleMenuBar(FXObject*,FXSelector,void*);
   long onCmdToggleStatusBar(FXObject*,FXSelector,void*);
@@ -128,6 +130,7 @@ public:
 
     ID_CANVAS,
     ID_TIMEOUT,
+    ID_GUISIGNAL,
 
     ID_TOGGLEMENUBAR,
     ID_TOGGLESTATUSBAR,

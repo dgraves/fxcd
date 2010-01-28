@@ -250,6 +250,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\CDInfoTask.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\CDListBox.cpp"
 				>
 			</File>
@@ -329,6 +333,10 @@
 			</File>
 			<File
 				RelativePath="..\include\CDInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDInfoTask.h"
 				>
 			</File>
 			<File

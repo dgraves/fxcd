@@ -1,5 +1,5 @@
 /* CDInfo.h
- * Copyright (C) 2001,2004,2009 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2004,2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +18,6 @@
 
 #ifndef _CDINFO_H_
 #define _CDINFO_H_
-
-namespace FX {
-  class FXTabbook;
-}
 
 struct CDData;
 
@@ -44,7 +40,7 @@ public:
   virtual FXString getErrorString() const = 0;
 
   // Request disc info; returns true if request will be handled and false if request can not be processed
-  virtual FXbool requestData(const CDPlayer& cdplayer) = 0;
+  virtual FXbool requestData() = 0;
 
   // Fill existing CDData object with disc info; returns true if data is available and false if data is unavailable 
   // due to retrieval error, etc
@@ -55,6 +51,9 @@ public:
 
   // Request user input through custom process defined for the object (for objects which may require user interaction)
   virtual FXbool getUserInput(FXWindow* owner = 0) = 0;
+
+  // Get FXGUISignal object used to synchronize threaded info retrieval
+  virtual FXGUISignal* getGUISignal() const = 0;
 
   // Destructor
   virtual ~CDInfo() { }

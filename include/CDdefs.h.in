@@ -1,5 +1,5 @@
 /* CDdefs.h
- * Copyright (C) 2004 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2004,2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@
 #define _CDDEFS_H_
 
 #include <vector>
+#include <list>
 
 //Version number - for windows
 #define PROG_VERSION "@VERSION@"
@@ -29,5 +30,9 @@ class CDBMPIcon;
 
 typedef std::vector<CDBMPIcon*> CDBMPArray;
 typedef std::vector<FXWindow*>  FXWinArray;
+
+class CDInfoTask;
+
+typedef std::list<CDInfoTask*> CDInfoTaskList;
 
 #endif

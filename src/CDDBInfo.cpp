@@ -1,5 +1,5 @@
 /* CDDBInfo.h
- * Copyright (C) 2001,2009 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,17 +54,50 @@ CDDBInfo::CDDBSettings::CDDBSettings(const CDDBSettings& settings)
 {
 }
 
-CDDBInfo::CDDBInfo()
-  : status(CDINFO_IDLE),
-    errorstring("No error")
+CDDBInfo::CDDBInfo(FXGUISignal* guisignal)
+  : initialized(FALSE),
+    choice(0),
+    discid(0),
+    status(CDINFO_IDLE),
+    errorstring("No error"),
+    signal(guisignal)
 {
 }
 
-CDDBInfo::CDDBInfo(const CDDBInfo::CDDBSettings& s)
-  : status(CDINFO_IDLE),
+CDDBInfo::CDDBInfo(const CDDBInfo::CDDBSettings& s,FXGUISignal* guisignal)
+  : initialized(FALSE),
+    choice(0),
+    discid(0),
+    status(CDINFO_IDLE),
     errorstring("No error"),
-    settings(s)
+    settings(s),
+    signal(guisignal)
 {
+}
+
+void CDDBInfo::init(const CDPlayer& cdplayer)
+{
+  // Initialize current data structure
+  disc_data data;
+  cddb_init_disc_data(&data);
+  genDefaultInfo(cdplayer,&data);
+  fillCurrentData(data);
+  cddb_free_disc_data(&data);
+
+  // Initialize query string for remote info request if local copy disabled or not found
+  FXint len=BUFSIZ;
+  char buffer[BUFSIZ];
+  querystring=cddb_query_string(cdplayer.getDescriptor(),buffer,&len);
+
+  // Initialize the discid and disc_info values when working with local copies
+  if(settings.localcopy)
+  {
+    discid=cddb_discid(cdplayer.getDescriptor());
+    cd_init_disc_info(&discinfo);
+    cd_stat(cdplayer.getDescriptor(),&discinfo);
+  }
+ 
+  initialized=TRUE;
 }
 
 void CDDBInfo::setStatus(FXuint current)
@@ -84,24 +117,8 @@ FXString CDDBInfo::getErrorString() const
   return errorstring;
 }
 
-// Request disc info; returns true if request will be handled and false if request can not be processed
-FXbool CDDBInfo::requestData(const CDPlayer& cdplayer)
+void CDDBInfo::fillCurrentData(const disc_data& info)
 {
-  FXbool success=TRUE;
-  disc_data info;
-
-  setStatus(CDINFO_PENDING);
-
-  cddb_init_disc_data(&info);
-  if(!getLocalInfo(cdplayer,&info))
-  {
-    if(!getRemoteInfo(cdplayer,&info))
-    {
-      genDefaultInfo(cdplayer,&info);
-      success=FALSE;
-    }
-  }
-
   currentdata.artist = info.data_artist;
   currentdata.genre = info.data_genre;
   currentdata.title = info.data_title;
@@ -114,8 +131,45 @@ FXbool CDDBInfo::requestData(const CDPlayer& cdplayer)
     currentdata.trackArtist.append(info.data_track[i].track_artist);
     currentdata.trackTitle.append(info.data_track[i].track_title);
   }
+}
 
-  setStatus(success ? CDINFO_DONE : CDINFO_ERROR);
+// Request disc info; returns true if request will be handled and false if request can not be processed
+FXbool CDDBInfo::requestData()
+{
+  FXbool success=TRUE;
+
+  if(!initialized)
+  {
+    setStatus(CDINFO_ERROR);
+    success=FALSE;
+    errorstring="Not initialized";
+  }
+  else
+  {
+    FXbool foundlocal=FALSE;
+    disc_data data;
+
+    setStatus(CDINFO_PENDING);
+
+    cddb_init_disc_data(&data);
+    if(settings.localcopy)
+    {
+      if(getLocalInfo(&data))
+        foundlocal=TRUE;
+    }
+
+    if(!foundlocal&&!getRemoteInfo(&data))
+      success=FALSE;
+
+    fillCurrentData(data);
+    cddb_free_disc_data(&data);
+
+    setStatus(success ? CDINFO_DONE : CDINFO_ERROR);
+  }
+
+  // Signal completion to main thread
+  if(signal!=NULL)
+    signal->signal();
 
   return success;
 }
@@ -150,6 +204,12 @@ FXbool CDDBInfo::getUserInput(FXWindow* owner)
   }
 
   // Show dialog for user input
+  CDChoiceDialog dialog(owner,&query);
+  if(dialog.execute(PLACEMENT_OWNER))
+    choice=dialog.getSelection();
+
+  // Signal thread to continue
+  condition.signal();
 
   return TRUE;
 }
@@ -159,17 +219,17 @@ void CDDBInfo::genDefaultInfo(const CDPlayer& cddesc,disc_data* info)
   cddb_gen_unknown_entry(cddesc.getDescriptor(),info);
 }
 
-FXbool CDDBInfo::getLocalInfo(const CDPlayer& cddesc,disc_data* info)
+FXbool CDDBInfo::getLocalInfo(disc_data* info)
 {
   FXString localpath=FXStringFormat("%s%c%s",FXSystem::getHomeDirectory(),PATHSEP,".cddb");
-  if(cddb_read_local(localpath.text(),cddesc.getDescriptor(),info)<0)
+  if(cddb_read_local(localpath.text(),discid,info)<0)
   {
     return FALSE;
   }
   return TRUE;
 }
 
-FXbool CDDBInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* owner)
+FXbool CDDBInfo::getRemoteInfo(disc_data* info)
 {
   cdsock_t sock;
   char http_string[512];
@@ -204,53 +264,57 @@ FXbool CDDBInfo::getRemoteInfo(const CDPlayer& cddesc,disc_data* info,FXWindow* 
 
   if(sock!=-1)
   {
-    FXint result,len=BUFSIZ;
-    char query_string[BUFSIZ];
-    struct cddb_query query;
-    cddb_init_cddb_query(&query);
-    result=cddb_query(cddb_query_string(cddesc.getDescriptor(),query_string,&len),sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
-    if(result!=-1&&query.query_match!=QUERY_NOMATCH)
+    if(!querystring.empty())
     {
-      FXint choice=0;
-      if(query.query_matches>1&&owner!=NULL)
+      cddb_init_cddb_query(&query);
+      FXint result=cddb_query(querystring.text(),sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
+      if(result!=-1&&query.query_match!=QUERY_NOMATCH)
       {
-        CDChoiceDialog dialog(owner,&query);
-        if(dialog.execute())
-	  choice=dialog.getSelection();
-      }
-
-      if(settings.cddbproto==CDDB_PROTOCOL_HTTP)
-      {
-        cddb_quit(sock,CDDB_MODE_HTTP);
-        sock=cddb_connect(&host,pserver,&hello,http_string,&http_string_len);
-      }
-
-      if(sock!=-1) result=cddb_read(query.query_list[choice].list_category,query.query_list[choice].list_id,sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,info,http_string);
-      else result=-1;
-
-      cddb_quit(sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP);
-
-      if(result!=-1)
-      {
-        success = TRUE;
-
-        if(settings.localcopy)
+        choice=0;
+        if(query.query_matches>1&&signal!=NULL)
         {
-          struct disc_info di;
+          setStatus(CDINFO_INTERACT);
 
-          // Save entry in home directory
-          FXString localpath=FXStringFormat("%s%c%s",FXSystem::getHomeDirectory(),PATHSEP,".cddb");
+          // Signal to main thread that input is requested
+          signal->signal();
 
-          cd_init_disc_info(&di);
-          cd_stat(cddesc.getDescriptor(),&di);
+          // Wait for GUI operation to complete
+          FXMutex mtx;
+          mtx.lock();
+          condition.wait(mtx);
+        }
 
-          //Write to the local database
-          cddb_write_local(localpath.text(),&hello,&di,info,"Generated by fxcd");
-          cd_free_disc_info(&di);
+        if(settings.cddbproto==CDDB_PROTOCOL_HTTP)
+        {
+          cddb_quit(sock,CDDB_MODE_HTTP);
+          sock=cddb_connect(&host,pserver,&hello,http_string,&http_string_len);
+        }
+
+        if(sock!=-1) result=cddb_read(query.query_list[choice].list_category,query.query_list[choice].list_id,sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,info,http_string);
+        else result=-1;
+
+        cddb_quit(sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP);
+
+        if(result!=-1)
+        {
+          success = TRUE;
+
+          if(settings.localcopy)
+          {
+            // Save entry in home directory
+            FXString localpath=FXStringFormat("%s%c%s",FXSystem::getHomeDirectory(),PATHSEP,".cddb");
+
+            // Create CDDB direcotry if it does not exist
+            if(!FXStat::exists(localpath))
+              FXDir::create(localpath);
+
+            //Write to the local database
+            cddb_write_local(localpath.text(),&hello,&discinfo,info,"Generated by fxcd");
+          }
         }
       }
+      cddb_free_cddb_query(&query);
     }
-    cddb_free_cddb_query(&query);
   }
 
   if(pserver) cddb_free_cddb_server(&server);
@@ -387,4 +451,17 @@ FXbool CDDBInfo::getCDDBServerList(struct cddb_serverlist* list) const
   }
 
   return FALSE;
+}
+
+
+// Get FXGUISignal object used to synchronize threaded info retrieval
+FXGUISignal* CDDBInfo::getGUISignal() const
+{
+  return signal;
+}
+
+CDDBInfo::~CDDBInfo()
+{
+  if(initialized&&settings.localcopy)
+    cd_free_disc_info(&discinfo);
 }
