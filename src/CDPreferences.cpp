@@ -1,5 +1,5 @@
 /* CDPreferences.cpp
- * Copyright (C) 2001 Dustin Graves <dgraves@computer.org>
+ * Copyright (C) 2001,2009 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -495,7 +495,7 @@ long CDPreferences::onCmdCDDBServerList(FXObject*,FXSelector,void*)
   if(info.getCDDBServerList(&list))
   {
     CDServerDialog dialog(this,&list);
-    if(dialog.execute())
+    if(dialog.execute(PLACEMENT_OWNER))
     {
       FXint index=dialog.getSelection();
       struct cddb_host* host=&list.list_host[index];
