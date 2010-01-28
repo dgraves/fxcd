@@ -27,7 +27,7 @@ FXDEFMAP(CDChoiceDialog) CDChoiceDialogMap[]={
 FXIMPLEMENT(CDChoiceDialog,FXDialogBox,CDChoiceDialogMap,ARRAYNUMBER(CDChoiceDialogMap))
 
 CDChoiceDialog::CDChoiceDialog(FXWindow* owner,const struct cddb_query* entries)
-: FXDialogBox(owner,"CD Info Selection",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,360,250, 10,10,10,10, 4,4)
+: FXDialogBox(owner,"Select a CD Description",DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE,0,0,360,250, 10,10,10,10, 4,4)
 {
   FXint i,len;
   FXchar b[BUFSIZ];
@@ -35,12 +35,11 @@ CDChoiceDialog::CDChoiceDialog(FXWindow* owner,const struct cddb_query* entries)
 
   FXHorizontalFrame* buttons=new FXHorizontalFrame(this,PACK_UNIFORM_WIDTH|LAYOUT_SIDE_BOTTOM|LAYOUT_RIGHT);
   new FXButton(buttons,"&OK",NULL,this,FXDialogBox::ID_ACCEPT,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT,0,0,0,0, 20,20);
-  new FXButton(buttons,"&Cancel",NULL,this,FXDialogBox::ID_CANCEL,FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT,0,0,0,0, 20,20);
 
   new FXHorizontalSeparator(this,SEPARATOR_RIDGE|LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X);
 
   FXVerticalFrame* labelframe=new FXVerticalFrame(this,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
-  new FXLabel(labelframe,"There are multiple data entries to choose from:",NULL,LAYOUT_CENTER_Y);
+  new FXLabel(labelframe,"There are multiple descriptions for the current disc:",NULL,LAYOUT_CENTER_Y);
   FXHorizontalFrame* listframe=new FXHorizontalFrame(this,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
   list=new FXIconList(listframe,this,ID_LIST,ICONLIST_BROWSESELECT|LAYOUT_FILL_X|LAYOUT_FILL_Y);
   list->appendHeader("Category",NULL,80);
