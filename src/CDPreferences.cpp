@@ -95,6 +95,7 @@ CDPreferences::CDPreferences(CDWindow* owner)
   cddbpporttgt.connect(cddbsettings.cddbpport);
   cddbporttgt.connect(cddbsettings.cddbport);
   cddbaddrtgt.connect(cddbsettings.cddbaddr);
+  cbbdpromptmultipletgt.connect(cddbsettings.promptmultiple);
   cbbdlocalcopytgt.connect(cddbsettings.localcopy);
 
   FXVerticalFrame* contents=new FXVerticalFrame(this,LAYOUT_FILL_X|LAYOUT_FILL_Y);
@@ -157,11 +158,14 @@ CDPreferences::CDPreferences(CDWindow* owner)
   FXVerticalFrame* startframe=new FXVerticalFrame(startbox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
   new FXRadioButton(startframe,"No Action",&startmodetgt,FXDataTarget::ID_OPTION+CDSTART_NONE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
   new FXRadioButton(startframe,"Start Play on Startup",&startmodetgt,FXDataTarget::ID_OPTION+CDSTART_START,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+#ifndef WIN32
+  // Disable UI components for operations not supported on Windows
   new FXRadioButton(startframe,"Stop Play on Startup",&startmodetgt,FXDataTarget::ID_OPTION+CDSTART_STOP,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
 
   FXGroupBox* stopbox=new FXGroupBox(optionsframe,"Exit Action",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
   FXVerticalFrame* stopframe=new FXVerticalFrame(stopbox,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
   new FXCheckButton(stopframe,"Stop Play on Exit",&stoponexittgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+#endif
 
   // Display panel
   FXVerticalFrame* displayframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
@@ -232,6 +236,7 @@ CDPreferences::CDPreferences(CDWindow* owner)
   FXHorizontalFrame* cddbbuttons=new FXHorizontalFrame(infoframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   new FXCheckButton(cddbbuttons,"Obtain info from CDDB",&usecddbtgt,FXDataTarget::ID_VALUE,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
   new FXButton(cddbbuttons,"Advanced...",NULL,this,ID_ADVANCEDCDDB,FRAME_THICK|FRAME_RAISED|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
+  new FXCheckButton(infoframe,"Prompt when multiple matches exist",&cbbdpromptmultipletgt,FXDataTarget::ID_VALUE,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
   new FXCheckButton(infoframe,"Keep local copy",&cbbdlocalcopytgt,FXDataTarget::ID_VALUE,CHECKBUTTON_NORMAL|LAYOUT_CENTER_Y);
 
 

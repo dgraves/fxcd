@@ -78,6 +78,7 @@ protected:
   FXDataTarget cddbpporttgt;
   FXDataTarget cddbporttgt;
   FXDataTarget cddbaddrtgt;
+  FXDataTarget cbbdpromptmultipletgt;
   FXDataTarget cbbdlocalcopytgt;
 protected:
   CDWindow*                cdwindow;

@@ -39,6 +39,7 @@ public:
     FXString cddbaddr;
     FXString proxyaddr;
     FXString cddbexec;
+    FXbool promptmultiple;  // Prompt for user selection when multiple matches exist
     FXbool localcopy;
   public:
     CDDBSettings();

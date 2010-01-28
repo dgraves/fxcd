@@ -37,6 +37,7 @@ CDDBInfo::CDDBSettings::CDDBSettings()
     cddbaddr("freedb.freedb.org"),
     proxyaddr("0.0.0.0"),
     cddbexec(CDDB_HTTP_QUERY_CGI),
+    promptmultiple(FALSE),
     localcopy(FALSE)
 {
 }
@@ -50,6 +51,7 @@ CDDBInfo::CDDBSettings::CDDBSettings(const CDDBSettings& settings)
     cddbaddr(settings.cddbaddr),
     proxyaddr(settings.proxyaddr),
     cddbexec(settings.cddbexec),
+    promptmultiple(settings.promptmultiple),
     localcopy(settings.localcopy)
 {
 }
@@ -271,7 +273,7 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
       if(result!=-1&&query.query_match!=QUERY_NOMATCH)
       {
         choice=0;
-        if(query.query_matches>1&&signal!=NULL)
+        if(query.query_matches>1&&settings.promptmultiple&&signal!=NULL)
         {
           setStatus(CDINFO_INTERACT);
 

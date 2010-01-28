@@ -233,8 +233,11 @@ CDWindow::CDWindow(FXApp* app)
       new FXMenuRadio(repeatmenu,"&None",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_NONE);
       new FXMenuRadio(repeatmenu,"&Track",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_TRACK);
       new FXMenuRadio(repeatmenu,"&Album",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_DISC);
+#ifndef WIN32
+    // Disable UI components for operations not supported on Windows
     new FXMenuSeparator(optionsmenu);
     new FXMenuCheck(optionsmenu,"Stop Play on &Exit",&stoponexittgt,FXDataTarget::ID_VALUE);
+#endif
     new FXMenuSeparator(optionsmenu);
     new FXMenuCommand(optionsmenu,"&Preferences...\tCtrl+P",NULL,this,ID_PREFS);
   viewmenu=new FXMenuPane(this);
@@ -321,8 +324,13 @@ void CDWindow::readRegistry()
   }
 
   canvas->setTimeMode(getApp()->reg().readUnsignedEntry("SETTINGS","timemode",canvas->getTimeMode()));
-  stoponexit=getApp()->reg().readIntEntry("SETTINGS","stoponexit",stoponexit);
   startmode=getApp()->reg().readIntEntry("SETTINGS","startaction",startmode);
+#ifdef WIN32
+  if(startmode==CDSTART_STOP) startmode=CDSTART_NONE;
+#else
+  // Disable preferences for operations not supported on Windows
+  stoponexit=getApp()->reg().readIntEntry("SETTINGS","stoponexit",stoponexit);
+#endif
   cdplayer.setRepeatMode(getApp()->reg().readUnsignedEntry("SETTINGS","repeatmode",cdplayer.getRepeatMode()));
 
   // Colors and fonts
@@ -341,6 +349,7 @@ void CDWindow::readRegistry()
   cddbsettings.cddbpport=getApp()->reg().readUnsignedEntry("SETTINGS","cddbpport",cddbsettings.cddbpport);
   cddbsettings.cddbport=getApp()->reg().readUnsignedEntry("SETTINGS","cddbport",cddbsettings.cddbport);
   cddbsettings.cddbexec=getApp()->reg().readStringEntry("SETTINGS","cddbscript",cddbsettings.cddbexec.text());
+  cddbsettings.promptmultiple=getApp()->reg().readIntEntry("SETTINGS","cddbpromptmultiple",cddbsettings.promptmultiple);
   cddbsettings.localcopy=getApp()->reg().readIntEntry("SETTINGS","cddblocalcopy",cddbsettings.localcopy);
 
   // Apply settings
@@ -368,7 +377,10 @@ void CDWindow::writeRegistry()
   getApp()->reg().writeIntEntry("SETTINGS","showtooltips",(tooltip!=NULL)?TRUE:FALSE);
 
   getApp()->reg().writeUnsignedEntry("SETTINGS","timemode",canvas->getTimeMode());
+#ifndef WIN32
+  // Disable preferences for operations not supported on Windows
   getApp()->reg().writeIntEntry("SETTINGS","stoponexit",stoponexit);
+#endif
   getApp()->reg().writeIntEntry("SETTINGS","startaction",startmode);
   getApp()->reg().writeUnsignedEntry("SETTINGS","repeatmode",cdplayer.getRepeatMode());
 
@@ -387,6 +399,7 @@ void CDWindow::writeRegistry()
   getApp()->reg().writeUnsignedEntry("SETTINGS","cddbpport",cddbsettings.cddbpport);
   getApp()->reg().writeUnsignedEntry("SETTINGS","cddbport",cddbsettings.cddbport);
   getApp()->reg().writeStringEntry("SETTINGS","cddbscript",cddbsettings.cddbexec.text());
+  getApp()->reg().writeIntEntry("SETTINGS","cddbpromptmultiple",cddbsettings.promptmultiple);
   getApp()->reg().writeIntEntry("SETTINGS","cddblocalcopy",cddbsettings.localcopy);
 
   getApp()->reg().write();
