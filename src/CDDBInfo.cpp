@@ -1,4 +1,4 @@
-/* CDDBInfo.h
+/* CDDBInfo.cpp
  * Copyright (C) 2001,2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
@@ -21,60 +21,24 @@
 #include <fox-1.6/fx.h>
 #include <fox-1.6/FXArray.h>
 #include <fox-1.6/FXElement.h>
-#include "CDDefs.h"
+#include "CDdefs.h"
 #include "CDPlayer.h"
 #include "CDChoiceDialog.h"
 #include "CDData.h"
+#include "CDDBSettings.h"
 #include "CDInfo.h"
 #include "CDDBInfo.h"
 
-CDDBInfo::CDDBSettings::CDDBSettings()
-  : proxy(FALSE),
-    cddbproto(CDDB_PROTOCOL_HTTP),
-    cddbpport(CDDBP_DEFAULT_PORT),
-    cddbport(HTTP_DEFAULT_PORT),
-    proxyport(0),
-    cddbaddr("freedb.freedb.org"),
-    proxyaddr("0.0.0.0"),
-    cddbexec(CDDB_HTTP_QUERY_CGI),
-    promptmultiple(FALSE),
-    localcopy(FALSE)
-{
-}
-
-CDDBInfo::CDDBSettings::CDDBSettings(const CDDBSettings& settings)
-  : proxy(settings.proxy),
-    cddbproto(settings.cddbproto),
-    cddbpport(settings.cddbpport),
-    cddbport(settings.cddbport),
-    proxyport(settings.proxyport),
-    cddbaddr(settings.cddbaddr),
-    proxyaddr(settings.proxyaddr),
-    cddbexec(settings.cddbexec),
-    promptmultiple(settings.promptmultiple),
-    localcopy(settings.localcopy)
-{
-}
-
-CDDBInfo::CDDBInfo(FXGUISignal* guisignal)
-  : initialized(FALSE),
-    choice(0),
+CDDBInfo::CDDBInfo(const CDDBSettings& s,const CDPlayer& cdplayer,FXGUISignal* guisignal)
+  : choice(0),
     discid(0),
-    status(CDINFO_IDLE),
-    errorstring("No error"),
-    signal(guisignal)
-{
-}
-
-CDDBInfo::CDDBInfo(const CDDBInfo::CDDBSettings& s,FXGUISignal* guisignal)
-  : initialized(FALSE),
-    choice(0),
-    discid(0),
+    pserver(NULL),
     status(CDINFO_IDLE),
     errorstring("No error"),
     settings(s),
     signal(guisignal)
 {
+  init(cdplayer);
 }
 
 void CDDBInfo::init(const CDPlayer& cdplayer)
@@ -98,8 +62,30 @@ void CDDBInfo::init(const CDPlayer& cdplayer)
     cd_init_disc_info(&discinfo);
     cd_stat(cdplayer.getDescriptor(),&discinfo);
   }
- 
-  initialized=TRUE;
+
+  // Allocate CDDB resources here, to be deallocated in destructor, so that
+  // thread can be canceled at any time without leaking memory
+  cddb_init_cddb_query(&query);
+
+  cddb_init_cddb_hello(&hello);
+  hello.hello_program=cddb_strdup(PROG_PACKAGE);
+  hello.hello_version=cddb_strdup(PROG_VERSION);
+  hello.hello_user=cddb_strdup("anonymous");
+  hello.hello_hostname=cddb_strdup("anonymous");
+
+  cddb_init_cddb_host(&host);
+  host.host_server.server_name=cddb_strdup(settings.cddbaddr.text());
+  host.host_server.server_port=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?settings.cddbpport:settings.cddbport;
+  host.host_protocol=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP;
+  if(settings.cddbproto==CDDB_PROTOCOL_HTTP) host.host_addressing=cddb_strdup(settings.cddbexec.text());
+
+  if(settings.proxy)
+  {
+    cddb_init_cddb_server(&server);
+    server.server_name=cddb_strdup(settings.proxyaddr.text());
+    server.server_port=settings.proxyport;
+    pserver=&server;
+  }
 }
 
 void CDDBInfo::setStatus(FXuint current)
@@ -140,34 +126,25 @@ FXbool CDDBInfo::requestData()
 {
   FXbool success=TRUE;
 
-  if(!initialized)
+  FXbool foundlocal=FALSE;
+  disc_data data;
+
+  setStatus(CDINFO_PENDING);
+
+  cddb_init_disc_data(&data);
+  if(settings.localcopy)
   {
-    setStatus(CDINFO_ERROR);
+    if(getLocalInfo(&data))
+      foundlocal=TRUE;
+  }
+
+  if(!foundlocal&&!getRemoteInfo(&data))
     success=FALSE;
-    errorstring="Not initialized";
-  }
-  else
-  {
-    FXbool foundlocal=FALSE;
-    disc_data data;
 
-    setStatus(CDINFO_PENDING);
+  fillCurrentData(data);
+  cddb_free_disc_data(&data);
 
-    cddb_init_disc_data(&data);
-    if(settings.localcopy)
-    {
-      if(getLocalInfo(&data))
-        foundlocal=TRUE;
-    }
-
-    if(!foundlocal&&!getRemoteInfo(&data))
-      success=FALSE;
-
-    fillCurrentData(data);
-    cddb_free_disc_data(&data);
-
-    setStatus(success ? CDINFO_DONE : CDINFO_ERROR);
-  }
+  setStatus(success ? CDINFO_DONE : CDINFO_ERROR);
 
   // Signal completion to main thread
   if(signal!=NULL)
@@ -236,31 +213,7 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
   cdsock_t sock;
   char http_string[512];
   int http_string_len=sizeof(http_string);
-  struct cddb_host host;
-  struct cddb_hello hello;
-  struct cddb_server server;
-  struct cddb_server *pserver=NULL;
   FXbool success=FALSE;
-
-  cddb_init_cddb_hello(&hello);
-  hello.hello_program=cddb_strdup(PROG_PACKAGE);
-  hello.hello_version=cddb_strdup(PROG_VERSION);
-  hello.hello_user=cddb_strdup("anonymous");
-  hello.hello_hostname=cddb_strdup("anonymous");
-
-  cddb_init_cddb_host(&host);
-  host.host_server.server_name=cddb_strdup(settings.cddbaddr.text());
-  host.host_server.server_port=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?settings.cddbpport:settings.cddbport;
-  host.host_protocol=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP;
-  if(settings.cddbproto==CDDB_PROTOCOL_HTTP) host.host_addressing=cddb_strdup(settings.cddbexec.text());
-
-  if(settings.proxy)
-  {
-    cddb_init_cddb_server(&server);
-    server.server_name=cddb_strdup(settings.proxyaddr.text());
-    server.server_port=settings.proxyport;
-    pserver=&server;
-  }
 
   sock=cddb_connect(&host,pserver,&hello,http_string,&http_string_len);
 
@@ -268,7 +221,6 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
   {
     if(!querystring.empty())
     {
-      cddb_init_cddb_query(&query);
       FXint result=cddb_query(querystring.text(),sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
       if(result!=-1&&query.query_match!=QUERY_NOMATCH)
       {
@@ -315,13 +267,8 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
           }
         }
       }
-      cddb_free_cddb_query(&query);
     }
   }
-
-  if(pserver) cddb_free_cddb_server(&server);
-  cddb_free_cddb_host(&host);
-  cddb_free_cddb_hello(&hello);
 
   return success;
 }
@@ -407,56 +354,6 @@ void CDDBInfo::setSaveLocalCopy(FXbool copy)
   settings.localcopy = copy;
 }
 
-FXbool CDDBInfo::getCDDBServerList(struct cddb_serverlist* list) const
-{
-  int sock;
-  char http_string[512];
-  int http_string_len=sizeof(http_string);
-  struct cddb_host host;
-  struct cddb_hello hello;
-  struct cddb_server server;
-  struct cddb_server *pserver=NULL;
-
-  printf("Checking %s for disc info: ",settings.cddbaddr.text());
-
-  cddb_init_cddb_hello(&hello);
-  hello.hello_program=cddb_strdup(PROG_PACKAGE);
-  hello.hello_version=cddb_strdup(PROG_VERSION);
-  hello.hello_user=cddb_strdup("anonymous");
-  hello.hello_hostname=cddb_strdup("anonymous");
-
-  cddb_init_cddb_host(&host);
-  host.host_server.server_name=cddb_strdup(settings.cddbaddr.text());
-  host.host_server.server_port=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?settings.cddbpport:settings.cddbport;
-  host.host_protocol=(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP;
-  if(settings.cddbproto==CDDB_PROTOCOL_HTTP) host.host_addressing=cddb_strdup(settings.cddbexec.text());
-
-  if(settings.proxy)
-  {
-    cddb_init_cddb_server(&server);
-    server.server_name=cddb_strdup(settings.proxyaddr.text());
-    server.server_port=settings.proxyport;
-    pserver=&server;
-  }
-
-  sock=cddb_connect(&host,pserver,&hello,http_string,&http_string_len);
-
-  if(pserver) cddb_free_cddb_server(&server);
-  cddb_free_cddb_host(&host);
-  cddb_free_cddb_hello(&hello);
-
-  if(sock!=-1)
-  {
-    FXint result=cddb_sites(sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,list,http_string);
-    if(result!=-1)
-      return TRUE;
-  }
-
-  return FALSE;
-}
-
-
-// Get FXGUISignal object used to synchronize threaded info retrieval
 FXGUISignal* CDDBInfo::getGUISignal() const
 {
   return signal;
@@ -464,6 +361,11 @@ FXGUISignal* CDDBInfo::getGUISignal() const
 
 CDDBInfo::~CDDBInfo()
 {
-  if(initialized&&settings.localcopy)
+  if(pserver) cddb_free_cddb_server(&server);
+  cddb_free_cddb_host(&host);
+  cddb_free_cddb_hello(&hello);
+  cddb_free_cddb_query(&query);
+
+  if(settings.localcopy)
     cd_free_disc_info(&discinfo);
 }

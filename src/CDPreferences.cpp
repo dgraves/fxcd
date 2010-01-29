@@ -32,9 +32,12 @@
 #include "CDPlayer.h"
 #include "CDListBox.h"
 #include "CDCanvas.h"
+#include "CDDBSettings.h"
 #include "CDInfo.h"
 #include "CDDBInfo.h"
 #include "CDWindow.h"
+#include "CDDBServerListTask.h"
+#include "CDDBServerListExecutor.h"
 #include "CDServerDialog.h"
 #include "CDPreferences.h"
 
@@ -493,33 +496,35 @@ long CDPreferences::onUpdCDDBPort(FXObject* sender,FXSelector,void*)
 
 long CDPreferences::onCmdCDDBServerList(FXObject*,FXSelector,void*)
 {
-  CDDBInfo info(cddbsettings);
   struct cddb_serverlist list;
-
   cddb_init_cddb_serverlist(&list);
-  if(info.getCDDBServerList(&list))
-  {
-    CDServerDialog dialog(this,&list);
-    if(dialog.execute(PLACEMENT_OWNER))
-    {
-      FXint index=dialog.getSelection();
-      struct cddb_host* host=&list.list_host[index];
 
-      cddbsettings.cddbproto=(host->host_protocol==CDDB_MODE_HTTP)?CDDB_PROTOCOL_HTTP:CDDB_PROTOCOL_CDDBP;
-      cddbsettings.cddbaddr=host->host_server.server_name;
-      (host->host_protocol==CDDB_MODE_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport=host->host_server.server_port;
-      if(host->host_protocol==CDDB_MODE_HTTP)
+  CDDBServerListExecutor executor(this,cddbsettings,&list);
+  if(executor.execute(PLACEMENT_OWNER))
+  {
+    if(executor.getSuccess())
+    {
+      CDServerDialog dialog(this,&list);
+      if(dialog.execute(PLACEMENT_OWNER))
       {
-	//For current broken get we need to trim down string
-	//cdwindow->setCDDBScript(host->host_addressing);
-	FXString script(host->host_addressing);
-        cddbsettings.cddbexec=script.before(' ');
+        FXint index=dialog.getSelection();
+        struct cddb_host* host=&list.list_host[index];
+        cddbsettings.cddbproto=(host->host_protocol==CDDB_MODE_HTTP)?CDDB_PROTOCOL_HTTP:CDDB_PROTOCOL_CDDBP;
+        cddbsettings.cddbaddr=host->host_server.server_name;
+        (host->host_protocol==CDDB_MODE_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport=host->host_server.server_port;
+        if(host->host_protocol==CDDB_MODE_HTTP)
+        {
+	  //For current broken get we need to trim down string
+	  //cdwindow->setCDDBScript(host->host_addressing);
+	  FXString script(host->host_addressing);
+          cddbsettings.cddbexec=script.before(' ');
+        }
       }
     }
-  }
-  else
-  {
-    FXMessageBox::error(this,MBOX_OK,"Get Server List Error","Could not connect to %s:%d",info.getCDDBAddress().text(),info.getCDDBPort());
+    else
+    {
+      FXMessageBox::error(this,MBOX_OK,"Get Server List Error","Could not connect to %s:%d",cddbsettings.cddbaddr.text(),(cddbsettings.cddbproto==CDDB_PROTOCOL_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport);
+    }
   }
 
   cddb_free_cddb_serverlist(&list);
@@ -529,7 +534,7 @@ long CDPreferences::onCmdCDDBServerList(FXObject*,FXSelector,void*)
 
 long CDPreferences::onCmdDefaultInternet(FXObject*,FXSelector,void*)
 {
-  CDDBInfo::CDDBSettings defaults;
+  CDDBSettings defaults;
   cddbsettings=defaults;
   usecddb=TRUE;
   return 1;

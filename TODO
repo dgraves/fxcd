@@ -1,17 +1,4 @@
-Batch mode for network info retrieval - will require mods to libcdaudio.  
-
-CD device discovery
-
-Support for audio mixers other than the cd player (OSS, ALSA, Solaris, Irix, etc)
-
-Add submission of disc data to freedb and cdindex.  
-
-Updates to libcdaudio:
- * Make it work on Windows!!
- * Update CDDB code to work with latest protocol levels.  
-   - cdaudio host_addressing string retrieved from server contains additional proto level4 info
-
-Possibly use FXThreadEx to get cd info in background.  
+Add submission of disc data to freedb.  
 
 When drive door is closed manually with no disc in the tray the cd player still thinks drive door is open.  
 

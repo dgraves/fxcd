@@ -1,4 +1,4 @@
-/* CDInfo.h
+/* CDDBInfo.h
  * Copyright (C) 2001,2004,2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
@@ -19,39 +19,18 @@
 #ifndef _CDDBINFO_H_
 #define _CDDBINFO_H_
 
-enum
-{
-  CDDB_PROTOCOL_CDDBP=0,
-  CDDB_PROTOCOL_HTTP=1
-};
-
 class CDDBInfo : public CDInfo
 {
-public:
-  class CDDBSettings
-  {
-  public:
-    FXbool proxy;
-    FXuint cddbproto;
-    FXushort cddbpport;
-    FXushort cddbport;
-    FXushort proxyport;
-    FXString cddbaddr;
-    FXString proxyaddr;
-    FXString cddbexec;
-    FXbool promptmultiple;  // Prompt for user selection when multiple matches exist
-    FXbool localcopy;
-  public:
-    CDDBSettings();
-    CDDBSettings(const CDDBSettings& settings);
-  };
 private:
-  FXbool initialized;
   FXuint choice;                 // Choice made by getUsetInput for getRemoteInfo
   FXString querystring;          // String to be used for query
   unsigned long discid;          // Disc ID to be initialized by init for use by getLocalInfo
   struct cddb_query query;       // Query to be shared with getUserInput by getRemoteInfo
   struct disc_info discinfo;     // Disc info to be initialized by init for use by getRemoteInfo
+  struct cddb_host host;
+  struct cddb_hello hello;
+  struct cddb_server server;
+  struct cddb_server *pserver;
 private:
   // Thread synchronization mechanisms
   FXCondition condition;
@@ -66,14 +45,11 @@ protected:
   CDDBSettings settings;
   CDData currentdata;
 protected:
+  void init(const CDPlayer& cdplayer);
   void setStatus(FXuint current);
   void fillCurrentData(const disc_data& info);
 public:
-  CDDBInfo(FXGUISignal* guisignal=NULL);
-
-  CDDBInfo(const CDDBInfo::CDDBSettings& s,FXGUISignal* guisignal=NULL);
-
-  void init(const CDPlayer& cdplayer);
+  CDDBInfo(const CDDBSettings& s,const CDPlayer& cdplayer,FXGUISignal* guisignal=NULL);
 
   FXbool getUseProxy() const;
 
@@ -106,8 +82,6 @@ public:
   FXbool getSaveLocalCopy() const;
 
   void setSaveLocalCopy(FXbool copy);
-
-  FXbool getCDDBServerList(struct cddb_serverlist* list) const;
 
   // Get status
   virtual FXuint getStatus() const;

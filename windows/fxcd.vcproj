@@ -250,6 +250,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\CDDBServerListExecutor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDDBServerListTask.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\CDDBSettings.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\CDInfoTask.cpp"
 				>
 			</File>
@@ -325,6 +337,18 @@
 			</File>
 			<File
 				RelativePath="..\include\CDDBInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDDBServerListExecutor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDDBServerListTask.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\CDDBSettings.h"
 				>
 			</File>
 			<File

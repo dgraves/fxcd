@@ -23,18 +23,8 @@
 #include "CDInfoTask.h"
 
 CDInfoTask::CDInfoTask(CDInfo* cdinfo)
-: startTime(0),
-  info(cdinfo)
+: info(cdinfo)
 {
-}
-
-CDInfoTask::~CDInfoTask()
-{
-}
-
-FXlong CDInfoTask::getStartTime() const
-{
-  return startTime;
 }
 
 CDInfo* CDInfoTask::getInfo() const
@@ -44,7 +34,10 @@ CDInfo* CDInfoTask::getInfo() const
 
 FXint CDInfoTask::run()
 {
-  startTime=time();
   info->requestData();
   return 1;
+}
+
+CDInfoTask::~CDInfoTask()
+{
 }

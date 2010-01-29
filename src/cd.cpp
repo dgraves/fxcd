@@ -32,6 +32,7 @@
 #include "CDdefs.h"
 #include "CDData.h"
 #include "CDPlayer.h"
+#include "CDDBSettings.h"
 #include "CDInfo.h"
 #include "CDDBInfo.h"
 #include "CDWindow.h"

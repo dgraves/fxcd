@@ -1,4 +1,4 @@
-/* CDInfoTask.h
+/* CDDBServerListTask.h
  * Copyright (C) 2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
@@ -16,23 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CDINFOTASK_H
-#define CDINFOTASK_H
+#ifndef _CDDBSERVERLISTTASK_H_
+#define _CDDBSERVERLISTTASK_H_
 
-class CDInfo;
-
-class CDInfoTask : public FXThread
+class CDDBServerListTask : public FXThread
 {
+private:
+  FXGUISignal* signal;
+  struct cddb_host host;
+  struct cddb_hello hello;
+  struct cddb_server server;
+  struct cddb_server *pserver;
 protected:
-  CDInfo* info;
+  struct cddb_serverlist* list;
+  CDDBSettings settings;
+protected:
+  void init();
 public:
-  CDInfoTask(CDInfo* cdinfo);
-
-  CDInfo* getInfo() const;
+  CDDBServerListTask(const CDDBSettings& cddbsettings,struct cddb_serverlist* serverlist,FXGUISignal* guisignal=NULL);
 
   virtual FXint run();
 
-  ~CDInfoTask();
+  ~CDDBServerListTask();
 };
 
 #endif

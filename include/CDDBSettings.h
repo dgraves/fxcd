@@ -1,5 +1,5 @@
-/* CDInfoTask.h
- * Copyright (C) 2010 Dustin Graves <dgraves@computer.org>
+/* CDDBSettings.h
+ * Copyright (C) 2009-2010 Dustin Graves <dgraves@computer.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,23 +16,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CDINFOTASK_H
-#define CDINFOTASK_H
+#ifndef _CDDBSETTINGS_H_
+#define _CDDBSETTINGS_H_
 
-class CDInfo;
-
-class CDInfoTask : public FXThread
+enum
 {
-protected:
-  CDInfo* info;
+  CDDB_PROTOCOL_CDDBP=0,
+  CDDB_PROTOCOL_HTTP=1
+};
+
+class CDDBSettings
+{
 public:
-  CDInfoTask(CDInfo* cdinfo);
-
-  CDInfo* getInfo() const;
-
-  virtual FXint run();
-
-  ~CDInfoTask();
+  FXbool proxy;
+  FXuint cddbproto;
+  FXushort cddbpport;
+  FXushort cddbport;
+  FXushort proxyport;
+  FXString cddbaddr;
+  FXString proxyaddr;
+  FXString cddbexec;
+  FXbool promptmultiple;  // Prompt for user selection when multiple matches exist
+  FXbool localcopy;
+public:
+  CDDBSettings();
+  CDDBSettings(const CDDBSettings& settings);
 };
 
 #endif

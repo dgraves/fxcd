@@ -55,7 +55,7 @@ protected:
   std::list<FXString> adddev;
   std::list<FXString> remdev;
   FXbool usecddb;
-  CDDBInfo::CDDBSettings cddbsettings;
+  CDDBSettings cddbsettings;
 protected:
   FXDataTarget showmenubartgt;
   FXDataTarget showstatusbartgt;
