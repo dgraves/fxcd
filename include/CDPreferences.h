@@ -52,6 +52,9 @@ protected:
   FXbool  random;
   FXuint  repeatmode;
   FXuint  timemode;
+  FXuint  initseekrate;
+  FXuint  fastseekrate;
+  FXuint  fastseekstart;
   std::list<FXString> adddev;
   std::list<FXString> remdev;
   FXbool usecddb;
@@ -70,6 +73,9 @@ protected:
   FXDataTarget randomtgt;
   FXDataTarget repeatmodetgt;
   FXDataTarget timemodetgt;
+  FXDataTarget initseekratetgt;
+  FXDataTarget fastseekratetgt;
+  FXDataTarget fastseekstarttgt;
   FXDataTarget usecddbtgt;
   FXDataTarget proxytgt;
   FXDataTarget proxyporttgt;

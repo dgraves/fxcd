@@ -44,6 +44,10 @@ protected:
   FXFont*                font;              // Font for LCD
   FXint                  seektrack;         // Currently seeking in this track
   struct disc_timeval    seektime;          // Current seek time in track
+  FXuint                 seekrate;          // Current seek rate (seconds)
+  FXuint                 initseekrate;      // Inital seek rate (seconds)
+  FXuint                 fastseekrate;      // Faster seek rate to be activated after seeking for a specific interval (seconds)
+  FXuint                 fastseekstart;     // Interval that must elapse before the faster seek rate is used (seconds)
   CDPlayer               cdplayer;          // The cd player
   FXbool                 usecddb;
   CDDBSettings cddbsettings;
@@ -112,6 +116,8 @@ public:
   long onCmdBalance(FXObject*,FXSelector,void*);
   long onUpdBalance(FXObject*,FXSelector,void*);
   long onActivateSeeker(FXObject*,FXSelector,void*);
+  long onDeactivateSeeker(FXObject*,FXSelector,void*);
+  long onSeekRateTimeout(FXObject*,FXSelector,void*);
   long onCmdSeekReverse(FXObject*,FXSelector,void*);
   long onCmdSeekForward(FXObject*,FXSelector,void*);
   long onUpdSeekBtns(FXObject*,FXSelector,void*);
@@ -151,6 +157,7 @@ public:
     ID_BALANCE,
     ID_SEEKREVERSE,
     ID_SEEKFORWARD,
+    ID_SEEKRATETIMEOUT,
     ID_STOP,
     ID_PREV,
     ID_NEXT,

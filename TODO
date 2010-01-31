@@ -1,3 +1,2 @@
 * Add submission of disc data to freedb
-* Increase seek speed with respect to seek duration
 * Seeking through all random tracks may not obey CDREPEAT_DISC

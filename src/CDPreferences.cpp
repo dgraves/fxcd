@@ -73,6 +73,9 @@ CDPreferences::CDPreferences(CDWindow* owner)
   random(owner->cdplayer.getRandom()),
   repeatmode(owner->cdplayer.getRepeatMode()),
   timemode(owner->canvas->getTimeMode()),
+  initseekrate(owner->initseekrate),
+  fastseekrate(owner->fastseekrate),
+  fastseekstart(owner->fastseekstart),
   usecddb(owner->usecddb),
   cddbsettings(owner->cddbsettings),
   cdwindow(owner)
@@ -90,6 +93,9 @@ CDPreferences::CDPreferences(CDWindow* owner)
   randomtgt.connect(random);
   repeatmodetgt.connect(repeatmode);
   timemodetgt.connect(timemode);
+  initseekratetgt.connect(initseekrate),
+  fastseekratetgt.connect(fastseekrate),
+  fastseekstarttgt.connect(fastseekstart),
   usecddbtgt.connect(usecddb);
   proxytgt.connect(cddbsettings.proxy);
   proxyporttgt.connect(cddbsettings.proxyport);
@@ -119,6 +125,7 @@ CDPreferences::CDPreferences(CDWindow* owner)
   treeitem.push_back(tree->appendItem(0,"Options",NULL,NULL));
   treeitem.push_back(tree->appendItem(treeitem[CDPREFS_OPTIONS],"Display",NULL,NULL));
   treeitem.push_back(tree->appendItem(treeitem[CDPREFS_OPTIONS],"Player",NULL,NULL));
+  treeitem.push_back(tree->appendItem(treeitem[CDPREFS_OPTIONS],"Seek",NULL,NULL));
   treeitem.push_back(tree->appendItem(0,"Hardware",NULL,NULL));
   treeitem.push_back(tree->appendItem(0,"Internet",NULL, NULL));
 
@@ -192,7 +199,7 @@ CDPreferences::CDPreferences(CDWindow* owner)
   new FXCheckButton(playmodeframe,"Shuffle Play",&randomtgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
   new FXCheckButton(playmodeframe,"Intro Play",&introtgt,FXDataTarget::ID_VALUE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
   FXHorizontalFrame* introtimeframe=new FXHorizontalFrame(playmodeframe,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
-  new FXLabel(introtimeframe,"Intro Length:",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXLabel(introtimeframe,"Intro Length (seconds):",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X);
   new FXSpinner(introtimeframe,4,&introtimetgt,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
 
   FXGroupBox* repeatbox=new FXGroupBox(playerframe,"Repeat Mode",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
@@ -200,6 +207,20 @@ CDPreferences::CDPreferences(CDWindow* owner)
   new FXRadioButton(repeatframe,"None",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_NONE,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
   new FXRadioButton(repeatframe,"Track",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_TRACK,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
   new FXRadioButton(repeatframe,"Album",&repeatmodetgt,FXDataTarget::ID_OPTION+CDREPEAT_DISC,ICON_BEFORE_TEXT|JUSTIFY_LEFT);
+
+  // Seek panel
+  FXVerticalFrame* seekframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(seekframe,"Seek");
+  new FXHorizontalSeparator(seekframe,SEPARATOR_LINE|LAYOUT_FILL_X);
+
+  FXGroupBox* seekratebox=new FXGroupBox(seekframe,"Seek Rate",GROUPBOX_TITLE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X);
+  FXMatrix* seekratematrix=new FXMatrix(seekratebox,2,MATRIX_BY_COLUMNS|LAYOUT_FILL_X,0,0,0,0, 0,0,0,0);
+  new FXLabel(seekratematrix,"Initial Seek Rate (seconds):",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXSpinner(seekratematrix,4,&initseekratetgt,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
+  new FXLabel(seekratematrix,"Increase Seek Rate After (seconds):",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXSpinner(seekratematrix,4,&fastseekstarttgt,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
+  new FXLabel(seekratematrix,"Increased Seek Rate (seconds):",NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y|LAYOUT_FILL_X|LAYOUT_FILL_ROW);
+  new FXSpinner(seekratematrix,4,&fastseekratetgt,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
 
   // Hardware panel
   FXVerticalFrame* hardframe=new FXVerticalFrame(switcher,LAYOUT_FILL_X|LAYOUT_FILL_Y,0,0,0,0, 0,0,0,0);
@@ -346,6 +367,10 @@ long CDPreferences::onCmdApply(FXObject*,FXSelector,void*)
   cdwindow->cdplayer.setRandom(random);
   cdwindow->cdplayer.setRepeatMode(repeatmode);
   cdwindow->canvas->setTimeMode(timemode);
+
+  cdwindow->initseekrate=initseekrate;
+  cdwindow->fastseekrate=fastseekrate;
+  cdwindow->fastseekstart=fastseekstart;
 
   for(iter=adddev.begin();iter!=adddev.end();++iter)
   {
