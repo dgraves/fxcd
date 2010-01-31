@@ -1,7 +1,3 @@
-Add submission of disc data to freedb.  
-
-When drive door is closed manually with no disc in the tray the cd player still thinks drive door is open.  
-
-Increase seek speed with respect to seek duration
-
-Seeking through all random tracks may not obey CDREPEAT_DISC
+* Add submission of disc data to freedb
+* Increase seek speed with respect to seek duration
+* Seeking through all random tracks may not obey CDREPEAT_DISC

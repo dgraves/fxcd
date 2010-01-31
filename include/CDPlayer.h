@@ -33,7 +33,6 @@ class CDPlayer
   friend class CDWindow;            // For data targets
 protected:
   cddesc_t media;                   // CD-ROM handle
-  FXbool open;                      // Drive door status (open/closed)
   FXbool nodisc;                    // Indicates known presence of disc in cdrom
   FXbool audiodisc;                 // Is disc audio or data
   FXbool stopped;                   // Was a stop requested (or did the disc finish)
@@ -110,9 +109,6 @@ public:
 
   /// Check for valid CD audio device
   FXbool isValid() const;
-
-  /// Check for open CD audio device tray
-  FXbool isTrayOpen() const;
 
   /// Check for disc in tray
   FXbool isDiscPresent() const;

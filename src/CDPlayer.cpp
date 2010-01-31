@@ -35,7 +35,6 @@ ptrdiff_t rand_func(ptrdiff_t max)
 
 CDPlayer::CDPlayer()
 : media(-1),
-  open(FALSE),
   nodisc(TRUE),
   audiodisc(FALSE),
   stopped(TRUE),
@@ -80,7 +79,6 @@ void CDPlayer::load()
   else
     nodisc=FALSE;
 
-  open=FALSE;  //In any case, the drive has been closed
   audiodisc=FALSE;  //Will be set to true if it passes the following test
 
   if(nodisc)
@@ -475,7 +473,6 @@ FXbool CDPlayer::openTray()
 
   if(cd_eject(media)<0)
     return FALSE;
-  open=TRUE;
 
   return TRUE;
 }
@@ -487,7 +484,6 @@ FXbool CDPlayer::closeTray()
 
   if(cd_close(media)<0)
     return FALSE;
-  open=FALSE;
 
   return TRUE;
 }
@@ -589,11 +585,6 @@ FXint CDPlayer::getDescriptor() const
 FXbool CDPlayer::isValid() const
 {
   return (media!=-1);
-}
-
-FXbool CDPlayer::isTrayOpen() const
-{
-  return open;
 }
 
 FXbool CDPlayer::isDiscPresent() const

@@ -1296,10 +1296,7 @@ long CDWindow::onUpdSkipBtns(FXObject* sender,FXSelector,void*)
 
 long CDWindow::onCmdEject(FXObject*,FXSelector,void*)
 {
-  if(cdplayer.isTrayOpen())
-    cdplayer.closeTray();
-  else
-    cdplayer.openTray();
+  cdplayer.openTray();
   return 1;
 }
 
