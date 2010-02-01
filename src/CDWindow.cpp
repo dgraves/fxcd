@@ -544,7 +544,7 @@ void CDWindow::displayDiscData(const CDData& data)
   FXint i,s,n;
   FXString title;
 
-  title.format("%s - <%s>",data.artist,deviceStr->text());
+  title.format("%s - <%s>",data.artist.text(),deviceStr->text());
   bandtitle->setItemText(band,title);
   bandtitle->setTipText(title);
   albumtitle->setText(data.title);
@@ -560,7 +560,7 @@ void CDWindow::displayDiscData(const CDData& data)
     cdplayer.getTrackInfo(i,track);
     if(track.track_type==CDLYTE_TRACK_AUDIO)
     {
-      title.format("%d. %s (%d:%02d)",i+s,data.trackTitle[i],track.track_length.minutes,track.track_length.seconds);
+      title.format("%d. %s (%d:%02d)",i+s,data.trackTitle[i].text(),track.track_length.minutes,track.track_length.seconds);
       tracktitle->appendItem(title);
     }
   }
