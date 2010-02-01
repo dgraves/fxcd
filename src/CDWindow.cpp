@@ -1003,9 +1003,9 @@ long CDWindow::onCmdPrefs(FXObject*,FXSelector,void*)
   }
   else
   {
-    prefsbox->show();
+    prefsbox->show(PLACEMENT_OWNER);
   }
-  
+
   return 1;
 }
 

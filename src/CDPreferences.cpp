@@ -50,8 +50,7 @@ FXDEFMAP(CDPreferences) CDPreferencesMap[]={
   FXMAPFUNC(SEL_UPDATE,CDPreferences::ID_DEVICEREM,CDPreferences::onUpdDeviceRemove),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEVICESCAN,CDPreferences::onCmdDeviceScan),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_ADVANCEDCDDB,CDPreferences::onCmdAdvancedCDDB),
-  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_CDDBPORT,CDPreferences::onCmdCDDBPort),
-  FXMAPFUNC(SEL_UPDATE,CDPreferences::ID_CDDBPORT,CDPreferences::onUpdCDDBPort),
+  FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_CDDBPROTOCHANGED,CDPreferences::onCmdCDDBProtoChanged),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_CDDBSERVERLIST,CDPreferences::onCmdCDDBServerList),
   FXMAPFUNC(SEL_COMMAND,CDPreferences::ID_DEFAULTINTERNET,CDPreferences::onCmdDefaultInternet)
 };
@@ -100,9 +99,8 @@ CDPreferences::CDPreferences(CDWindow* owner)
   proxytgt.connect(cddbsettings.proxy);
   proxyporttgt.connect(cddbsettings.proxyport);
   proxyaddrtgt.connect(cddbsettings.proxyaddr);
-  cddbprototgt.connect(cddbsettings.cddbproto);
-  cddbpporttgt.connect(cddbsettings.cddbpport);
-  cddbporttgt.connect(cddbsettings.cddbport);
+  cddbprototgt.connect(cddbsettings.cddbproto,this,ID_CDDBPROTOCHANGED);
+  cddbcurrentporttgt.connect((cddbsettings.cddbproto==CDDB_PROTOCOL_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport);
   cddbaddrtgt.connect(cddbsettings.cddbaddr);
   cbbdpromptmultipletgt.connect(cddbsettings.promptmultiple);
   cbbdlocalcopytgt.connect(cddbsettings.localcopy);
@@ -272,7 +270,7 @@ CDPreferences::CDPreferences(CDWindow* owner)
   FXHorizontalFrame* cddbserv=new FXHorizontalFrame(infoframe,LAYOUT_FILL_X|LAYOUT_CENTER_Y,0,0,0,0, 0,0,0,0);
   new FXLabel(cddbserv,"Server:",NULL,LAYOUT_CENTER_Y);
   new FXTextField(cddbserv,0,&cddbaddrtgt,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_FILL_X);
-  FXSpinner* cddbspinner=new FXSpinner(cddbserv,4,this,ID_CDDBPORT,FRAME_THICK|FRAME_SUNKEN|LAYOUT_RIGHT);
+  FXSpinner* cddbspinner=new FXSpinner(cddbserv,4,&cddbcurrentporttgt,FXDataTarget::ID_VALUE,FRAME_THICK|FRAME_SUNKEN|LAYOUT_RIGHT);
   cddbspinner->setRange(0,65535);
 
   new FXButton(infoframe,"Get Server List",NULL,this,ID_CDDBSERVERLIST,FRAME_THICK|FRAME_RAISED|LAYOUT_CENTER_Y|LAYOUT_RIGHT);
@@ -307,6 +305,31 @@ FXuint CDPreferences::getPanel() const
   }
 
   return 0;  // Default to first item
+}
+
+void CDPreferences::show(FXuint placement)
+{
+  showmenubar=cdwindow->menubar->shown();
+  showstatusbar=cdwindow->statusbar->shown();
+  showtooltips=cdwindow->tooltip!=NULL;
+  lcdforeclr=cdwindow->lcdforeclr;
+  lcdbackclr=cdwindow->lcdbackclr;
+  iconclr=cdwindow->iconclr;
+  startmode=cdwindow->startmode;
+  stoponexit=cdwindow->stoponexit;
+  intro=cdwindow->cdplayer.getIntro();
+  introtime=cdwindow->cdplayer.getIntroLength();
+  random=cdwindow->cdplayer.getRandom();
+  repeatmode=cdwindow->cdplayer.getRepeatMode();
+  timemode=cdwindow->canvas->getTimeMode();
+  initseekrate=cdwindow->initseekrate;
+  fastseekrate=cdwindow->fastseekrate;
+  fastseekstart=cdwindow->fastseekstart;
+  usecddb=cdwindow->usecddb;
+  cddbsettings=cdwindow->cddbsettings;
+  cddbcurrentporttgt.connect((cddbsettings.cddbproto==CDDB_PROTOCOL_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport);
+
+  FXDialogBox::show(placement);
 }
 
 long CDPreferences::onCmdAccept(FXObject*,FXSelector,void*)
@@ -400,8 +423,12 @@ long CDPreferences::onCmdApply(FXObject*,FXSelector,void*)
     FXMessageBox::error(this,MBOX_OK,"Remove Device Error","Error adding the following CD Audio Devices:\n\n%s",remerr.text());
   }
 
+  FXbool cddbchanged=(cdwindow->usecddb==usecddb&&cdwindow->cddbsettings==cddbsettings)?FALSE:TRUE;
   cdwindow->usecddb=usecddb;
   cdwindow->cddbsettings=cddbsettings;
+  if(cddbchanged)
+    cdwindow->loadDiscData();
+
   return 1;
 }
 
@@ -504,18 +531,9 @@ long CDPreferences::onCmdAdvancedCDDB(FXObject*,FXSelector sel,void*)
   return 1;
 }
 
-long CDPreferences::onCmdCDDBPort(FXObject* sender,FXSelector,void*)
+long CDPreferences::onCmdCDDBProtoChanged(FXObject*,FXSelector,void*)
 {
-  FXint port=0;
-  sender->handle(this,FXSEL(SEL_COMMAND,FXWindow::ID_GETINTVALUE),(void*)&port);
-  (cddbsettings.cddbproto==CDDB_PROTOCOL_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport=(FXushort)port;
-  return 1;
-}
-
-long CDPreferences::onUpdCDDBPort(FXObject* sender,FXSelector,void*)
-{
-  FXint port=(cddbsettings.cddbproto==CDDB_PROTOCOL_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport;
-  sender->handle(this,FXSEL(SEL_COMMAND,FXWindow::ID_SETINTVALUE),(void*)&port);
+  cddbcurrentporttgt.connect((cddbsettings.cddbproto==CDDB_PROTOCOL_HTTP)?cddbsettings.cddbport:cddbsettings.cddbpport);
   return 1;
 }
 

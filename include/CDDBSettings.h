@@ -40,7 +40,12 @@ public:
   FXbool localcopy;
 public:
   CDDBSettings();
+  
   CDDBSettings(const CDDBSettings& settings);
+
+  CDDBSettings& operator=(const CDDBSettings& rhs);
+
+  bool operator==(const CDDBSettings& rhs);
 };
 
 #endif
