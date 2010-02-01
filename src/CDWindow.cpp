@@ -75,6 +75,8 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
   FXMAPFUNC(SEL_UPDATE,CDWindow::ID_BALANCE,CDWindow::onUpdBalance),
 
   FXMAPFUNCS(SEL_LEFTBUTTONPRESS,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onActivateSeeker),
+  FXMAPFUNCS(SEL_LEFTBUTTONRELEASE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onDeactivateSeeker),
+  FXMAPFUNC(SEL_TIMEOUT,CDWindow::ID_SEEKRATETIMEOUT,CDWindow::onSeekRateTimeout),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_SEEKREVERSE,CDWindow::onCmdSeekReverse),
   FXMAPFUNC(SEL_COMMAND,CDWindow::ID_SEEKFORWARD,CDWindow::onCmdSeekForward),
   FXMAPFUNCS(SEL_UPDATE,CDWindow::ID_SEEKREVERSE,CDWindow::ID_SEEKFORWARD,CDWindow::onUpdSeekBtns),
@@ -105,6 +107,11 @@ CDWindow::CDWindow(FXApp* app)
   lcdbackclr(FXRGB(0,0,0)),
   iconclr(FXRGB(0,0,0)),
   font(NULL),
+  seektrack(0),
+  seekrate(1),
+  initseekrate(1),
+  fastseekrate(5),
+  fastseekstart(5),
   usecddb(TRUE),
   tooltip(NULL),
   prefsbox(NULL)
@@ -340,6 +347,11 @@ void CDWindow::readRegistry()
   ic=getApp()->reg().readColorEntry("SETTINGS","iconcolor",DEFAULTBACK);
   fontspec=getApp()->reg().readStringEntry("SETTINGS","font",getDisplayFont()->getFont().text());
 
+  // Seek rate settings
+  initseekrate=getApp()->reg().readUnsignedEntry("SETTINGS","initseekrate",initseekrate);
+  fastseekrate=getApp()->reg().readUnsignedEntry("SETTINGS","fastseekrate",fastseekrate);
+  fastseekstart=getApp()->reg().readUnsignedEntry("SETTINGS","fastseekstart",fastseekstart);
+
   // CD Info settings
   usecddb=getApp()->reg().readIntEntry("SETTINGS","usecddb",usecddb);
   cddbsettings.proxy=getApp()->reg().readIntEntry("SETTINGS","proxy",cddbsettings.proxy);
@@ -390,6 +402,10 @@ void CDWindow::writeRegistry()
   getApp()->reg().writeColorEntry("SETTINGS","iconcolor",iconclr);
 
   getApp()->reg().writeStringEntry("SETTINGS","font",getDisplayFont()->getFont().text());
+
+  getApp()->reg().writeUnsignedEntry("SETTINGS","initseekrate",initseekrate);
+  getApp()->reg().writeUnsignedEntry("SETTINGS","fastseekrate",fastseekrate);
+  getApp()->reg().writeUnsignedEntry("SETTINGS","fastseekstart",fastseekstart);
 
   getApp()->reg().writeIntEntry("SETTINGS","usecddb",usecddb);
   getApp()->reg().writeIntEntry("SETTINGS","proxy",cddbsettings.proxy);
@@ -987,9 +1003,9 @@ long CDWindow::onCmdPrefs(FXObject*,FXSelector,void*)
   }
   else
   {
-    prefsbox->show();
+    prefsbox->show(PLACEMENT_OWNER);
   }
-  
+
   return 1;
 }
 
@@ -1111,16 +1127,30 @@ long CDWindow::onActivateSeeker(FXObject*,FXSelector,void*)
 {
   seektrack=cdplayer.getCurrentTrack();
   cdplayer.getTrackTime(seektime);
+  seekrate=initseekrate;
+  getApp()->addTimeout(this,ID_SEEKRATETIMEOUT,fastseekstart*1000);
   return 0;
+}
+
+long CDWindow::onDeactivateSeeker(FXObject*,FXSelector,void*)
+{
+  getApp()->removeTimeout(this,ID_SEEKRATETIMEOUT);
+  return 0;
+}
+
+long CDWindow::onSeekRateTimeout(FXObject*,FXSelector,void*)
+{
+  seekrate=fastseekrate;
+  return 1;
 }
 
 long CDWindow::onCmdSeekReverse(FXObject*,FXSelector,void*)
 {
-  seektime.seconds--;
+  seektime.seconds-=seekrate;
   if(seektime.seconds<0)
   {
     seektime.minutes--;
-    seektime.seconds=59;
+    seektime.seconds+=60;
   }
 
   //Check to see if we skipped over track boundary
@@ -1179,11 +1209,11 @@ long CDWindow::onCmdSeekForward(FXObject*,FXSelector,void*)
     cdplayer.getTrackLength(seektrack,boundary);
   }
 
-  seektime.seconds++;
+  seektime.seconds+=seekrate;
   if(seektime.seconds>59)
   {
     seektime.minutes++;
-    seektime.seconds=00;
+    seektime.seconds-=60;
   }
 
   //Check to see if we skipped over track boundary
@@ -1308,6 +1338,7 @@ CDWindow::~CDWindow()
   FXString* devnam=NULL;
 
   getApp()->removeTimeout(this,ID_TIMEOUT);
+  getApp()->removeTimeout(this,ID_SEEKRATETIMEOUT);
 
   for(i=0;i<n;i++)
   {

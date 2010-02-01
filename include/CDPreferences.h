@@ -52,6 +52,9 @@ protected:
   FXbool  random;
   FXuint  repeatmode;
   FXuint  timemode;
+  FXuint  initseekrate;
+  FXuint  fastseekrate;
+  FXuint  fastseekstart;
   std::list<FXString> adddev;
   std::list<FXString> remdev;
   FXbool usecddb;
@@ -70,13 +73,15 @@ protected:
   FXDataTarget randomtgt;
   FXDataTarget repeatmodetgt;
   FXDataTarget timemodetgt;
+  FXDataTarget initseekratetgt;
+  FXDataTarget fastseekratetgt;
+  FXDataTarget fastseekstarttgt;
   FXDataTarget usecddbtgt;
   FXDataTarget proxytgt;
   FXDataTarget proxyporttgt;
   FXDataTarget proxyaddrtgt;
   FXDataTarget cddbprototgt;
-  FXDataTarget cddbpporttgt;
-  FXDataTarget cddbporttgt;
+  FXDataTarget cddbcurrentporttgt;
   FXDataTarget cddbaddrtgt;
   FXDataTarget cbbdpromptmultipletgt;
   FXDataTarget cbbdlocalcopytgt;
@@ -97,8 +102,7 @@ public:
   long onUpdDeviceRemove(FXObject*,FXSelector,void*);
   long onCmdDeviceScan(FXObject*,FXSelector,void*);
   long onCmdAdvancedCDDB(FXObject*,FXSelector,void*);
-  long onCmdCDDBPort(FXObject*,FXSelector,void*);
-  long onUpdCDDBPort(FXObject*,FXSelector,void*);
+  long onCmdCDDBProtoChanged(FXObject*,FXSelector,void*);
   long onCmdCDDBServerList(FXObject*,FXSelector,void*);
   long onCmdDefaultInternet(FXObject*,FXSelector,void*);
 public:
@@ -111,7 +115,7 @@ public:
     ID_DEVICEREM,
     ID_DEVICESCAN,
     ID_ADVANCEDCDDB,
-    ID_CDDBPORT,
+    ID_CDDBPROTOCHANGED,
     ID_CDDBSERVERLIST,
     ID_DEFAULTINTERNET,
     ID_LAST
@@ -122,6 +126,8 @@ public:
   void setPanel(FXuint panel);
 
   FXuint getPanel() const;
+
+  void show(FXuint placement);
 };
 
 #endif

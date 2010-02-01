@@ -47,3 +47,33 @@ CDDBSettings::CDDBSettings(const CDDBSettings& settings)
     localcopy(settings.localcopy)
 {
 }
+
+CDDBSettings& CDDBSettings::operator=(const CDDBSettings& rhs)
+{
+  proxy=rhs.proxy;
+  cddbproto=rhs.cddbproto;
+  cddbpport=rhs.cddbpport;
+  cddbport=rhs.cddbport;
+  proxyport=rhs.proxyport;
+  cddbaddr=rhs.cddbaddr;
+  proxyaddr=rhs.proxyaddr;
+  cddbexec=rhs.cddbexec;
+  promptmultiple=rhs.promptmultiple;
+  localcopy=rhs.localcopy;
+
+  return *this;
+}
+
+bool CDDBSettings::operator==(const CDDBSettings& rhs)
+{
+  return (proxy==rhs.proxy&&
+          cddbproto==rhs.cddbproto&&
+          cddbpport==rhs.cddbpport&&
+          cddbport==rhs.cddbport&&
+          proxyport==rhs.proxyport&&
+          cddbaddr==rhs.cddbaddr&&
+          proxyaddr==rhs.proxyaddr&&
+          cddbexec==rhs.cddbexec&&
+          promptmultiple==rhs.promptmultiple&&
+          localcopy==rhs.localcopy);
+}
