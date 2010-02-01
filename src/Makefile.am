@@ -37,29 +37,23 @@ ICONS = \
 	$(top_srcdir)/icons/zero_bmp.bmp
 
 fxcd_SOURCES = \
-		icons.cpp	        \
-		CDutils.cpp     	\
-		CDBMPIcon.cpp	        \
-		CDCanvas.cpp	        \
-		CDListBox.cpp	        \
-		CDPlayer.cpp	        \
-		CDPreferences.cpp	\
-		CDSeekButton.cpp	\
-		CDWindow.cpp	        \
+		icons.cpp	           \
+		CDutils.cpp                \
+		CDBMPIcon.cpp	           \
+		CDCanvas.cpp               \
+                CDChoiceDialog.cpp         \
+                CDDBInfo.cpp               \
+                CDDBServerListExecutor.cpp \
+                CDDBServerListTask.cpp     \
+                CDDBSettings.cpp           \
+                CDInfoTask.cpp             \
+		CDListBox.cpp	           \
+		CDPlayer.cpp	           \
+		CDPreferences.cpp          \
+		CDSeekButton.cpp           \
+                CDServerDialog.cpp         \
+		CDWindow.cpp	           \
 		cd.cpp
-
-#fxcd_SOURCES = \
-#		icons.cpp	        \
-#		CDBMPIcon.cpp	        \
-#		CDChoiceDialog.cpp	\
-#		CDInfo.cpp	        \
-#		CDPipe.cpp              \
-#		CDPlayer.cpp	        \
-#		CDPreferences.cpp	\
-#		CDSeekButton.cpp	\
-#		CDServerDialog.cpp	\
-#		CDWindow.cpp	        \
-#		cd.cpp
 
 CDBMPIcon.cpp: $(top_srcdir)/include/icons.h icons.cpp
 

@@ -127,7 +127,9 @@ public:
 
   FXuint getPanel() const;
 
-  void show(FXuint placement);
+  virtual void show();
+
+  virtual void show(FXuint placement);
 };
 
 #endif

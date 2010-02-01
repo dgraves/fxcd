@@ -23,7 +23,7 @@
 #include "CDDBServerListExecutor.h"
 
 namespace {
-  FXchar* progstates[] = {".  ",".. ","..."," ..","  .","   ","  ."," ..","...",".. ",".  ","   "};
+  FXchar progstates[][4] = {".  ",".. ","..."," ..","  .","   ","  ."," ..","...",".. ",".  ","   "};
   FXuint progtotal=ARRAYNUMBER(progstates);
 }
 

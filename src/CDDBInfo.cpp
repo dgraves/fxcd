@@ -33,10 +33,10 @@ CDDBInfo::CDDBInfo(const CDDBSettings& s,const CDPlayer& cdplayer,FXGUISignal* g
   : choice(0),
     discid(0),
     pserver(NULL),
+    signal(guisignal),
     status(CDINFO_IDLE),
     errorstring("No error"),
-    settings(s),
-    signal(guisignal)
+    settings(s)
 {
   init(cdplayer);
 }
@@ -200,7 +200,7 @@ void CDDBInfo::genDefaultInfo(const CDPlayer& cddesc,disc_data* info)
 
 FXbool CDDBInfo::getLocalInfo(disc_data* info)
 {
-  FXString localpath=FXStringFormat("%s%c%s",FXSystem::getHomeDirectory(),PATHSEP,".cddb");
+  FXString localpath=FXStringFormat("%s%c%s",FXSystem::getHomeDirectory().text(),PATHSEP,".cddb");
   if(cddb_read_local(localpath.text(),discid,info)<0)
   {
     return FALSE;
@@ -256,7 +256,7 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
           if(settings.localcopy)
           {
             // Save entry in home directory
-            FXString localpath=FXStringFormat("%s%c%s",FXSystem::getHomeDirectory(),PATHSEP,".cddb");
+            FXString localpath=FXStringFormat("%s%c%s",FXSystem::getHomeDirectory().text(),PATHSEP,".cddb");
 
             // Create CDDB direcotry if it does not exist
             if(!FXStat::exists(localpath))

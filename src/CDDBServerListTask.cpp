@@ -25,8 +25,8 @@
 #include "CDDBServerListTask.h"
 
 CDDBServerListTask::CDDBServerListTask(const CDDBSettings& cddbsettings,struct cddb_serverlist* serverlist,FXGUISignal* guisignal)
-: pserver(NULL),
-  signal(guisignal),
+: signal(guisignal),
+  pserver(NULL),
   list(serverlist),
   settings(cddbsettings)
 {

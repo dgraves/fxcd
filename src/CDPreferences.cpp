@@ -307,6 +307,11 @@ FXuint CDPreferences::getPanel() const
   return 0;  // Default to first item
 }
 
+void CDPreferences::show()
+{
+  show(PLACEMENT_CURSOR);
+}
+
 void CDPreferences::show(FXuint placement)
 {
   showmenubar=cdwindow->menubar->shown();
@@ -520,7 +525,7 @@ long CDPreferences::onCmdDeviceScan(FXObject*,FXSelector,void*)
   return 1;
 }
 
-long CDPreferences::onCmdAdvancedCDDB(FXObject*,FXSelector sel,void*)
+long CDPreferences::onCmdAdvancedCDDB(FXObject*,FXSelector,void*)
 {
   FXInputDialog dialog(this,"Advanced CDDB Server Settings","CDDB Script to Execute");
   dialog.setText(cddbsettings.cddbexec);
