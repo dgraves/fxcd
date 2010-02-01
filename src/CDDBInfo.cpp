@@ -215,12 +215,21 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
   int http_string_len=sizeof(http_string);
   FXbool success=FALSE;
 
-  sock=cddb_connect(&host,pserver,&hello,http_string,&http_string_len);
-
-  if(sock!=-1)
+  if(!querystring.empty())
   {
-    if(!querystring.empty())
+    sock=cddb_connect(&host,pserver,&hello,http_string,&http_string_len);
+    if(sock!=-1)
     {
+      if(settings.cddbproto==CDDB_PROTOCOL_CDDBP)
+      {
+        // Send handshake
+        if(!cddb_handshake(sock,&hello)||!cddb_proto(sock))
+        {
+          cddb_quit(sock,CDDB_MODE_CDDBP);
+          return FALSE;
+        }
+      }
+
       FXint result=cddb_query(querystring.text(),sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,&query,http_string);
       if(result!=-1&&query.query_match!=QUERY_NOMATCH)
       {
@@ -247,8 +256,6 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
         if(sock!=-1) result=cddb_read(query.query_list[choice].list_category,query.query_list[choice].list_id,sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP,info,http_string);
         else result=-1;
 
-        cddb_quit(sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP);
-
         if(result!=-1)
         {
           success = TRUE;
@@ -267,6 +274,8 @@ FXbool CDDBInfo::getRemoteInfo(disc_data* info)
           }
         }
       }
+
+      cddb_quit(sock,(settings.cddbproto==CDDB_PROTOCOL_CDDBP)?CDDB_MODE_CDDBP:CDDB_MODE_HTTP);
     }
   }
 
