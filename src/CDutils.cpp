@@ -66,11 +66,47 @@ FXbool checkDevice(const FXString& device)
   return TRUE;
 }
 
+#ifndef WIN32
+// Functions internal to this compilation unit
+namespace {
+  FXbool scanSingleDevice(const FXchar* device,std::vector<FXString>& preferredName,std::vector<FXString>& actualName)
+  {
+    FXbool exists=FALSE;
+    if(checkDevice(device))
+    {
+      // The device exists - make sure it is not a duplicate
+      FXString link=FXFile::symlink(device);
+      if(link.empty())
+        link=device;
+      if(std::find(actualName.begin(),actualName.end(),link)==actualName.end())
+      {
+        actualName.push_back(link);
+        preferredName.push_back(device);
+      }
+
+      exists=TRUE;
+    }
+    return exists;
+  }
+
+  void scanDeviceRange(const FXchar* pattern,std::vector<FXString>& preferredName,std::vector<FXString>& actualName,FXint start=0)
+  {
+    FXint i;
+    FXbool exists=TRUE;
+    for(i=start;exists;i++)
+    {
+      FXString device=FXStringFormat(pattern,i);
+      exists=scanSingleDevice(device.text(),preferredName,actualName);
+    }
+  }
+}
+#endif
+
 void scanDevices(std::vector<FXString>& devices)
 {
   FXint i;
-  FXString device;
 #ifdef WIN32
+  FXString device;
   for(i='A';i<='Z';i++)
   {
     device=FXStringFormat("%c:\\",i);
@@ -80,80 +116,36 @@ void scanDevices(std::vector<FXString>& devices)
     }
   }
 #else
-  std::vector<FXString> actual;
-  FXint j;
-  FXbool exists;
-  FXString link;
-  const FXchar *special[]={"/dev/cdrom","/dev/dvd","/dev/cdrw",NULL};
-  const FXchar *letters[]={"/dev/hd%d",NULL};
-  const FXchar *numbers[]={"/dev/scd%d","/dev/sr%d","/dev/cd%d","dev/cdrom%d","/dev/cdroms/cdrom%d",
-                           "/dev/cd%dc","/dev/acd%dc","/dev/matcd%dc","/dev/mcd%dc","/dev/scd%dc","/dev/rsr%dc",NULL};
+  FXint i;
+  std::vector<FXString> actualName;
+  const FXchar *devicePatterns[]={"/dev/scd%d","/dev/sr%d","/dev/cd%d","/dev/cdroms/cdrom%d","/dev/cd%dc",
+                                  "/dev/acd%dc","/dev/matcd%dc","/dev/mcd%dc","/dev/scd%dc","/dev/rsr%dc",NULL};
 
-  for(i=0;special[i]!=NULL;i++)
+  // Check for cdrom name first - scan the 0 device independently because many systems start at 1
+  // for special name and scanDeviceRange stops as soon as a non-existent device is encountered
+  scanSingleDevice("cdrom",devices,actualName);
+  scanSingleDevice("cdrom0",devices,actualName);
+  scanDeviceRange("cdrom%d",devices,actualName,1);
+
+  // Check cdrw name second - scan the 0 device independently because many systems start at 1
+  // for special name and scanDeviceRange stops as soon as a non-existent device is encountered
+  scanSingleDevice("cdrw",devices,actualName);
+  scanSingleDevice("cdrw0",devices,actualName);
+  scanDeviceRange("cdrw%d",devices,actualName,1);
+
+  // Check dvd name third - scan the 0 device independently because many systems start at 1
+  // for special name and scanDeviceRange stops as soon as a non-existent device is encountered
+  scanSingleDevice("dvd",devices,actualName);
+  scanSingleDevice("dvd0",devices,actualName);
+  scanDeviceRange("dvd%d",devices,actualName,1);
+
+  // Scan block devices
+  for(i=0;devicePatterns[i]!=NULL;i++)
   {
-    device=special[i];
-    if(checkDevice(device))
-    {
-      // The device exists - make sure it is not a duplicate
-      link=FXFile::symlink(device);
-      if(link.empty())
-        link=device;
-      if(std::find(actual.begin(),actual.end(),link)==actual.end())
-      {
-        actual.push_back(link);
-        devices.push_back(device);
-      }
-    }
+    scanDeviceRange(devicePatterns[i],devices,actualName);
   }
 
-  for(i=0;letters[i]!=NULL;i++)
-  {
-    exists=TRUE;
-    for(j=0;exists;j++)
-    {
-      device=FXStringFormat(letters[i],'a'+j);
-      if(checkDevice(device))
-      {
-        // The device exists - make sure it is not a duplicate
-        link=FXFile::symlink(device);
-        if(link.empty())
-          link=device;
-        if(std::find(actual.begin(),actual.end(),link)==actual.end())
-        {
-          actual.push_back(link);
-          devices.push_back(device);
-        }
-      }
-      else
-      {
-        exists=FALSE;
-      }
-    }
-  }
-
-  for(i=0;numbers[i]!=NULL;i++)
-  {
-    exists=TRUE;
-    for(j=0;exists;j++)
-    {
-      device=FXStringFormat(numbers[i],j);
-      if(checkDevice(device))
-      {
-        // The device exists - make sure it is not a duplicate
-        link=FXFile::symlink(device);
-        if(link.empty())
-          link=device;
-        if(std::find(actual.begin(),actual.end(),link)==actual.end())
-        {
-          actual.push_back(link);
-          devices.push_back(device);
-        }
-      }
-      else
-      {
-        exists=FALSE;
-      }
-    }
-  }
+  // Check for IDE device names
+  scanDeviceRange("/dev/hd%c",devices,actualName,'a');
 #endif
 }
