@@ -76,7 +76,9 @@ namespace {
     {
       // The device exists - make sure it is not a duplicate
       FXString link=FXFile::symlink(device);
-      if(link.empty())
+      if(!link.empty())
+        link=FXStringFormat("%s/%s",FXPath::directory(device).text(),link.text());  // Make full path from symlink target (relative to symlink)
+      else
         link=device;
       if(std::find(actualName.begin(),actualName.end(),link)==actualName.end())
       {
@@ -116,28 +118,27 @@ void scanDevices(std::vector<FXString>& devices)
     }
   }
 #else
-  FXint i;
   std::vector<FXString> actualName;
   const FXchar *devicePatterns[]={"/dev/scd%d","/dev/sr%d","/dev/cd%d","/dev/cdroms/cdrom%d","/dev/cd%dc",
                                   "/dev/acd%dc","/dev/matcd%dc","/dev/mcd%dc","/dev/scd%dc","/dev/rsr%dc",NULL};
 
   // Check for cdrom name first - scan the 0 device independently because many systems start at 1
   // for special name and scanDeviceRange stops as soon as a non-existent device is encountered
-  scanSingleDevice("cdrom",devices,actualName);
-  scanSingleDevice("cdrom0",devices,actualName);
-  scanDeviceRange("cdrom%d",devices,actualName,1);
+  scanSingleDevice("/dev/cdrom",devices,actualName);
+  scanSingleDevice("/dev/cdrom0",devices,actualName);
+  scanDeviceRange("/dev/cdrom%d",devices,actualName,1);
 
   // Check cdrw name second - scan the 0 device independently because many systems start at 1
   // for special name and scanDeviceRange stops as soon as a non-existent device is encountered
-  scanSingleDevice("cdrw",devices,actualName);
-  scanSingleDevice("cdrw0",devices,actualName);
-  scanDeviceRange("cdrw%d",devices,actualName,1);
+  scanSingleDevice("/dev/cdrw",devices,actualName);
+  scanSingleDevice("/dev/cdrw0",devices,actualName);
+  scanDeviceRange("/dev/cdrw%d",devices,actualName,1);
 
   // Check dvd name third - scan the 0 device independently because many systems start at 1
   // for special name and scanDeviceRange stops as soon as a non-existent device is encountered
-  scanSingleDevice("dvd",devices,actualName);
-  scanSingleDevice("dvd0",devices,actualName);
-  scanDeviceRange("dvd%d",devices,actualName,1);
+  scanSingleDevice("/dev/dvd",devices,actualName);
+  scanSingleDevice("/dev/dvd0",devices,actualName);
+  scanDeviceRange("/dev/dvd%d",devices,actualName,1);
 
   // Scan block devices
   for(i=0;devicePatterns[i]!=NULL;i++)
