@@ -505,6 +505,17 @@ FXbool CDPlayer::update()
 
     if(audiodisc)
     {
+      //Check for completion of play for devices that do not report completed status (Windows MCI)
+      if(discInfo.disc_mode==CDLYTE_PLAYING)
+      {
+        if(discInfo.disc_length.minutes==discInfo.disc_time.minutes&&
+           discInfo.disc_length.seconds==discInfo.disc_time.seconds&&
+           discInfo.disc_length.frames==discInfo.disc_time.frames)
+        {
+          discInfo.disc_mode=CDLYTE_COMPLETED;
+        }
+      }
+
       //What's happening
       switch(discInfo.disc_mode)
       {
