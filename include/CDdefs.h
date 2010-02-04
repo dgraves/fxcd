@@ -23,7 +23,7 @@
 #include <list>
 
 //Version number - for windows
-#define PROG_VERSION "0.9.9"
+#define PROG_VERSION "1.0.0"
 #define PROG_PACKAGE "fxcd"
 
 class CDBMPIcon;
