@@ -42,7 +42,7 @@ protected:
   FXbool random;                    // Shuffle play is active
   FXint currentTrack;               // Track currently playing (or to play)
   FXint volLevel;                   // Volume level (0-100%)
-  FXfloat volBalance;               // Left-right volume balance
+  FXdouble volBalance;              // Left-right volume balance
   struct disc_timeval playlen;      // Actual length of playable audio on disc in seconds
   struct disc_timeval introTime;    // Length of time for intro play
   struct disc_volume volCurrent;    // Use to test for volume change by other party
@@ -186,10 +186,10 @@ public:
   FXbool setVolume(FXint volume);
 
   /// Get left-right audio balance
-  FXfloat getBalance() const;
+  FXdouble getBalance() const;
 
   /// Set left-right audio balance
-  FXbool setBalance(FXfloat balance);
+  FXbool setBalance(FXdouble balance);
 
   /// Get random track
   FXint randomTrack();

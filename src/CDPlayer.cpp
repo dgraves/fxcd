@@ -23,8 +23,8 @@
 #include <fox-1.6/fx.h>
 #include "CDPlayer.h"
 
-#define VOLUME_TO_FLOAT(v) (((FXfloat)(v))/100.0f)
-#define VOLUME_TO_INT(v)   ((FXint)((v)*100.0f))
+#define VOLUME_TO_DOUBLE(v) (((FXdouble)(v))/100.0)
+#define VOLUME_TO_INT(v)   ((FXint)floor(((v)*100.0)+0.5))    // Float to int conversion with rounding
 
 // Function for random track generation
 ptrdiff_t rand_func(ptrdiff_t max)
@@ -134,24 +134,24 @@ void CDPlayer::polldisc()
 //Set the volume
 FXbool CDPlayer::setvol()
 {
-  if(volBalance>0.0f)
+  if(volBalance>0.0)
   {
-    volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel)*(1.0f-volBalance);
-    volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel)*(1.0f-volBalance);
-    volCurrent.vol_front.right=VOLUME_TO_FLOAT(volLevel);
-    volCurrent.vol_back.right=VOLUME_TO_FLOAT(volLevel);
+    volCurrent.vol_front.left=VOLUME_TO_DOUBLE(volLevel)*(1.0-volBalance);
+    volCurrent.vol_back.left=VOLUME_TO_DOUBLE(volLevel)*(1.0-volBalance);
+    volCurrent.vol_front.right=VOLUME_TO_DOUBLE(volLevel);
+    volCurrent.vol_back.right=VOLUME_TO_DOUBLE(volLevel);
   }
-  else if(volBalance<0.0f)
+  else if(volBalance<0.0)
   {
-    volCurrent.vol_front.right=VOLUME_TO_FLOAT(volLevel)*(1.0f+volBalance);
-    volCurrent.vol_back.right=VOLUME_TO_FLOAT(volLevel)*(1.0f+volBalance);
-    volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel);
-    volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel);
+    volCurrent.vol_front.right=VOLUME_TO_DOUBLE(volLevel)*(1.0+volBalance);
+    volCurrent.vol_back.right=VOLUME_TO_DOUBLE(volLevel)*(1.0+volBalance);
+    volCurrent.vol_front.left=VOLUME_TO_DOUBLE(volLevel);
+    volCurrent.vol_back.left=VOLUME_TO_DOUBLE(volLevel);
   }
   else
   {
-    volCurrent.vol_front.right=volCurrent.vol_front.left=VOLUME_TO_FLOAT(volLevel);
-    volCurrent.vol_back.right=volCurrent.vol_back.left=VOLUME_TO_FLOAT(volLevel);
+    volCurrent.vol_front.right=volCurrent.vol_front.left=VOLUME_TO_DOUBLE(volLevel);
+    volCurrent.vol_back.right=volCurrent.vol_back.left=VOLUME_TO_DOUBLE(volLevel);
   }
 
   //Don't change anything if we are mute
@@ -183,11 +183,11 @@ FXbool CDPlayer::checkvol()
       volLevel=VOLUME_TO_INT((volume.vol_front.left>volume.vol_front.right)?volume.vol_front.left:volume.vol_front.right);
 
       if(volume.vol_front.left<volume.vol_front.right)
-        volBalance=1.0f-(((FXfloat)volume.vol_front.left)/((FXfloat)volume.vol_front.right));
+        volBalance=1.0-(volume.vol_front.left/volume.vol_front.right);
       else if(volume.vol_front.right<volume.vol_front.left)
-        volBalance=(((FXfloat)volume.vol_front.right)/((FXfloat)volume.vol_front.left))-1.0f;
+        volBalance=(volume.vol_front.right/volume.vol_front.left)-1.0;
       else
-        volBalance=0.0f;
+        volBalance=0.0;
     }
   }
 
@@ -760,12 +760,12 @@ FXbool CDPlayer::setVolume(FXint volume)
 }
 
 //Volume is checked in update
-FXfloat CDPlayer::getBalance() const
+FXdouble CDPlayer::getBalance() const
 {
   return volBalance;
 }
 
-FXbool CDPlayer::setBalance(FXfloat balance)
+FXbool CDPlayer::setBalance(FXdouble balance)
 {
   volBalance=balance;
   return setvol();

@@ -1098,15 +1098,15 @@ long CDWindow::onUpdMute(FXObject* sender,FXSelector,void*)
 long CDWindow::onCmdBalance(FXObject*,FXSelector,void* ptr)
 {
   FXint value=(FXint)(FXival)ptr;
-  FXfloat volbalance=0.0f;
+  FXdouble volbalance=0.0;
 
   //determine percentege of balance to what side
   if(value>100)  //Balance goes right
-    volbalance=((FXfloat)value-100.0f)/100.0f;
+    volbalance=((FXdouble)value-100.0)/100.0;
   else if(value<100)          //Balance goes left
-    volbalance=((FXfloat)value/100.0f)-1.0f;
+    volbalance=((FXdouble)value/100.0)-1.0;
   else
-    volbalance=0.0f;
+    volbalance=0.0;
 
   cdplayer.setBalance(volbalance);
 
@@ -1115,7 +1115,7 @@ long CDWindow::onCmdBalance(FXObject*,FXSelector,void* ptr)
 
 long CDWindow::onUpdBalance(FXObject* sender,FXSelector,void*)
 {
-  FXfloat volbalance=cdplayer.getBalance();
+  FXdouble volbalance=cdplayer.getBalance();
   FXint value=100+(FXint)(100*volbalance);
 
   sender->handle(this,MKUINT(ID_SETVALUE,SEL_COMMAND),(void*)(FXival)value);
