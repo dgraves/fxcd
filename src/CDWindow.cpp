@@ -928,9 +928,9 @@ long CDWindow::onUpdToggleTooltips(FXObject* sender,FXSelector,void*)
 
 long CDWindow::onCmdAbout(FXObject*,FXSelector,void*)
 {
-  FXString msg("Compact Disc Player\nVersion "PROG_VERSION"\n\nCopyright (C) 2000-2004 Dustin Graves (dgraves@computer.org)\n\n"\
+  FXString msg("Compact Disc Player\nVersion "PROG_VERSION"\n\nCopyright (C) 2000-2010 Dustin Graves (dgraves@computer.org)\n\n"\
 "This software uses the FOX Platform Independent GUI Toolkit Library.\n"\
-"The FOX Library is Copyright (C) 1997,2000-2004 Jeroen van der Zijp and is\n"\
+"The FOX Library is Copyright (C) 1997,2000-2010 Jeroen van der Zijp and is\n"\
 "available freely under the GNU Lesser Public License at the following site:\n"\
 "http://www.fox-toolkit.org");
 
