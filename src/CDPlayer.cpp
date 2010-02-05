@@ -69,7 +69,9 @@ void CDPlayer::load()
 {
   FXint i,sec;
 
-  cd_stat(media,&discInfo);
+  if(cd_stat(media,&discInfo)<0)
+    discInfo.disc_present=FALSE;  // Treat failure as no disc detected
+
   if(!discInfo.disc_present)
     nodisc=(discInfo.disc_present)?FALSE:TRUE;
   else
@@ -97,34 +99,46 @@ void CDPlayer::load()
       }
     }
 
-    //Make the current track be the first track - or track being played
-    if(audiodisc&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
-      currentTrack=discInfo.disc_current_track;
-    else
-      currentTrack=discInfo.disc_first_track;
-
-    //Calculate actual play time for disc in seconds
-    sec=0;
-    for(i=0;i<discInfo.disc_total_tracks;i++)
+    if(audiodisc)
     {
-      sec+=discInfo.disc_track[i].track_length.minutes*60+discInfo.disc_track[i].track_length.seconds;
-    }
-    playlen.minutes=sec/60;
-    playlen.seconds=sec%60;
-    playlen.frames=0;
-  }
+      //Make the current track be the first track - or track being played
+      if(audiodisc&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
+        currentTrack=discInfo.disc_current_track;
+      else
+        currentTrack=discInfo.disc_first_track;
 
-  //Helpful when starting while disc is already playing
-  srand(time(NULL));
-  makeRandomList();
+      //Calculate actual play time for disc in seconds
+      sec=0;
+      for(i=0;i<discInfo.disc_total_tracks;i++)
+      {
+        sec+=discInfo.disc_track[i].track_length.minutes*60+discInfo.disc_track[i].track_length.seconds;
+      }
+      playlen.minutes=sec/60;
+      playlen.seconds=sec%60;
+      playlen.frames=0;
+
+      //Helpful when starting while disc is already playing
+      srand(time(NULL));
+      makeRandomList();
+    }
+    else
+    {
+      currentTrack=0;
+      playlen.minutes=0;
+      playlen.seconds=0;
+      playlen.frames=0;
+    }
+  }
 }
 
 //Check disc status
 void CDPlayer::polldisc()
 {
   struct disc_status status;
-  cd_poll(media,&status);
-  cd_update(&discInfo,&status);
+  if(cd_poll(media,&status)<0)
+    discInfo.disc_present=FALSE;   // Treat failure as no disc present
+  else
+    cd_update(&discInfo,&status);
 }
 
 //Set the volume
