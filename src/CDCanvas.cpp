@@ -127,7 +127,7 @@ void CDCanvas::setBlinkMode(FXbool mode)
     blink=TRUE;
     blinkmode=mode;
     if(blinkmode) 
-	  getApp()->addTimeout(this,ID_BLINK,blinkrate);
+      getApp()->addTimeout(this,ID_BLINK,blinkrate);
   }
 }
 

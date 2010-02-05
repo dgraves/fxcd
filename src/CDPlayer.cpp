@@ -71,11 +71,7 @@ void CDPlayer::load()
 
   cd_stat(media,&discInfo);
   if(!discInfo.disc_present)
-  {
-    cd_close(media);  //Drive door may be open
-    cd_stat(media,&discInfo);
     nodisc=(discInfo.disc_present)?FALSE:TRUE;
-  }
   else
     nodisc=FALSE;
 

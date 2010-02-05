@@ -789,7 +789,7 @@ long CDWindow::onTimeout(FXObject*,FXSelector,void*)
   {
     cdplayer.update();
 
-    if(cdplayer.isDiscPresent())
+    if(cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
     {
       //We'll need to load the info if the disk is new
       if(albumtitle->getText()==NODISC_MSG)
@@ -969,7 +969,7 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
 long CDWindow::onUpdStatusDisc(FXObject* sender,FXSelector,void*)
 {
   FXString str("00:00");
-  if(cdplayer.isDiscPresent())
+  if(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
   {
     struct disc_timeval length;
     cdplayer.getPlayLength(length);
@@ -983,7 +983,7 @@ long CDWindow::onUpdStatusDisc(FXObject* sender,FXSelector,void*)
 long CDWindow::onUpdStatusTrack(FXObject* sender,FXSelector,void*)
 {
   FXString str("00:00");
-  if(cdplayer.isDiscPresent())
+  if(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
   {
     struct disc_timeval length;
     cdplayer.getTrackLength(cdplayer.getCurrentTrack(),length);
@@ -1047,9 +1047,12 @@ long CDWindow::onCmdBand(FXObject*,FXSelector,void* ptr)
 
 long CDWindow::onCmdTrack(FXObject*,FXSelector,void* ptr)
 {
-  cdplayer.setCurrentTrack(((FXint)(FXival)ptr)+1);
-  if(cdplayer.getStatus()!=CDLYTE_PLAYING&&cdplayer.getStatus()!=CDLYTE_PAUSED)
-    cdplayer.play();
+  if(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
+  {
+    cdplayer.setCurrentTrack(((FXint)(FXival)ptr)+1);
+    if(cdplayer.getStatus()!=CDLYTE_PLAYING&&cdplayer.getStatus()!=CDLYTE_PAUSED)
+      cdplayer.play();
+  }
   return 1;
 }
 
