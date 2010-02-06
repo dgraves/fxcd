@@ -246,6 +246,14 @@ FXbool CDPlayer::finish()
   cd_finish(media);
   media=-1;
 
+  //Reset state values
+  cd_free_disc_info(&discInfo);
+  cd_init_disc_info(&discInfo);
+  nodisc=TRUE;
+  audiodisc=FALSE;
+  stopped=TRUE;
+  currentTrack=0;
+
   return TRUE;
 }
 
@@ -455,7 +463,7 @@ FXbool CDPlayer::openTray()
 
   //Some cd players continue to act as if playing if ejected while playing, and ignore stop requests while tray is open.
   //So check for present disc to avoid infinite loop.
-  if(nodisc==FALSE&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
+  if(nodisc==FALSE&&audiodisc==TRUE&&(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED))
   {
     if(!stop())
       return FALSE;

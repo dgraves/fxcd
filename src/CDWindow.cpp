@@ -95,7 +95,7 @@ FXDEFMAP(CDWindow) CDWindowMap[]={
 FXIMPLEMENT(CDWindow,FXMainWindow,CDWindowMap,ARRAYNUMBER(CDWindowMap))
 
 #define TIMED_UPDATE      200
-#define NODISC_MSG        "Data or no disc loaded"
+#define NODISC_MSG        "No audio disc"
 #define DEFAULTFORE       FXRGB(0,160,255)
 #define DEFAULTBACK       FXRGB(0,0,0)
 
