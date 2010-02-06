@@ -157,7 +157,7 @@ void CDCanvas::doDraw(FXint track,const struct disc_info* di)
   FXString text;
 
   //Create string to draw
-  if(di->disc_mode==CDLYTE_PLAYING||di->disc_mode==CDLYTE_PAUSED)
+  if(di!=NULL&&(di->disc_mode==CDLYTE_PLAYING||di->disc_mode==CDLYTE_PAUSED))
   {
     if(blinkmode&&blink)
     {

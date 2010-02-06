@@ -111,7 +111,7 @@ CDWindow::CDWindow(FXApp* app)
   seekrate(1),
   initseekrate(1),
   fastseekrate(5),
-  fastseekstart(5),
+  fastseekstart(3),
   usecddb(TRUE),
   tooltip(NULL),
   prefsbox(NULL)
@@ -773,12 +773,18 @@ long CDWindow::onMouseUp(FXObject*,FXSelector,void* ptr)
 
 long CDWindow::onPaint(FXObject*,FXSelector,void*)
 {
-  struct disc_info di;
-
-  cd_init_disc_info(&di);
-  cdplayer.getDiscInfo(di);
-  canvas->doDraw(cdplayer.getCurrentTrack(),&di);
-  cd_free_disc_info(&di);
+  if(cdplayer.isValid()&&cdplayer.isDiscPresent()&&cdplayer.isAudioDisc())
+  {
+    struct disc_info di;
+    cd_init_disc_info(&di);
+    cdplayer.getDiscInfo(di);
+    canvas->doDraw(cdplayer.getCurrentTrack(),&di);
+    cd_free_disc_info(&di);
+  }
+  else
+  {
+    canvas->doDraw(0,NULL);
+  }
   return 1;
 }
 
@@ -954,9 +960,11 @@ long CDWindow::onCmdQuit(FXObject*,FXSelector,void*)
 {
   if(stoponexit==TRUE)
   {
-    if(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED)
-      cdplayer.stop();
-    cdplayer.finish();
+    if(cdplayer.isValid())
+    {
+      if(cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
+        cdplayer.stop();
+    }
   }
 
   writeRegistry();
@@ -1032,7 +1040,8 @@ long CDWindow::onCmdBand(FXObject*,FXSelector,void* ptr)
     // Stop any device that is currently in use
     if(cdplayer.isValid())
     {
-      cdplayer.stop();
+      if(cdplayer.isDiscPresent()&&cdplayer.isAudioDisc()&&(cdplayer.getStatus()==CDLYTE_PLAYING||cdplayer.getStatus()==CDLYTE_PAUSED))
+        cdplayer.stop();
       cdplayer.finish();
     }
 

@@ -78,12 +78,9 @@ void CDPlayer::load()
     nodisc=FALSE;
 
   audiodisc=FALSE;  //Will be set to true if it passes the following test
+  currentTrack=0;   //Will be set if audio disc is present
 
-  if(nodisc)
-  {
-    currentTrack=0;
-  }
-  else
+  if(!nodisc)
   {
     //If it's playing it can't be stopped
     if(discInfo.disc_mode==CDLYTE_PLAYING||discInfo.disc_mode==CDLYTE_PAUSED)
@@ -120,13 +117,6 @@ void CDPlayer::load()
       //Helpful when starting while disc is already playing
       srand(time(NULL));
       makeRandomList();
-    }
-    else
-    {
-      currentTrack=0;
-      playlen.minutes=0;
-      playlen.seconds=0;
-      playlen.frames=0;
     }
   }
 }
