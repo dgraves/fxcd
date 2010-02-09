@@ -116,6 +116,12 @@ CDWindow::CDWindow(FXApp* app)
   tooltip(NULL),
   prefsbox(NULL)
 {
+  // Create program icons
+  bigcd=new FXBMPIcon(getApp(),big_cd,0,IMAGE_ALPHAGUESS);
+  smallcd=new FXBMPIcon(getApp(),small_cd,0,IMAGE_ALPHAGUESS);
+  setIcon(bigcd);
+  setMiniIcon(smallcd);
+
   // Create icons for mute button
   mutebmp.push_back(new CDBMPIcon(getApp(),nomute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
   mutebmp.push_back(new CDBMPIcon(getApp(),mute_bmp,0,IMAGE_ALPHAGUESS|IMAGE_KEEP));
@@ -948,7 +954,7 @@ long CDWindow::onCmdAbout(FXObject*,FXSelector,void*)
   new FXLabel(aboutframe,"About "PROG_PACKAGE);
   new FXHorizontalSeparator(aboutframe,SEPARATOR_LINE|LAYOUT_FILL_X);
   FXHorizontalFrame* aboutlabels=new FXHorizontalFrame(aboutframe,LAYOUT_FILL_X|LAYOUT_FILL_Y);
-//  new FXLabel(aboutlabels,NULL,bigcalc,JUSTIFY_LEFT|LAYOUT_CENTER_Y,0,0,0,0, 20,20,20,20);
+  new FXLabel(aboutlabels,FXString::null,bigcd,JUSTIFY_LEFT|LAYOUT_CENTER_Y,0,0,0,0, 20,20,20,20);
   new FXLabel(aboutlabels,msg,NULL,JUSTIFY_LEFT|LAYOUT_CENTER_Y,0,0,0,0, 0,20,20,20);
 
   about.execute(PLACEMENT_OWNER);
@@ -1387,4 +1393,7 @@ CDWindow::~CDWindow()
     delete (*task)->getInfo();
     delete (*task);    
   }
+
+  delete bigcd;
+  delete smallcd;
 }

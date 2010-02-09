@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="fxcd"
 	ProjectGUID="{4F32B4E1-EDA4-41B2-9FA5-716A4CBC6D34}"
+	RootNamespace="fxcd"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -208,6 +209,11 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<AssemblyReference
+			RelativePath="System.Drawing.dll"
+			AssemblyName="System.Drawing, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -402,7 +408,15 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
+			<File
+				RelativePath=".\fxcd.ico"
+				>
+			</File>
 		</Filter>
+		<File
+			RelativePath=".\fxcd.res"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

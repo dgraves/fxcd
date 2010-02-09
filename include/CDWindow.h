@@ -59,11 +59,13 @@ protected:
   FXDataTarget           repeatmodetgt;
   FXDataTarget           introtgt;
 protected:
-  CDBMPArray         mutebmp;           // Mute icons
-  CDBMPArray         btnbmp;            // Icons for cd player controls
-  CDBMPArray         lcdbmp;            // Icons for the display
-  CDBMPArray         disbmp;            // "Greyed-out" icons for the display
-  FXWinArray         lcdwin;            // Buttons for the display
+  FXIcon*             bigcd;
+  FXIcon*             smallcd;
+  CDBMPArray          mutebmp;           // Mute icons
+  CDBMPArray          btnbmp;            // Icons for cd player controls
+  CDBMPArray          lcdbmp;            // Icons for the display
+  CDBMPArray          disbmp;            // "Greyed-out" icons for the display
+  FXWinArray          lcdwin;            // Buttons for the display
   CDCanvas*           canvas;            // Time display
   CDListBox*          bandtitle;         // List for LCD artist name display
   CDListBox*          tracktitle;        // List for LCD track name display
