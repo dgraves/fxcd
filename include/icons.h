@@ -3,77 +3,26 @@
 /* created by reswrap from file ../icons/big_cd.bmp */
 extern const unsigned char big_cd[];
 
-/* created by reswrap from file ../icons/small_cd.bmp */
-extern const unsigned char small_cd[];
-
-/* created by reswrap from file ../icons/eject_bmp.bmp */
-extern const unsigned char eject_bmp[];
-
-/* created by reswrap from file ../icons/forward_bmp.bmp */
-extern const unsigned char forward_bmp[];
-
-/* created by reswrap from file ../icons/next_bmp.bmp */
-extern const unsigned char next_bmp[];
-
-/* created by reswrap from file ../icons/pause_bmp.bmp */
-extern const unsigned char pause_bmp[];
-
-/* created by reswrap from file ../icons/play_bmp.bmp */
-extern const unsigned char play_bmp[];
-
-/* created by reswrap from file ../icons/prev_bmp.bmp */
-extern const unsigned char prev_bmp[];
-
-/* created by reswrap from file ../icons/reverse_bmp.bmp */
-extern const unsigned char reverse_bmp[];
-
-/* created by reswrap from file ../icons/stop_bmp.bmp */
-extern const unsigned char stop_bmp[];
-
-/* created by reswrap from file ../icons/mute_bmp.bmp */
-extern const unsigned char mute_bmp[];
-
-/* created by reswrap from file ../icons/nomute_bmp.bmp */
-extern const unsigned char nomute_bmp[];
-
-/* created by reswrap from file ../icons/prefs_bmp.bmp */
-extern const unsigned char prefs_bmp[];
+/* created by reswrap from file ../icons/colon_bmp.bmp */
+extern const unsigned char colon_bmp[];
 
 /* created by reswrap from file ../icons/dash_bmp.bmp */
 extern const unsigned char dash_bmp[];
 
-/* created by reswrap from file ../icons/colon_bmp.bmp */
-extern const unsigned char colon_bmp[];
+/* created by reswrap from file ../icons/eight_bmp.bmp */
+extern const unsigned char eight_bmp[];
 
-/* created by reswrap from file ../icons/zero_bmp.bmp */
-extern const unsigned char zero_bmp[];
-
-/* created by reswrap from file ../icons/one_bmp.bmp */
-extern const unsigned char one_bmp[];
-
-/* created by reswrap from file ../icons/two_bmp.bmp */
-extern const unsigned char two_bmp[];
-
-/* created by reswrap from file ../icons/three_bmp.bmp */
-extern const unsigned char three_bmp[];
-
-/* created by reswrap from file ../icons/four_bmp.bmp */
-extern const unsigned char four_bmp[];
+/* created by reswrap from file ../icons/eject_bmp.bmp */
+extern const unsigned char eject_bmp[];
 
 /* created by reswrap from file ../icons/five_bmp.bmp */
 extern const unsigned char five_bmp[];
 
-/* created by reswrap from file ../icons/six_bmp.bmp */
-extern const unsigned char six_bmp[];
+/* created by reswrap from file ../icons/forward_bmp.bmp */
+extern const unsigned char forward_bmp[];
 
-/* created by reswrap from file ../icons/seven_bmp.bmp */
-extern const unsigned char seven_bmp[];
-
-/* created by reswrap from file ../icons/eight_bmp.bmp */
-extern const unsigned char eight_bmp[];
-
-/* created by reswrap from file ../icons/nine_bmp.bmp */
-extern const unsigned char nine_bmp[];
+/* created by reswrap from file ../icons/four_bmp.bmp */
+extern const unsigned char four_bmp[];
 
 /* created by reswrap from file ../icons/intro_bmp.bmp */
 extern const unsigned char intro_bmp[];
@@ -81,11 +30,41 @@ extern const unsigned char intro_bmp[];
 /* created by reswrap from file ../icons/introd_bmp.bmp */
 extern const unsigned char introd_bmp[];
 
+/* created by reswrap from file ../icons/mute_bmp.bmp */
+extern const unsigned char mute_bmp[];
+
+/* created by reswrap from file ../icons/next_bmp.bmp */
+extern const unsigned char next_bmp[];
+
+/* created by reswrap from file ../icons/nine_bmp.bmp */
+extern const unsigned char nine_bmp[];
+
+/* created by reswrap from file ../icons/nomute_bmp.bmp */
+extern const unsigned char nomute_bmp[];
+
+/* created by reswrap from file ../icons/one_bmp.bmp */
+extern const unsigned char one_bmp[];
+
+/* created by reswrap from file ../icons/pause_bmp.bmp */
+extern const unsigned char pause_bmp[];
+
+/* created by reswrap from file ../icons/play_bmp.bmp */
+extern const unsigned char play_bmp[];
+
+/* created by reswrap from file ../icons/prefs_bmp.bmp */
+extern const unsigned char prefs_bmp[];
+
+/* created by reswrap from file ../icons/prev_bmp.bmp */
+extern const unsigned char prev_bmp[];
+
 /* created by reswrap from file ../icons/rand_bmp.bmp */
 extern const unsigned char rand_bmp[];
 
 /* created by reswrap from file ../icons/randd_bmp.bmp */
 extern const unsigned char randd_bmp[];
+
+/* created by reswrap from file ../icons/repeatd_bmp.bmp */
+extern const unsigned char repeatd_bmp[];
 
 /* created by reswrap from file ../icons/repeatn_bmp.bmp */
 extern const unsigned char repeatn_bmp[];
@@ -93,6 +72,27 @@ extern const unsigned char repeatn_bmp[];
 /* created by reswrap from file ../icons/repeatt_bmp.bmp */
 extern const unsigned char repeatt_bmp[];
 
-/* created by reswrap from file ../icons/repeatd_bmp.bmp */
-extern const unsigned char repeatd_bmp[];
+/* created by reswrap from file ../icons/reverse_bmp.bmp */
+extern const unsigned char reverse_bmp[];
+
+/* created by reswrap from file ../icons/seven_bmp.bmp */
+extern const unsigned char seven_bmp[];
+
+/* created by reswrap from file ../icons/six_bmp.bmp */
+extern const unsigned char six_bmp[];
+
+/* created by reswrap from file ../icons/small_cd.bmp */
+extern const unsigned char small_cd[];
+
+/* created by reswrap from file ../icons/stop_bmp.bmp */
+extern const unsigned char stop_bmp[];
+
+/* created by reswrap from file ../icons/three_bmp.bmp */
+extern const unsigned char three_bmp[];
+
+/* created by reswrap from file ../icons/two_bmp.bmp */
+extern const unsigned char two_bmp[];
+
+/* created by reswrap from file ../icons/zero_bmp.bmp */
+extern const unsigned char zero_bmp[];
 
