@@ -1,4 +1,4 @@
-fxcd version 0.9.9, Copyright (C) 2001-2004 Dustin Graves <dgraves@computer.org>
+fxcd version 1.0.0, Copyright (C) 2001-2010 Dustin Graves <dgraves@computer.org>
 fxcd comes with ABSOLUTELY NO WARRANTY.  This is free software, and you are 
 welcome to redistribute it under certain conditions; see COPYING for details.
 
@@ -16,10 +16,9 @@ and is available freely under the GNU Lesser General Public License at
 the following site:
 http://www.cfdrc.com/FOX/fox.html
 
-This software uses libcdaudio.  
+This software uses libcdlyte, a fork of libcdaudio version 0.99.4.  
 libcdaudio is Copyright (C) 1998-1999 Tony Arcieri and is available 
 freely under the GNU Lesser General Public License at the following site:
 http://cdcd.undergrid.net/libcdaudio 
 
 See INSTALL for installation instructions
-
